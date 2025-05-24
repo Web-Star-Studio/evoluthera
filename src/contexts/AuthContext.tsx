@@ -53,7 +53,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
 
-      return data;
+      // Type assertion to ensure proper typing
+      const typedProfile: Profile = {
+        id: data.id,
+        name: data.name,
+        email: data.email,
+        user_type: data.user_type as 'patient' | 'psychologist' | 'admin',
+        avatar_url: data.avatar_url
+      };
+
+      return typedProfile;
     } catch (error) {
       console.error('Error in fetchProfile:', error);
       return null;
