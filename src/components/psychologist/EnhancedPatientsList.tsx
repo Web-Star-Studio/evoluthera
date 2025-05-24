@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,26 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
 import { Plus, User, Calendar, TrendingUp, CreditCard, CheckCircle, Clock, AlertCircle } from "lucide-react";
+
+interface PatientActivation {
+  id: string;
+  status: string;
+  activation_fee: number;
+  activated_at: string | null;
+}
+
+interface PatientProfile {
+  id: string;
+  name: string;
+  email: string;
+}
+
+interface PatientData {
+  patient_id: string;
+  status: string;
+  profiles: PatientProfile;
+  patient_activations: PatientActivation[];
+}
 
 interface Patient {
   id: string;
@@ -55,7 +74,7 @@ const EnhancedPatientsList = () => {
 
       if (error) throw error;
 
-      return patientsData.map(p => ({
+      return (patientsData as PatientData[]).map(p => ({
         id: p.profiles.id,
         name: p.profiles.name,
         email: p.profiles.email,
