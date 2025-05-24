@@ -9,6 +9,44 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          description: string | null
+          earned_at: string
+          icon: string | null
+          id: string
+          patient_id: string
+          title: string
+          type: string
+        }
+        Insert: {
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          patient_id: string
+          title: string
+          type: string
+        }
+        Update: {
+          description?: string | null
+          earned_at?: string
+          icon?: string | null
+          id?: string
+          patient_id?: string
+          title?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievements_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anamnesis: {
         Row: {
           completed: boolean | null
@@ -54,6 +92,41 @@ export type Database = {
           },
         ]
       }
+      diary_entries: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          mood_score: number | null
+          patient_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          mood_score?: number | null
+          patient_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          mood_score?: number | null
+          patient_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diary_entries_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mood_records: {
         Row: {
           created_at: string
@@ -81,6 +154,53 @@ export type Database = {
             foreignKeyName: "mood_records_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      patient_stats: {
+        Row: {
+          created_at: string
+          diary_entries_count: number | null
+          id: string
+          last_activity: string | null
+          mood_records_count: number | null
+          patient_id: string
+          streak_days: number | null
+          tasks_completed: number | null
+          total_points: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          diary_entries_count?: number | null
+          id?: string
+          last_activity?: string | null
+          mood_records_count?: number | null
+          patient_id: string
+          streak_days?: number | null
+          tasks_completed?: number | null
+          total_points?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          diary_entries_count?: number | null
+          id?: string
+          last_activity?: string | null
+          mood_records_count?: number | null
+          patient_id?: string
+          streak_days?: number | null
+          tasks_completed?: number | null
+          total_points?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_stats_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: true
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -208,6 +328,45 @@ export type Database = {
             columns: ["psychologist_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_responses: {
+        Row: {
+          created_at: string
+          id: string
+          patient_id: string
+          response: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          patient_id: string
+          response: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          patient_id?: string
+          response?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_responses_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_responses_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
             referencedColumns: ["id"]
           },
         ]
