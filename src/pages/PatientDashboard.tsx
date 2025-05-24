@@ -1,141 +1,173 @@
-import { useState, useEffect } from "react";
+
 import DashboardLayout from "@/components/layout/DashboardLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import MoodTracker from "@/components/patient/MoodTracker";
-import DiaryEntry from "@/components/patient/DiaryEntry";
-import TasksList from "@/components/patient/TasksList";
-import WeeklyProgressChart from "@/components/patient/WeeklyProgressChart";
-import SimplifiedMoodChart from "@/components/patient/SimplifiedMoodChart";
-import GamificationCard from "@/components/patient/GamificationCard";
-import DailyMoodTracker from "@/components/patient/DailyMoodTracker";
-import MoodHistory from "@/components/patient/MoodHistory";
-import ChatPage from "@/components/chat/ChatPage";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, BookOpen, Target, TrendingUp, Award, BarChart3, Smile, History, MessageCircle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Calendar, CheckCircle, Clock, Heart, Trophy, Target } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const PatientDashboard = () => {
-  const [activeStreak, setActiveStreak] = useState(7);
-  const [totalPoints, setTotalPoints] = useState(120);
-  const [weeklyMoodAverage, setWeeklyMoodAverage] = useState(4.2);
-  const [completedTasks, setCompletedTasks] = useState(5);
-  const [totalTasks, setTotalTasks] = useState(8);
+  const { profile } = useAuth();
 
   return (
-    <DashboardLayout userType="patient" userName="Maria Silva">
+    <DashboardLayout>
       <div className="space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Meu Bem-Estar</h1>
-          <p className="text-gray-600">Como você está se sentindo hoje?</p>
+        <div className="flex justify-between items-center">
+          <h1 className="text-3xl font-bold text-gray-900">Meu Dashboard</h1>
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            Paciente Ativo
+          </Badge>
         </div>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card className="bg-gradient-to-r from-emerald-50 to-emerald-100 border-emerald-200">
-            <CardContent className="p-4 text-center">
-              <Heart className="h-6 w-6 text-emerald-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-emerald-700">{weeklyMoodAverage}</div>
-              <p className="text-sm text-emerald-600">Humor Médio</p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Humor Médio</CardTitle>
+              <Heart className="h-4 w-4 text-pink-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-pink-600">7.2</div>
+              <p className="text-xs text-gray-600">Últimos 7 dias</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-blue-50 to-blue-100 border-blue-200">
-            <CardContent className="p-4 text-center">
-              <Target className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-blue-700">{completedTasks}/{totalTasks}</div>
-              <p className="text-sm text-blue-600">Tarefas</p>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sequência</CardTitle>
+              <Trophy className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-yellow-600">12 dias</div>
+              <p className="text-xs text-gray-600">Registro diário</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-purple-50 to-purple-100 border-purple-200">
-            <CardContent className="p-4 text-center">
-              <TrendingUp className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-purple-700">{activeStreak}</div>
-              <p className="text-sm text-purple-600">Dias Seguidos</p>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Tarefas</CardTitle>
+              <CheckCircle className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-600">8/10</div>
+              <p className="text-xs text-gray-600">Esta semana</p>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-r from-orange-50 to-orange-100 border-orange-200">
-            <CardContent className="p-4 text-center">
-              <Award className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-              <div className="text-2xl font-bold text-orange-700">{totalPoints}</div>
-              <p className="text-sm text-orange-600">Pontos</p>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Próxima Sessão</CardTitle>
+              <Calendar className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-600">2 dias</div>
+              <p className="text-xs text-gray-600">Quinta-feira, 15h</p>
             </CardContent>
           </Card>
         </div>
 
-        {/* Main Content Tabs */}
-        <Tabs defaultValue="daily-mood" className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="daily-mood" className="flex items-center gap-2">
-              <Smile className="h-4 w-4" />
-              Humor Diário
-            </TabsTrigger>
-            <TabsTrigger value="history" className="flex items-center gap-2">
-              <History className="h-4 w-4" />
-              Histórico
-            </TabsTrigger>
-            <TabsTrigger value="mood" className="flex items-center gap-2">
-              <Heart className="h-4 w-4" />
-              Humor
-            </TabsTrigger>
-            <TabsTrigger value="diary" className="flex items-center gap-2">
-              <BookOpen className="h-4 w-4" />
-              Diário
-            </TabsTrigger>
-            <TabsTrigger value="tasks" className="flex items-center gap-2">
-              <Target className="h-4 w-4" />
-              Tarefas
-            </TabsTrigger>
-            <TabsTrigger value="chat" className="flex items-center gap-2">
-              <MessageCircle className="h-4 w-4" />
-              Chat
-            </TabsTrigger>
-            <TabsTrigger value="progress" className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4" />
-              Progresso
-            </TabsTrigger>
-            <TabsTrigger value="achievements" className="flex items-center gap-2">
-              <Award className="h-4 w-4" />
-              Conquistas
-            </TabsTrigger>
-          </TabsList>
+        {/* Progress Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5 text-emerald-600" />
+                Progresso Semanal
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Registro de Humor</span>
+                  <span>7/7 dias</span>
+                </div>
+                <Progress value={100} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Atividades Concluídas</span>
+                  <span>5/6 tarefas</span>
+                </div>
+                <Progress value={83} className="h-2" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-1">
+                  <span>Exercícios de Mindfulness</span>
+                  <span>4/5 sessões</span>
+                </div>
+                <Progress value={80} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
 
-          <TabsContent value="daily-mood" className="mt-6">
-            <DailyMoodTracker />
-          </TabsContent>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-blue-600" />
+                Atividades Pendentes
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-blue-900">Diário de Gratidão</p>
+                    <p className="text-sm text-blue-600">Vence hoje às 22h</p>
+                  </div>
+                  <Badge variant="secondary">Pendente</Badge>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                  <div>
+                    <p className="font-medium text-yellow-900">Exercício de Respiração</p>
+                    <p className="text-sm text-yellow-600">Vence amanhã</p>
+                  </div>
+                  <Badge variant="outline">Novo</Badge>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-          <TabsContent value="history" className="mt-6">
-            <MoodHistory />
-          </TabsContent>
-
-          <TabsContent value="mood" className="mt-6">
-            <MoodTracker />
-          </TabsContent>
-
-          <TabsContent value="diary" className="mt-6">
-            <DiaryEntry />
-          </TabsContent>
-
-          <TabsContent value="tasks" className="mt-6">
-            <TasksList />
-          </TabsContent>
-
-          <TabsContent value="chat" className="mt-6">
-            <ChatPage currentUserId="temp-patient-id" userType="patient" />
-          </TabsContent>
-
-          <TabsContent value="progress" className="mt-6">
-            <WeeklyProgressChart />
-          </TabsContent>
-
-          <TabsContent value="achievements" className="mt-6">
-            <GamificationCard />
-          </TabsContent>
-        </Tabs>
+        {/* Recent Activity */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Atividade Recente</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-4">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Registro de humor concluído</p>
+                  <p className="text-xs text-gray-500">Hoje, 14:30</p>
+                </div>
+                <Badge variant="outline" className="text-green-600 border-green-200">
+                  Humor: 8/10
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Tarefa "Reflexão Diária" concluída</p>
+                  <p className="text-xs text-gray-500">Ontem, 20:15</p>
+                </div>
+                <Badge variant="outline" className="text-blue-600 border-blue-200">
+                  Concluída
+                </Badge>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">Nova mensagem do psicólogo</p>
+                  <p className="text-xs text-gray-500">Ontem, 16:45</p>
+                </div>
+                <Badge variant="outline" className="text-purple-600 border-purple-200">
+                  Mensagem
+                </Badge>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </DashboardLayout>
   );

@@ -1,40 +1,57 @@
 
 import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface DashboardLayoutProps {
   children: ReactNode;
-  userType: "patient" | "psychologist" | "admin";
-  userName: string;
+  userType?: "patient" | "psychologist" | "admin";
+  userName?: string;
 }
 
 const DashboardLayout = ({ children, userType, userName }: DashboardLayoutProps) => {
-  const navigate = useNavigate();
+  const { signOut, profile } = useAuth();
+  
+  // Use profile data if available, fallback to props
+  const currentUserType = profile?.user_type || userType;
+  const currentUserName = profile?.name || userName || 'Usuário';
 
   const getNavItems = () => {
-    switch (userType) {
+    switch (currentUserType) {
       case "patient":
         return [
           { label: "Dashboard", path: "/patient-dashboard" },
           { label: "Anamnese", path: "/anamnesis" },
           { label: "Atividades", path: "/activities" },
+          { label: "Chat", path: "/chat" },
           { label: "Configurações", path: "/settings" },
         ];
       case "psychologist":
         return [
           { label: "Dashboard", path: "/psychologist-dashboard" },
           { label: "Prontuários", path: "/medical-record" },
+          { label: "Anamneses", path: "/anamnesis-management" },
           { label: "Atividades", path: "/activities" },
+          { label: "Chat", path: "/chat" },
           { label: "Configurações", path: "/settings" },
         ];
       case "admin":
         return [
           { label: "Dashboard", path: "/admin-dashboard" },
+          { label: "Chat", path: "/chat" },
           { label: "Configurações", path: "/settings" },
         ];
       default:
         return [];
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
     }
   };
 
@@ -60,10 +77,10 @@ const DashboardLayout = ({ children, userType, userName }: DashboardLayoutProps)
             </nav>
             
             <div className="flex items-center space-x-4">
-              <span className="text-gray-700">Olá, {userName}</span>
+              <span className="text-gray-700">Olá, {currentUserName}</span>
               <Button
                 variant="outline"
-                onClick={() => navigate("/login")}
+                onClick={handleSignOut}
                 className="text-gray-600 border-gray-300"
               >
                 Sair

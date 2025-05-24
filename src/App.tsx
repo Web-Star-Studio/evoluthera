@@ -4,7 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { navItems } from "./nav-items";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import Index from "./pages/Index";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
@@ -20,6 +21,7 @@ import EnhancedActivities from "./pages/EnhancedActivities";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat";
+import Unauthorized from "./pages/Unauthorized";
 
 const queryClient = new QueryClient();
 
@@ -29,23 +31,79 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/index" element={<Index />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/patient-dashboard" element={<PatientDashboard />} />
-          <Route path="/psychologist-dashboard" element={<PsychologistDashboard />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/medical-record" element={<MedicalRecord />} />
-          <Route path="/anamnesis" element={<Anamnesis />} />
-          <Route path="/anamnesis/:anamnesisId" element={<PatientAnamnesis />} />
-          <Route path="/anamnesis-management" element={<AnamnesisManagement />} />
-          <Route path="/activities" element={<Activities />} />
-          <Route path="/enhanced-activities" element={<EnhancedActivities />} />
-          <Route path="/chat" element={<Chat />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/index" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/unauthorized" element={<Unauthorized />} />
+            
+            {/* Patient Routes */}
+            <Route path="/patient-dashboard" element={
+              <ProtectedRoute allowedUserTypes={['patient']}>
+                <PatientDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/anamnesis" element={
+              <ProtectedRoute allowedUserTypes={['patient']}>
+                <Anamnesis />
+              </ProtectedRoute>
+            } />
+            <Route path="/anamnesis/:anamnesisId" element={
+              <ProtectedRoute allowedUserTypes={['patient']}>
+                <PatientAnamnesis />
+              </ProtectedRoute>
+            } />
+            <Route path="/activities" element={
+              <ProtectedRoute allowedUserTypes={['patient']}>
+                <Activities />
+              </ProtectedRoute>
+            } />
+            <Route path="/enhanced-activities" element={
+              <ProtectedRoute allowedUserTypes={['patient']}>
+                <EnhancedActivities />
+              </ProtectedRoute>
+            } />
+
+            {/* Psychologist Routes */}
+            <Route path="/psychologist-dashboard" element={
+              <ProtectedRoute allowedUserTypes={['psychologist']}>
+                <PsychologistDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/medical-record" element={
+              <ProtectedRoute allowedUserTypes={['psychologist']}>
+                <MedicalRecord />
+              </ProtectedRoute>
+            } />
+            <Route path="/anamnesis-management" element={
+              <ProtectedRoute allowedUserTypes={['psychologist']}>
+                <AnamnesisManagement />
+              </ProtectedRoute>
+            } />
+
+            {/* Admin Routes */}
+            <Route path="/admin-dashboard" element={
+              <ProtectedRoute allowedUserTypes={['admin']}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+
+            {/* Shared Routes (require authentication) */}
+            <Route path="/chat" element={
+              <ProtectedRoute>
+                <Chat />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            } />
+
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

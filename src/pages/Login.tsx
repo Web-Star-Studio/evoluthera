@@ -5,26 +5,49 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useEffect } from "react";
 
 const Login = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [userType, setUserType] = useState("patient");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+  
+  const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const from = location.state?.from?.pathname || '/';
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login/register logic
-    switch (userType) {
-      case "patient":
-        navigate("/patient-dashboard");
-        break;
-      case "psychologist":
-        navigate("/psychologist-dashboard");
-        break;
-      case "admin":
-        navigate("/admin-dashboard");
-        break;
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password, { name, user_type: userType });
+        setIsLogin(true); // Switch to login after successful signup
+        setEmail("");
+        setPassword("");
+        setName("");
+      }
+    } catch (error) {
+      // Error handling is done in the auth context
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +74,13 @@ const Login = () => {
                 <>
                   <div>
                     <Label htmlFor="name">Nome completo</Label>
-                    <Input id="name" type="text" required />
+                    <Input 
+                      id="name" 
+                      type="text" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required 
+                    />
                   </div>
                   
                   <div>
@@ -76,16 +105,32 @@ const Login = () => {
               
               <div>
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" required />
+                <Input 
+                  id="email" 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required 
+                />
               </div>
               
               <div>
                 <Label htmlFor="password">Senha</Label>
-                <Input id="password" type="password" required />
+                <Input 
+                  id="password" 
+                  type="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required 
+                />
               </div>
               
-              <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700">
-                {isLogin ? "Entrar" : "Criar Conta"}
+              <Button 
+                type="submit" 
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
+                disabled={loading}
+              >
+                {loading ? "Carregando..." : (isLogin ? "Entrar" : "Criar Conta")}
               </Button>
             </form>
             
@@ -93,6 +138,7 @@ const Login = () => {
               <button
                 onClick={() => setIsLogin(!isLogin)}
                 className="text-emerald-600 hover:text-emerald-700 underline"
+                disabled={loading}
               >
                 {isLogin ? "Criar nova conta" : "Já tenho uma conta"}
               </button>
