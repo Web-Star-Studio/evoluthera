@@ -1,4 +1,3 @@
-
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,27 +14,12 @@ import AdminSettings from "@/components/admin/AdminSettings";
 import LegalDocumentsManager from "@/components/admin/LegalDocumentsManager";
 import SupportTickets from "@/components/admin/SupportTickets";
 import CommunicationManager from "@/components/admin/CommunicationManager";
-import { 
-  BarChart3, 
-  Users, 
-  DollarSign, 
-  FileText, 
-  Download,
-  Shield,
-  TrendingUp,
-  Receipt,
-  Settings,
-  Scale,
-  MessageSquare,
-  Megaphone
-} from "lucide-react";
-
+import { BarChart3, Users, DollarSign, FileText, Download, Shield, TrendingUp, Receipt, Settings, Scale, MessageSquare, Megaphone } from "lucide-react";
 const AdminDashboard = () => {
-  return (
-    <DashboardLayout userType="admin" userName="Admin Master">
+  return <DashboardLayout userType="admin" userName="Admin Master">
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <Shield className="h-8 w-8 text-red-600" />
+          
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
             <p className="text-gray-600">Gestão completa da plataforma Evoluthera</p>
@@ -228,8 +212,6 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
-  );
+    </DashboardLayout>;
 };
-
 export default AdminDashboard;
