@@ -7,16 +7,16 @@ interface Anamnesis {
   id: string;
   status: string;
   created_at: string;
-  sent_at: string | null;
-  completed_at: string | null;
-  locked_at: string | null;
+  sent_at: string;
+  completed_at: string;
+  locked_at: string;
   patient: {
     name: string;
     email: string;
-  } | null;
+  };
   template: {
     name: string;
-  } | null;
+  };
 }
 
 export const useAnamnesisManager = () => {
@@ -36,35 +36,17 @@ export const useAnamnesisManager = () => {
 
   const loadAnamneses = async () => {
     try {
-      // Use anamnesis_applications instead of anamnesis for the new structure
       const { data, error } = await supabase
-        .from('anamnesis_applications')
+        .from('anamnesis')
         .select(`
           *,
-          patient:profiles!anamnesis_applications_patient_id_fkey(name, email),
-          template:anamnesis_templates!inner(name)
+          patient:profiles!anamnesis_patient_id_fkey(name, email),
+          template:anamnesis_templates(name)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
-      const convertedAnamneses: Anamnesis[] = (data || []).map(app => ({
-        id: app.id,
-        status: app.status,
-        created_at: app.created_at,
-        sent_at: app.sent_at,
-        completed_at: app.completed_at,
-        locked_at: app.locked_at,
-        patient: app.patient ? {
-          name: app.patient.name,
-          email: app.patient.email,
-        } : null,
-        template: app.template ? {
-          name: app.template.name,
-        } : null,
-      }));
-      
-      setAnamneses(convertedAnamneses);
+      setAnamneses(data || []);
     } catch (error) {
       console.error('Erro ao carregar anamneses:', error);
       toast({
@@ -103,11 +85,23 @@ export const useAnamnesisManager = () => {
       }
 
       const { error } = await supabase
-        .from('anamnesis_applications')
+        .from('anamnesis')
         .update(updateData)
         .eq('id', anamnesisId);
 
       if (error) throw error;
+
+      const anamnesis = anamneses.find(a => a.id === anamnesisId);
+      if (anamnesis) {
+        await supabase
+          .from('anamnesis_notifications')
+          .insert({
+            anamnesis_id: anamnesisId,
+            recipient_id: anamnesis.patient ? Object.values(anamnesis.patient)[0] : null,
+            type: newStatus,
+            message: `Anamnese ${newStatus === 'locked' ? 'bloqueada' : 'finalizada'}`
+          });
+      }
 
       await loadAnamneses();
       toast({
@@ -127,7 +121,7 @@ export const useAnamnesisManager = () => {
   const handleDeleteAnamnesis = async (anamnesisId: string) => {
     try {
       const { error } = await supabase
-        .from('anamnesis_applications')
+        .from('anamnesis')
         .delete()
         .eq('id', anamnesisId);
 
@@ -151,24 +145,21 @@ export const useAnamnesisManager = () => {
   const handleDuplicateAnamnesis = async (anamnesisId: string) => {
     try {
       const { data: originalAnamnesis, error: fetchError } = await supabase
-        .from('anamnesis_applications')
+        .from('anamnesis')
         .select('*')
         .eq('id', anamnesisId)
         .single();
 
       if (fetchError) throw fetchError;
 
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('Usuário não autenticado');
-
       const { error: insertError } = await supabase
-        .from('anamnesis_applications')
+        .from('anamnesis')
         .insert({
           patient_id: originalAnamnesis.patient_id,
-          psychologist_id: user.user.id,
+          psychologist_id: originalAnamnesis.psychologist_id,
           template_id: originalAnamnesis.template_id,
-          responses: originalAnamnesis.responses,
-          status: 'sent'
+          data: originalAnamnesis.data,
+          status: 'draft'
         });
 
       if (insertError) throw insertError;
@@ -190,29 +181,26 @@ export const useAnamnesisManager = () => {
 
   const handleSaveAsTemplate = async (anamnesisId: string) => {
     try {
-      const { data: application, error: fetchError } = await supabase
-        .from('anamnesis_applications')
+      const { data: anamnesis, error: fetchError } = await supabase
+        .from('anamnesis')
         .select(`
           *,
-          template:anamnesis_templates!inner(sections)
+          template:anamnesis_templates(fields)
         `)
         .eq('id', anamnesisId)
         .single();
 
       if (fetchError) throw fetchError;
 
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) throw new Error('Usuário não autenticado');
-
       const templateName = `Template baseado em ${new Date().toLocaleDateString('pt-BR')}`;
       
       const { error: insertError } = await supabase
         .from('anamnesis_templates')
         .insert({
-          psychologist_id: user.user.id,
+          psychologist_id: anamnesis.psychologist_id,
           name: templateName,
           description: 'Template criado a partir de anamnese existente',
-          sections: application.template?.sections || [],
+          fields: anamnesis.template?.fields || {},
           is_default: false
         });
 

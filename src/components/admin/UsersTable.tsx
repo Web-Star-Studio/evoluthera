@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,31 +13,19 @@ import { Search, UserMinus, UserPlus, Eye, Download, Users } from "lucide-react"
 import UserProfileModal from "./UserProfileModal";
 import UserRelationshipsModal from "./UserRelationshipsModal";
 
-interface UserWithControls {
-  id: string;
-  name: string;
-  email: string;
-  user_type: string;
-  created_at: string;
-  account_controls: Array<{
-    status: string;
-    suspension_reason?: string;
-  }> | null;
-}
-
 const UsersTable = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [userTypeFilter, setUserTypeFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [selectedUser, setSelectedUser] = useState<UserWithControls | null>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showRelationshipsModal, setShowRelationshipsModal] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: users, isLoading } = useQuery<UserWithControls[]>({
+  const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users', searchTerm, userTypeFilter, statusFilter],
-    queryFn: async (): Promise<UserWithControls[]> => {
+    queryFn: async () => {
       let query = supabase
         .from('profiles')
         .select(`
@@ -55,14 +44,7 @@ const UsersTable = () => {
       const { data, error } = await query.order('created_at', { ascending: false });
       
       if (error) throw error;
-      return (data as any[])?.map(user => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        user_type: user.user_type,
-        created_at: user.created_at,
-        account_controls: user.account_controls
-      })) || [];
+      return data;
     }
   });
 
@@ -138,7 +120,7 @@ const UsersTable = () => {
     });
   };
 
-  const getStatusBadge = (user: UserWithControls) => {
+  const getStatusBadge = (user: any) => {
     const status = Array.isArray(user.account_controls) && user.account_controls.length > 0 
       ? user.account_controls[0].status 
       : 'active';
@@ -165,12 +147,12 @@ const UsersTable = () => {
     );
   };
 
-  const handleViewProfile = (user: UserWithControls) => {
+  const handleViewProfile = (user: any) => {
     setSelectedUser(user);
     setShowProfileModal(true);
   };
 
-  const handleViewRelationships = (user: UserWithControls) => {
+  const handleViewRelationships = (user: any) => {
     setSelectedUser(user);
     setShowRelationshipsModal(true);
   };

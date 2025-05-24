@@ -246,104 +246,14 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
-        ]
-      }
-      anamnesis_applications: {
-        Row: {
-          completed_at: string | null
-          created_at: string | null
-          id: string
-          locked_at: string | null
-          patient_id: string
-          psychologist_id: string
-          psychologist_notes: Json | null
-          responses: Json | null
-          sent_at: string | null
-          started_at: string | null
-          status: string | null
-          template_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          locked_at?: string | null
-          patient_id: string
-          psychologist_id: string
-          psychologist_notes?: Json | null
-          responses?: Json | null
-          sent_at?: string | null
-          started_at?: string | null
-          status?: string | null
-          template_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          completed_at?: string | null
-          created_at?: string | null
-          id?: string
-          locked_at?: string | null
-          patient_id?: string
-          psychologist_id?: string
-          psychologist_notes?: Json | null
-          responses?: Json | null
-          sent_at?: string | null
-          started_at?: string | null
-          status?: string | null
-          template_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
           {
-            foreignKeyName: "anamnesis_applications_patient_id_fkey"
-            columns: ["patient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "anamnesis_applications_psychologist_id_fkey"
-            columns: ["psychologist_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "anamnesis_applications_template_id_fkey"
+            foreignKeyName: "anamnesis_template_id_fkey"
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "anamnesis_templates"
             referencedColumns: ["id"]
           },
         ]
-      }
-      anamnesis_default_templates: {
-        Row: {
-          category: string
-          created_at: string | null
-          description: string | null
-          id: string
-          name: string
-          sections: Json
-        }
-        Insert: {
-          category: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name: string
-          sections: Json
-        }
-        Update: {
-          category?: string
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          name?: string
-          sections?: Json
-        }
-        Relationships: []
       }
       anamnesis_notifications: {
         Row: {
@@ -390,81 +300,36 @@ export type Database = {
           },
         ]
       }
-      anamnesis_response_history: {
-        Row: {
-          application_id: string
-          created_at: string | null
-          created_by: string
-          id: string
-          responses: Json
-          version_number: number
-        }
-        Insert: {
-          application_id: string
-          created_at?: string | null
-          created_by: string
-          id?: string
-          responses: Json
-          version_number: number
-        }
-        Update: {
-          application_id?: string
-          created_at?: string | null
-          created_by?: string
-          id?: string
-          responses?: Json
-          version_number?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "anamnesis_response_history_application_id_fkey"
-            columns: ["application_id"]
-            isOneToOne: false
-            referencedRelation: "anamnesis_applications"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "anamnesis_response_history_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       anamnesis_templates: {
         Row: {
-          created_at: string | null
+          created_at: string
           description: string | null
+          fields: Json
           id: string
           is_default: boolean | null
-          is_published: boolean | null
           name: string
           psychologist_id: string
-          sections: Json
-          updated_at: string | null
+          updated_at: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           description?: string | null
+          fields?: Json
           id?: string
           is_default?: boolean | null
-          is_published?: boolean | null
           name: string
           psychologist_id: string
-          sections?: Json
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           description?: string | null
+          fields?: Json
           id?: string
           is_default?: boolean | null
-          is_published?: boolean | null
           name?: string
           psychologist_id?: string
-          sections?: Json
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
           {
