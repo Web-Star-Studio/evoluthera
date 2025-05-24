@@ -56,12 +56,12 @@ const PatientSidebar = () => {
         .eq('patient_id', profile?.id)
         .eq('status', 'pending');
 
-      // Fetch new achievements (example query)
+      // Fetch recent achievements (example query using achievements table)
       const { data: achievements } = await supabase
-        .from('patient_achievements')
+        .from('achievements')
         .select('*')
         .eq('patient_id', profile?.id)
-        .eq('is_new', true);
+        .gte('earned_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()); // Last 7 days
 
       // Fetch unread messages
       const { data: messages } = await supabase
