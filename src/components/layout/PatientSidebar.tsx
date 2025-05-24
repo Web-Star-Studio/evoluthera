@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigation } from "@/hooks/useNavigation";
@@ -50,25 +49,37 @@ const PatientSidebar = () => {
   const fetchBadgeCounts = async () => {
     try {
       // Fetch pending tasks
-      const { data: tasks } = await supabase
+      const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
-        .select('*')
+        .select('id')
         .eq('patient_id', profile?.id)
         .eq('status', 'pending');
 
-      // Fetch recent achievements (example query using achievements table)
-      const { data: achievements } = await supabase
-        .from('achievements')
-        .select('*')
-        .eq('patient_id', profile?.id)
-        .gte('earned_at', new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()); // Last 7 days
+      if (tasksError) {
+        console.error('Error fetching tasks:', tasksError);
+      }
 
-      // Fetch unread messages
-      const { data: messages } = await supabase
+      // Fetch recent achievements (last 7 days)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { data: achievements, error: achievementsError } = await supabase
+        .from('achievements')
+        .select('id')
+        .eq('patient_id', profile?.id)
+        .gte('earned_at', sevenDaysAgo);
+
+      if (achievementsError) {
+        console.error('Error fetching achievements:', achievementsError);
+      }
+
+      // Fetch unread messages - simplified query
+      const { data: messages, error: messagesError } = await supabase
         .from('chat_messages')
-        .select('*')
-        .eq('recipient_id', profile?.id)
+        .select('id')
         .eq('is_read', false);
+
+      if (messagesError) {
+        console.error('Error fetching messages:', messagesError);
+      }
 
       setBadges({
         pendingTasks: tasks?.length || 0,
