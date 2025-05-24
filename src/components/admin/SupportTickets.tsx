@@ -42,7 +42,7 @@ interface SupportTicket {
     name: string;
     email: string;
     user_type: string;
-  };
+  } | null;
 }
 
 interface TicketResponse {
@@ -55,7 +55,7 @@ interface TicketResponse {
   profiles: {
     name: string;
     user_type: string;
-  };
+  } | null;
 }
 
 const SupportTickets = () => {
@@ -102,7 +102,7 @@ const SupportTickets = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as SupportTicket[];
+      return data;
     }
   });
 
@@ -124,7 +124,7 @@ const SupportTickets = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data as TicketResponse[];
+      return data;
     },
     enabled: !!selectedTicket?.id
   });
@@ -397,10 +397,10 @@ const SupportTickets = () => {
                     <TableRow key={ticket.id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-medium">{ticket.profiles?.name}</div>
+                          <div className="font-medium">{ticket.profiles?.name || 'Usuário não encontrado'}</div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <Mail className="h-3 w-3" />
-                            {ticket.profiles?.email}
+                            {ticket.profiles?.email || 'Email não disponível'}
                           </div>
                           <Badge variant="outline" className="text-xs">
                             {ticket.profiles?.user_type === 'psychologist' ? 'Psicólogo' : 'Paciente'}
@@ -453,8 +453,8 @@ const SupportTickets = () => {
                                     <div>
                                       <h4 className="font-semibold mb-2">Informações do Usuário</h4>
                                       <div className="space-y-2 text-sm">
-                                        <div><strong>Nome:</strong> {selectedTicket.profiles?.name}</div>
-                                        <div><strong>Email:</strong> {selectedTicket.profiles?.email}</div>
+                                        <div><strong>Nome:</strong> {selectedTicket.profiles?.name || 'N/A'}</div>
+                                        <div><strong>Email:</strong> {selectedTicket.profiles?.email || 'N/A'}</div>
                                         <div><strong>Tipo:</strong> {selectedTicket.profiles?.user_type === 'psychologist' ? 'Psicólogo' : 'Paciente'}</div>
                                       </div>
                                     </div>
@@ -488,7 +488,7 @@ const SupportTickets = () => {
                                           <div className="flex justify-between items-start mb-2">
                                             <div className="flex items-center gap-2">
                                               <strong className="text-sm">
-                                                {response.profiles?.name} 
+                                                {response.profiles?.name || 'Usuário'} 
                                                 {response.profiles?.user_type === 'admin' && ' (Admin)'}
                                               </strong>
                                               {response.is_internal && (
