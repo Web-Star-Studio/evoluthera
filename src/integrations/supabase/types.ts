@@ -598,6 +598,63 @@ export type Database = {
           },
         ]
       }
+      patient_activations: {
+        Row: {
+          activated_at: string | null
+          activation_fee: number | null
+          created_at: string
+          deactivated_at: string | null
+          id: string
+          patient_id: string
+          psychologist_id: string
+          status: string
+          stripe_payment_intent_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          activated_at?: string | null
+          activation_fee?: number | null
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          patient_id: string
+          psychologist_id: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          activated_at?: string | null
+          activation_fee?: number | null
+          created_at?: string
+          deactivated_at?: string | null
+          id?: string
+          patient_id?: string
+          psychologist_id?: string
+          status?: string
+          stripe_payment_intent_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "patient_activations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_activations_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       patient_stats: {
         Row: {
           created_at: string
@@ -680,6 +737,76 @@ export type Database = {
           },
           {
             foreignKeyName: "patients_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_transactions: {
+        Row: {
+          activation_id: string | null
+          amount: number
+          created_at: string
+          currency: string | null
+          description: string | null
+          id: string
+          patient_id: string | null
+          psychologist_id: string
+          status: string
+          stripe_invoice_id: string | null
+          stripe_payment_intent_id: string | null
+          transaction_type: string
+          updated_at: string
+        }
+        Insert: {
+          activation_id?: string | null
+          amount: number
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          patient_id?: string | null
+          psychologist_id: string
+          status: string
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          transaction_type: string
+          updated_at?: string
+        }
+        Update: {
+          activation_id?: string | null
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          id?: string
+          patient_id?: string | null
+          psychologist_id?: string
+          status?: string
+          stripe_invoice_id?: string | null
+          stripe_payment_intent_id?: string | null
+          transaction_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_transactions_activation_id_fkey"
+            columns: ["activation_id"]
+            isOneToOne: false
+            referencedRelation: "patient_activations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_transactions_psychologist_id_fkey"
             columns: ["psychologist_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1061,6 +1188,33 @@ export type Database = {
           },
         ]
       }
+      temporary_passwords: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          temp_password: string
+          used_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          temp_password: string
+          used_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          temp_password?: string
+          used_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       test_applications: {
         Row: {
           completed_at: string | null
@@ -1193,6 +1347,10 @@ export type Database = {
       }
       create_default_anamnesis_template: {
         Args: { psychologist_uuid: string }
+        Returns: string
+      }
+      generate_temp_password: {
+        Args: Record<PropertyKey, never>
         Returns: string
       }
       is_admin: {

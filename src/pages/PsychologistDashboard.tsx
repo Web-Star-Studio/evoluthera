@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +13,7 @@ import PsychologistGamificationView from "@/components/gamification/Psychologist
 import PsychologicalTestsManager from "@/components/psychologist/PsychologicalTestsManager";
 import ChatPage from "@/components/chat/ChatPage";
 import AIInsights from "@/components/psychologist/AIInsights";
+import EnhancedPatientsList from "@/components/psychologist/EnhancedPatientsList";
 
 const PsychologistDashboard = () => {
   const [patients, setPatients] = useState([
@@ -96,7 +96,7 @@ const PsychologistDashboard = () => {
           </TabsList>
 
           <TabsContent value="patients" className="mt-6">
-            <PatientsList patients={patients} addPatient={addPatient} />
+            <EnhancedPatientsList />
           </TabsContent>
 
           <TabsContent value="mood-analytics" className="mt-6">
