@@ -12,10 +12,30 @@ interface UserProfileModalProps {
   onClose: () => void;
 }
 
+interface PatientStats {
+  user_type: 'patient';
+  tasks_completed?: number;
+  mood_records_count?: number;
+  diary_entries_count?: number;
+  total_points?: number;
+  mood_records_total?: number;
+  tasks_total?: number;
+  [key: string]: any;
+}
+
+interface PsychologistStats {
+  user_type: 'psychologist';
+  patients_count: number;
+  sessions_count: number;
+  templates_count: number;
+}
+
+type UserStats = PatientStats | PsychologistStats | null;
+
 const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
   const { data: userStats } = useQuery({
     queryKey: ['user-stats', user.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<UserStats> => {
       if (user.user_type === 'patient') {
         // Buscar estatísticas do paciente
         const { data: stats } = await supabase
@@ -39,7 +59,7 @@ const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
           mood_records_total: moodCount?.length || 0,
           tasks_total: taskCount?.length || 0,
           user_type: 'patient'
-        };
+        } as PatientStats;
       } else if (user.user_type === 'psychologist') {
         // Buscar estatísticas do psicólogo
         const { data: patientsCount } = await supabase
@@ -62,7 +82,7 @@ const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
           sessions_count: sessionsCount?.length || 0,
           templates_count: templatesCount?.length || 0,
           user_type: 'psychologist'
-        };
+        } as PsychologistStats;
       }
       return null;
     },
@@ -149,34 +169,34 @@ const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
                 {userStats.user_type === 'patient' ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">{userStats.tasks_completed || 0}</div>
+                      <div className="text-2xl font-bold text-blue-600">{(userStats as PatientStats).tasks_completed || 0}</div>
                       <div className="text-sm text-blue-800">Tarefas Concluídas</div>
                     </div>
                     <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">{userStats.mood_records_count || 0}</div>
+                      <div className="text-2xl font-bold text-green-600">{(userStats as PatientStats).mood_records_count || 0}</div>
                       <div className="text-sm text-green-800">Registros de Humor</div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">{userStats.diary_entries_count || 0}</div>
+                      <div className="text-2xl font-bold text-purple-600">{(userStats as PatientStats).diary_entries_count || 0}</div>
                       <div className="text-sm text-purple-800">Entradas no Diário</div>
                     </div>
                     <div className="text-center p-4 bg-orange-50 rounded-lg">
-                      <div className="text-2xl font-bold text-orange-600">{userStats.total_points || 0}</div>
+                      <div className="text-2xl font-bold text-orange-600">{(userStats as PatientStats).total_points || 0}</div>
                       <div className="text-sm text-orange-800">Total de Pontos</div>
                     </div>
                   </div>
                 ) : userStats.user_type === 'psychologist' ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
-                      <div className="text-2xl font-bold text-blue-600">{userStats.patients_count}</div>
+                      <div className="text-2xl font-bold text-blue-600">{(userStats as PsychologistStats).patients_count}</div>
                       <div className="text-sm text-blue-800">Pacientes</div>
                     </div>
                     <div className="text-center p-4 bg-green-50 rounded-lg">
-                      <div className="text-2xl font-bold text-green-600">{userStats.sessions_count}</div>
+                      <div className="text-2xl font-bold text-green-600">{(userStats as PsychologistStats).sessions_count}</div>
                       <div className="text-sm text-green-800">Sessões Registradas</div>
                     </div>
                     <div className="text-center p-4 bg-purple-50 rounded-lg">
-                      <div className="text-2xl font-bold text-purple-600">{userStats.templates_count}</div>
+                      <div className="text-2xl font-bold text-purple-600">{(userStats as PsychologistStats).templates_count}</div>
                       <div className="text-sm text-purple-800">Templates de Anamnese</div>
                     </div>
                   </div>
