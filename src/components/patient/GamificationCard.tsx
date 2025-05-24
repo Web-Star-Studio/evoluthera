@@ -5,37 +5,66 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { Award, Target, Heart, BookOpen, Flame, Star, Trophy } from "lucide-react";
+import PatientAchievements from "../gamification/PatientAchievements";
 
 const GamificationCard = () => {
   const [stats, setStats] = useState({
-    streak_days: 7,
-    total_points: 320,
-    tasks_completed: 12,
-    diary_entries_count: 8,
-    mood_records_count: 15,
+    streak_days: 0,
+    total_points: 0,
+    tasks_completed: 0,
+    diary_entries_count: 0,
+    mood_records_count: 0,
   });
 
-  const [achievements, setAchievements] = useState([
-    { id: 1, type: "streak", title: "Primeira Semana", description: "7 dias seguidos ativos", icon: "🔥", earned_at: "2024-01-20" },
-    { id: 2, type: "mood_tracker", title: "Autoconhecimento", description: "10 registros de humor", icon: "❤️", earned_at: "2024-01-18" },
-    { id: 3, type: "task_completion", title: "Dedicado", description: "5 tarefas completadas", icon: "🎯", earned_at: "2024-01-17" },
-  ]);
+  const patientId = "temp-user-id"; // Substituir por auth.uid()
 
-  const getNextLevel = (points: number) => {
-    const levels = [0, 100, 250, 500, 1000, 2000];
-    const currentLevel = levels.findIndex(level => points < level);
-    return currentLevel === -1 ? levels.length : currentLevel;
+  useEffect(() => {
+    fetchStats();
+  }, []);
+
+  const fetchStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('patient_stats')
+        .select('*')
+        .eq('patient_id', patientId)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      
+      if (data) {
+        setStats(data);
+      } else {
+        // Criar registro se não existir
+        await supabase
+          .from('patient_stats')
+          .insert({ patient_id: patientId });
+      }
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+    }
+  };
+
+  const getLevel = (points: number) => {
+    if (points >= 1000) return 6;
+    if (points >= 500) return 5;
+    if (points >= 250) return 4;
+    if (points >= 100) return 3;
+    if (points >= 50) return 2;
+    return 1;
   };
 
   const getPointsForNextLevel = (points: number) => {
-    const levels = [0, 100, 250, 500, 1000, 2000];
-    const currentLevel = getNextLevel(points);
+    const levels = [0, 50, 100, 250, 500, 1000];
+    const currentLevel = getLevel(points);
     return currentLevel < levels.length ? levels[currentLevel] : levels[levels.length - 1];
   };
 
-  const currentLevel = getNextLevel(stats.total_points);
+  const currentLevel = getLevel(stats.total_points);
   const nextLevelPoints = getPointsForNextLevel(stats.total_points);
-  const progressToNextLevel = ((stats.total_points % nextLevelPoints) / nextLevelPoints) * 100;
+  const pointsInLevel = currentLevel > 1 ? stats.total_points - getPointsForNextLevel(stats.total_points - 1) : stats.total_points;
+  const levelRange = currentLevel > 1 ? nextLevelPoints - getPointsForNextLevel(stats.total_points - 1) : nextLevelPoints;
+  const progressToNextLevel = currentLevel < 6 ? (pointsInLevel / levelRange) * 100 : 100;
 
   const milestones = [
     { 
@@ -94,6 +123,15 @@ const GamificationCard = () => {
               <Progress value={progressToNextLevel} className="h-3" />
             </div>
           )}
+
+          {currentLevel === 6 && (
+            <div className="text-center">
+              <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                <Star className="h-4 w-4 mr-1" />
+                Nível Máximo Atingido!
+              </Badge>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -111,64 +149,8 @@ const GamificationCard = () => {
         ))}
       </div>
 
-      {/* Achievements */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="h-5 w-5 text-yellow-500" />
-            Conquistas Desbloqueadas
-          </CardTitle>
-          <CardDescription>Parabéns por estes marcos importantes!</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {achievements.map((achievement) => (
-              <div key={achievement.id} className="flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <div className="text-2xl">{achievement.icon}</div>
-                <div className="flex-1">
-                  <div className="font-semibold text-gray-900">{achievement.title}</div>
-                  <div className="text-sm text-gray-600">{achievement.description}</div>
-                </div>
-                <Badge className="bg-yellow-100 text-yellow-800">
-                  {new Date(achievement.earned_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Upcoming Achievements */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="h-5 w-5 text-gray-400" />
-            Próximas Conquistas
-          </CardTitle>
-          <CardDescription>Continue assim para desbloquear mais marcos!</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg opacity-60">
-              <div className="text-2xl">🌟</div>
-              <div className="flex-1">
-                <div className="font-semibold text-gray-700">Mestre do Humor</div>
-                <div className="text-sm text-gray-500">Registre humor por 30 dias (15/30)</div>
-              </div>
-              <Progress value={50} className="w-16 h-2" />
-            </div>
-            
-            <div className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg opacity-60">
-              <div className="text-2xl">📚</div>
-              <div className="flex-1">
-                <div className="font-semibold text-gray-700">Escritor Reflexivo</div>
-                <div className="text-sm text-gray-500">Escreva 20 entradas no diário (8/20)</div>
-              </div>
-              <Progress value={40} className="w-16 h-2" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Achievements Component */}
+      <PatientAchievements patientId={patientId} />
     </div>
   );
 };

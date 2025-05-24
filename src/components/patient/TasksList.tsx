@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { CheckCircle, Clock, Calendar, Send } from "lucide-react";
+import { useAchievementManager } from "../gamification/AchievementManager";
 
 const TasksList = () => {
   const [tasks, setTasks] = useState<any[]>([]);
@@ -15,6 +15,9 @@ const TasksList = () => {
   const [response, setResponse] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+
+  const patientId = "temp-user-id"; // Substituir por auth.uid()
+  const { checkAndAwardAchievements, awardPoints, updateStreak } = useAchievementManager(patientId);
 
   const fetchTasks = async () => {
     try {
@@ -48,7 +51,7 @@ const TasksList = () => {
         .from("task_responses")
         .insert({
           task_id: selectedTask.id,
-          patient_id: "temp-user-id", // Substituir por auth.uid()
+          patient_id: patientId,
           response: response.trim(),
         });
 
@@ -65,9 +68,24 @@ const TasksList = () => {
 
       if (updateError) throw updateError;
 
+      // Sistema de gamificação
+      await awardPoints(patientId, 15, "tarefa completada");
+      await updateStreak(patientId);
+      
+      // Atualizar contador de tarefas completadas
+      await supabase
+        .from('patient_stats')
+        .update({
+          tasks_completed: supabase.sql`tasks_completed + 1`
+        })
+        .eq('patient_id', patientId);
+
+      // Verificar novas conquistas
+      setTimeout(() => checkAndAwardAchievements(), 1000);
+
       toast({
         title: "Resposta enviada!",
-        description: "Sua resposta foi registrada e enviada ao psicólogo.",
+        description: "Sua resposta foi registrada e enviada ao psicólogo. +15 pontos!",
       });
 
       setSelectedTask(null);
