@@ -14,9 +14,11 @@ interface Task {
   id: string;
   title: string;
   description: string;
-  status: 'pending' | 'completed';
+  status: string; // Changed from union type to string to match database
   due_date: string;
   created_at: string;
+  completed_at?: string;
+  updated_at?: string;
 }
 
 interface PatientStats {
@@ -132,7 +134,7 @@ export const usePatientData = () => {
             recentActivity.push({
               type: 'task' as const,
               description: `Tarefa "${task.title}" concluída`,
-              timestamp: task.completed_at || task.updated_at,
+              timestamp: task.completed_at || task.updated_at || task.created_at,
               value: 'Concluída'
             });
           });
