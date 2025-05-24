@@ -5,9 +5,40 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Calendar, CheckCircle, Clock, Heart, Trophy, Target } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePatientData } from "@/hooks/usePatientData";
 
 const PatientDashboard = () => {
   const { profile } = useAuth();
+  const { stats, pendingTasks, loading, error } = usePatientData();
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center min-h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-8">
+          <p className="text-red-600">{error}</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <DashboardLayout>
@@ -27,7 +58,9 @@ const PatientDashboard = () => {
               <Heart className="h-4 w-4 text-pink-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-pink-600">7.2</div>
+              <div className="text-2xl font-bold text-pink-600">
+                {stats.averageMood > 0 ? stats.averageMood : '--'}
+              </div>
               <p className="text-xs text-gray-600">Últimos 7 dias</p>
             </CardContent>
           </Card>
@@ -38,7 +71,7 @@ const PatientDashboard = () => {
               <Trophy className="h-4 w-4 text-yellow-600" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-yellow-600">12 dias</div>
+              <div className="text-2xl font-bold text-yellow-600">{stats.streakDays} dias</div>
               <p className="text-xs text-gray-600">Registro diário</p>
             </CardContent>
           </Card>
@@ -49,8 +82,10 @@ const PatientDashboard = () => {
               <CheckCircle className="h-4 w-4" style={{ color: '#1893f8' }} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" style={{ color: '#1893f8' }}>8/10</div>
-              <p className="text-xs text-gray-600">Esta semana</p>
+              <div className="text-2xl font-bold" style={{ color: '#1893f8' }}>
+                {stats.completedTasks}/{stats.totalTasks}
+              </div>
+              <p className="text-xs text-gray-600">Concluídas</p>
             </CardContent>
           </Card>
 
@@ -60,8 +95,10 @@ const PatientDashboard = () => {
               <Calendar className="h-4 w-4" style={{ color: '#1893f8' }} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold" style={{ color: '#1893f8' }}>2 dias</div>
-              <p className="text-xs text-gray-600">Quinta-feira, 15h</p>
+              <div className="text-2xl font-bold" style={{ color: '#1893f8' }}>
+                {stats.nextSession || '--'}
+              </div>
+              <p className="text-xs text-gray-600">Agendada</p>
             </CardContent>
           </Card>
         </div>
@@ -79,23 +116,26 @@ const PatientDashboard = () => {
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Registro de Humor</span>
-                  <span>7/7 dias</span>
+                  <span>{stats.streakDays}/7 dias</span>
                 </div>
-                <Progress value={100} className="h-2" />
+                <Progress value={Math.min((stats.streakDays / 7) * 100, 100)} className="h-2" />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span>Atividades Concluídas</span>
-                  <span>5/6 tarefas</span>
+                  <span>{stats.completedTasks}/{stats.totalTasks} tarefas</span>
                 </div>
-                <Progress value={83} className="h-2" />
+                <Progress 
+                  value={stats.totalTasks > 0 ? (stats.completedTasks / stats.totalTasks) * 100 : 0} 
+                  className="h-2" 
+                />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
-                  <span>Exercícios de Mindfulness</span>
-                  <span>4/5 sessões</span>
+                  <span>Engajamento Geral</span>
+                  <span>{Math.round((stats.averageMood / 5) * 100)}%</span>
                 </div>
-                <Progress value={80} className="h-2" />
+                <Progress value={(stats.averageMood / 5) * 100} className="h-2" />
               </div>
             </CardContent>
           </Card>
@@ -108,22 +148,26 @@ const PatientDashboard = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-blue-900">Diário de Gratidão</p>
-                    <p className="text-sm text-blue-600">Vence hoje às 22h</p>
-                  </div>
-                  <Badge variant="secondary">Pendente</Badge>
+              {pendingTasks.length === 0 ? (
+                <div className="text-center py-4 text-gray-500">
+                  <CheckCircle className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  <p>Nenhuma tarefa pendente</p>
                 </div>
-                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-yellow-900">Exercício de Respiração</p>
-                    <p className="text-sm text-yellow-600">Vence amanhã</p>
-                  </div>
-                  <Badge variant="outline">Novo</Badge>
+              ) : (
+                <div className="space-y-3">
+                  {pendingTasks.map((task) => (
+                    <div key={task.id} className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div>
+                        <p className="font-medium text-blue-900">{task.title}</p>
+                        <p className="text-sm text-blue-600">
+                          {task.due_date ? `Vence ${formatDate(task.due_date)}` : 'Sem prazo definido'}
+                        </p>
+                      </div>
+                      <Badge variant="secondary">Pendente</Badge>
+                    </div>
+                  ))}
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -134,38 +178,30 @@ const PatientDashboard = () => {
             <CardTitle>Atividade Recente</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#1893f8' }}></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Registro de humor concluído</p>
-                  <p className="text-xs text-gray-500">Hoje, 14:30</p>
-                </div>
-                <Badge variant="outline" className="border-blue-200" style={{ color: '#1893f8', borderColor: '#1893f8' }}>
-                  Humor: 8/10
-                </Badge>
+            {stats.recentActivity.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Clock className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                <p>Nenhuma atividade recente</p>
+                <p className="text-sm">Comece registrando seu humor ou completando uma tarefa!</p>
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#1893f8' }}></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Tarefa "Reflexão Diária" concluída</p>
-                  <p className="text-xs text-gray-500">Ontem, 20:15</p>
-                </div>
-                <Badge variant="outline" className="border-blue-200" style={{ color: '#1893f8', borderColor: '#1893f8' }}>
-                  Concluída
-                </Badge>
+            ) : (
+              <div className="space-y-4">
+                {stats.recentActivity.map((activity, index) => (
+                  <div key={index} className="flex items-center space-x-4">
+                    <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#1893f8' }}></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{activity.description}</p>
+                      <p className="text-xs text-gray-500">{formatDate(activity.timestamp)}</p>
+                    </div>
+                    {activity.value && (
+                      <Badge variant="outline" className="border-blue-200" style={{ color: '#1893f8', borderColor: '#1893f8' }}>
+                        {activity.value}
+                      </Badge>
+                    )}
+                  </div>
+                ))}
               </div>
-              <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium">Nova mensagem do psicólogo</p>
-                  <p className="text-xs text-gray-500">Ontem, 16:45</p>
-                </div>
-                <Badge variant="outline" className="text-purple-600 border-purple-200">
-                  Mensagem
-                </Badge>
-              </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>

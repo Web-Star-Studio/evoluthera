@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTestData } from "@/hooks/useTestData";
 import { useEffect } from "react";
 
 const Login = () => {
@@ -14,6 +15,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   
   const { signIn, user } = useAuth();
+  const { createTestPatient, loading: testLoading } = useTestData();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,6 +38,18 @@ const Login = () => {
       // Error handling is done in the auth context
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateTestData = async () => {
+    try {
+      const credentials = await createTestPatient();
+      if (credentials) {
+        setEmail(credentials.email);
+        setPassword(credentials.password);
+      }
+    } catch (error) {
+      console.error('Error creating test data:', error);
     }
   };
 
@@ -107,6 +121,22 @@ const Login = () => {
                   {loading ? "Entrando..." : "Entrar"}
                 </Button>
               </form>
+
+              {/* Test Data Section */}
+              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Para Testes</h3>
+                <Button
+                  onClick={handleCreateTestData}
+                  disabled={testLoading}
+                  variant="outline"
+                  className="w-full"
+                >
+                  {testLoading ? "Criando..." : "Criar Dados de Teste"}
+                </Button>
+                <p className="text-xs text-gray-500 mt-2">
+                  Cria um paciente de teste com dados fictícios para demonstração
+                </p>
+              </div>
               
               <div className="mt-6 text-center">
                 <a href="#" className="text-blue-600 hover:text-blue-700 underline text-sm" style={{ color: '#1893f8' }}>
