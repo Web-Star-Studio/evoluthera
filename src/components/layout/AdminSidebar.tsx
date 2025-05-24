@@ -1,8 +1,6 @@
 
-import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -17,110 +15,76 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
-  BarChart3, 
+  Shield, 
   Users, 
-  FileText, 
-  UserCheck, 
-  ClipboardList, 
-  Bell, 
-  Calendar, 
-  TrendingUp, 
+  DollarSign, 
+  Receipt, 
   MessageSquare, 
-  Settings,
+  Megaphone, 
+  Scale, 
+  Settings, 
+  FileText, 
+  Download,
   LogOut 
 } from "lucide-react";
 
-const PsychologistSidebar = () => {
+const AdminSidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut, profile } = useAuth();
   const { state } = useSidebar();
-  const [pendingTasks, setPendingTasks] = useState(0);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
-
-  useEffect(() => {
-    if (profile?.id) {
-      fetchCounts();
-    }
-  }, [profile?.id]);
-
-  const fetchCounts = async () => {
-    try {
-      // Fetch pending tasks
-      const { data: tasks } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('psychologist_id', profile?.id)
-        .eq('status', 'pending');
-
-      // Fetch unread notifications
-      const { data: notifications } = await supabase
-        .from('anamnesis_notifications')
-        .select('*')
-        .eq('recipient_id', profile?.id)
-        .is('read_at', null);
-
-      setPendingTasks(tasks?.length || 0);
-      setUnreadNotifications(notifications?.length || 0);
-    } catch (error) {
-      console.error('Error fetching counts:', error);
-    }
-  };
 
   const menuItems = [
     {
       title: "Dashboard",
-      icon: BarChart3,
-      path: "/psychologist-dashboard",
+      icon: Shield,
+      path: "/admin-dashboard",
     },
     {
-      title: "Pacientes",
+      title: "Usuários",
       icon: Users,
-      path: "/psychologist-dashboard#patients",
+      path: "/admin-dashboard#users",
     },
     {
-      title: "Prontuários",
-      icon: FileText,
-      path: "/medical-record",
+      title: "Cobrança",
+      icon: DollarSign,
+      path: "/admin-dashboard#billing",
     },
     {
-      title: "Anamneses",
-      icon: UserCheck,
-      path: "/anamnesis-management",
+      title: "Faturamento",
+      icon: Receipt,
+      path: "/admin-dashboard#billing-full",
     },
     {
-      title: "Tarefas",
-      icon: ClipboardList,
-      path: "/activities",
-      badge: pendingTasks > 0 ? pendingTasks : undefined,
-    },
-    {
-      title: "Notificações",
-      icon: Bell,
-      path: "/psychologist-dashboard#notifications",
-      badge: unreadNotifications > 0 ? unreadNotifications : undefined,
-    },
-    {
-      title: "Agenda",
-      icon: Calendar,
-      path: "/calendar",
-    },
-    {
-      title: "Relatórios",
-      icon: TrendingUp,
-      path: "/psychologist-dashboard#reports",
-    },
-    {
-      title: "Chat",
+      title: "Suporte",
       icon: MessageSquare,
-      path: "/chat",
+      path: "/admin-dashboard#support",
+    },
+    {
+      title: "Comunicados",
+      icon: Megaphone,
+      path: "/admin-dashboard#communications",
+    },
+    {
+      title: "Documentos",
+      icon: Scale,
+      path: "/admin-dashboard#documents",
     },
     {
       title: "Configurações",
       icon: Settings,
       path: "/settings",
+    },
+    {
+      title: "Logs",
+      icon: FileText,
+      path: "/admin-dashboard#logs",
+    },
+    {
+      title: "Relatórios",
+      icon: Download,
+      path: "/admin-dashboard#reports",
     },
   ];
 
@@ -128,6 +92,7 @@ const PsychologistSidebar = () => {
     if (path.includes("#")) {
       const [route, hash] = path.split("#");
       navigate(route);
+      // Use setTimeout to ensure the page has loaded before scrolling
       setTimeout(() => {
         const element = document.querySelector(`[data-tab="${hash}"]`);
         if (element) {
@@ -167,8 +132,8 @@ const PsychologistSidebar = () => {
           />
           {state === "expanded" && (
             <div className="flex flex-col">
-              <span className="font-semibold text-sm">Psicólogo</span>
-              <span className="text-xs text-muted-foreground">Painel Profissional</span>
+              <span className="font-semibold text-sm">Admin Panel</span>
+              <span className="text-xs text-muted-foreground">Evoluthera</span>
             </div>
           )}
         </div>
@@ -187,11 +152,6 @@ const PsychologistSidebar = () => {
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
-                    {item.badge && state === "expanded" && (
-                      <Badge variant="destructive" className="ml-auto">
-                        {item.badge}
-                      </Badge>
-                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -204,8 +164,8 @@ const PsychologistSidebar = () => {
         <div className="space-y-2">
           {state === "expanded" && (
             <div className="px-2 py-1">
-              <p className="text-sm font-medium">Dr(a). {profile?.name || 'Psicólogo'}</p>
-              <p className="text-xs text-muted-foreground">CRP: 06/123456</p>
+              <p className="text-sm font-medium">Olá, {profile?.name || 'Admin'}</p>
+              <p className="text-xs text-muted-foreground">Administrador</p>
             </div>
           )}
           <Button
@@ -222,4 +182,4 @@ const PsychologistSidebar = () => {
   );
 };
 
-export default PsychologistSidebar;
+export default AdminSidebar;

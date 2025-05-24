@@ -1,10 +1,10 @@
 
 import EnhancedTasksList from "@/components/patient/EnhancedTasksList";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 
 const EnhancedActivities = () => {
   return (
-    <DashboardLayout userType="patient" userName="Usuário">
+    <UniversalDashboardLayout userType="patient">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">
@@ -17,7 +17,7 @@ const EnhancedActivities = () => {
           <EnhancedTasksList />
         </div>
       </div>
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 

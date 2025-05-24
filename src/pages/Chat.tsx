@@ -1,6 +1,6 @@
 
 import ChatPage from "@/components/chat/ChatPage";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Chat = () => {
@@ -22,18 +22,18 @@ const Chat = () => {
   // Ensure the user type is valid for chat
   if (chatUserType !== 'patient' && chatUserType !== 'psychologist') {
     return (
-      <DashboardLayout userType={profile.user_type} userName={profile.name}>
+      <UniversalDashboardLayout userType={profile.user_type}>
         <div className="text-center py-8">
           <p className="text-gray-600">Chat não disponível para este tipo de usuário.</p>
         </div>
-      </DashboardLayout>
+      </UniversalDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout userType={profile.user_type} userName={profile.name}>
+    <UniversalDashboardLayout userType={profile.user_type}>
       <ChatPage currentUserId={user.id} userType={chatUserType} />
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 

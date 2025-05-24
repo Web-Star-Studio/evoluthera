@@ -1,12 +1,12 @@
 
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import AnamnesisManager from "@/components/anamnesis/AnamnesisManager";
 
 const AnamnesisManagement = () => {
   return (
-    <DashboardLayout userType="psychologist" userName="Dr. João Santos">
+    <UniversalDashboardLayout userType="psychologist">
       <AnamnesisManager />
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 

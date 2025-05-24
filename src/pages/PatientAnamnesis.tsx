@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import PatientAnamnesisView from "@/components/anamnesis/PatientAnamnesisView";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle } from "lucide-react";
@@ -11,7 +11,7 @@ const PatientAnamnesis = () => {
 
   if (!anamnesisId) {
     return (
-      <DashboardLayout userType="patient" userName="Maria Silva">
+      <UniversalDashboardLayout userType="patient">
         <div className="flex items-center justify-center h-64">
           <Card>
             <CardContent className="pt-6 text-center">
@@ -23,14 +23,14 @@ const PatientAnamnesis = () => {
             </CardContent>
           </Card>
         </div>
-      </DashboardLayout>
+      </UniversalDashboardLayout>
     );
   }
 
   return (
-    <DashboardLayout userType="patient" userName="Maria Silva">
+    <UniversalDashboardLayout userType="patient">
       <PatientAnamnesisView anamnesisId={anamnesisId} />
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ const MedicalRecord = () => {
   ];
 
   return (
-    <DashboardLayout userType="psychologist" userName="Dr. João Santos">
+    <UniversalDashboardLayout userType="psychologist">
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Prontuários</h1>
@@ -131,7 +131,7 @@ const MedicalRecord = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 
