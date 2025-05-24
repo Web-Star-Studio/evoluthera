@@ -30,6 +30,16 @@ interface Invoice {
   };
 }
 
+interface BillingStats {
+  total_invoices?: number;
+  paid_invoices?: number;
+  pending_invoices?: number;
+  overdue_invoices?: number;
+  total_billed?: number;
+  total_received?: number;
+  total_active_patients?: number;
+}
+
 const BillingDashboard = () => {
   const [exportModalOpen, setExportModalOpen] = useState(false);
   const [selectedInvoices, setSelectedInvoices] = useState<string[]>([]);
@@ -60,7 +70,7 @@ const BillingDashboard = () => {
         .limit(6);
 
       if (error) throw error;
-      return data;
+      return data as BillingStats[];
     }
   });
 
@@ -130,7 +140,7 @@ const BillingDashboard = () => {
     refetch();
   };
 
-  const currentMonthStats = stats?.[0] || {};
+  const currentMonthStats = stats?.[0] || {} as BillingStats;
   const totalRevenue = invoices?.reduce((sum, invoice) => 
     sum + (invoice.status === 'paid' ? Number(invoice.total_amount) : 0), 0) || 0;
   const pendingRevenue = invoices?.reduce((sum, invoice) => 

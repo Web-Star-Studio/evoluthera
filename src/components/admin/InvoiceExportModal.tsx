@@ -144,6 +144,10 @@ const InvoiceExportModal = ({ isOpen, onClose, invoices }: InvoiceExportModalPro
     }
   };
 
+  const handleIncludeDetailsChange = (checked: boolean) => {
+    setIncludeDetails(checked);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
@@ -194,7 +198,7 @@ const InvoiceExportModal = ({ isOpen, onClose, invoices }: InvoiceExportModalPro
                   <Checkbox
                     id={status.value}
                     checked={selectedStatuses.includes(status.value)}
-                    onCheckedChange={(checked) => handleStatusChange(status.value, checked as boolean)}
+                    onCheckedChange={(checked) => handleStatusChange(status.value, checked === true)}
                   />
                   <Label htmlFor={status.value} className="text-sm">
                     {status.label}
@@ -209,7 +213,7 @@ const InvoiceExportModal = ({ isOpen, onClose, invoices }: InvoiceExportModalPro
             <Checkbox
               id="includeDetails"
               checked={includeDetails}
-              onCheckedChange={setIncludeDetails}
+              onCheckedChange={(checked) => handleIncludeDetailsChange(checked === true)}
             />
             <Label htmlFor="includeDetails" className="text-sm">
               Incluir detalhes dos psicólogos
