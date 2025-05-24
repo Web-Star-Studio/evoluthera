@@ -2,11 +2,9 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageCircle, Plus, Users, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Conversation } from "@/types/chat";
 
 interface ChatListProps {
   currentUserId: string;
@@ -26,18 +24,14 @@ const ChatList = ({ currentUserId, userType, onSelectConversation, selectedConve
   }, [currentUserId]);
 
   const fetchConversations = async () => {
+    setLoading(true);
     try {
       const { data, error } = await supabase
         .from('conversations')
         .select(`
           *,
-          psychologist:psychologist_id (name, avatar_url),
-          patient:patient_id (name, avatar_url),
-          last_message:chat_messages (
-            message_content,
-            created_at,
-            sender_id
-          )
+          psychologist:profiles!conversations_psychologist_id_fkey (name, avatar_url),
+          patient:profiles!conversations_patient_id_fkey (name, avatar_url)
         `)
         .or(`psychologist_id.eq.${currentUserId},patient_id.eq.${currentUserId}`)
         .eq('is_active', true)
@@ -45,10 +39,23 @@ const ChatList = ({ currentUserId, userType, onSelectConversation, selectedConve
 
       if (error) throw error;
       
-      const conversationsWithLastMessage = data?.map(conv => ({
-        ...conv,
-        last_message: conv.last_message?.[0] || null
-      })) || [];
+      // Buscar última mensagem para cada conversa
+      const conversationsWithLastMessage = await Promise.all(
+        (data || []).map(async (conv) => {
+          const { data: lastMessage } = await supabase
+            .from('chat_messages')
+            .select('message_content, created_at, sender_id')
+            .eq('conversation_id', conv.id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...conv,
+            last_message: lastMessage
+          };
+        })
+      );
 
       setConversations(conversationsWithLastMessage);
     } catch (error) {
@@ -58,6 +65,8 @@ const ChatList = ({ currentUserId, userType, onSelectConversation, selectedConve
         description: "Erro ao carregar conversas",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,6 +79,17 @@ const ChatList = ({ currentUserId, userType, onSelectConversation, selectedConve
           event: '*',
           schema: 'public',
           table: 'conversations'
+        },
+        () => {
+          fetchConversations();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'chat_messages'
         },
         () => {
           fetchConversations();
@@ -115,8 +135,25 @@ const ChatList = ({ currentUserId, userType, onSelectConversation, selectedConve
     return message.substring(0, maxLength) + '...';
   };
 
+  if (loading) {
+    return (
+      <Card className="h-[600px] w-full lg:w-80">
+        <CardHeader className="pb-3">
+          <CardTitle>Carregando...</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="animate-pulse space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-16 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="h-[600px] w-80">
+    <Card className="h-[600px] w-full lg:w-80">
       <CardHeader className="pb-3">
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">

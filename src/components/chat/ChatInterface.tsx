@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Paperclip, MoreVertical } from "lucide-react";
+import { Send, Paperclip } from "lucide-react";
 import { ChatMessage } from "@/types/chat";
 
 interface ChatInterfaceProps {
@@ -20,11 +21,13 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
   const [isLoading, setIsLoading] = useState(false);
   const [dailyLimit, setDailyLimit] = useState<number | null>(null);
   const [dailyCount, setDailyCount] = useState(0);
+  const [conversationData, setConversationData] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     if (conversationId) {
+      fetchConversationData();
       fetchMessages();
       checkDailyLimits();
       subscribeToMessages();
@@ -37,6 +40,25 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const fetchConversationData = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('conversations')
+        .select(`
+          *,
+          psychologist:profiles!conversations_psychologist_id_fkey (name),
+          patient:profiles!conversations_patient_id_fkey (name)
+        `)
+        .eq('id', conversationId)
+        .single();
+
+      if (error) throw error;
+      setConversationData(data);
+    } catch (error) {
+      console.error('Erro ao carregar dados da conversa:', error);
+    }
   };
 
   const fetchMessages = async () => {
@@ -55,7 +77,6 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
 
       if (error) throw error;
       
-      // Transformar dados do Supabase para o tipo ChatMessage
       const transformedMessages: ChatMessage[] = (data || []).map(msg => ({
         id: msg.id,
         conversation_id: msg.conversation_id,
@@ -85,33 +106,25 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
 
   const checkDailyLimits = async () => {
     try {
-      // Buscar configurações do psicólogo
-      const { data: conversation } = await supabase
-        .from('conversations')
-        .select('psychologist_id')
-        .eq('id', conversationId)
+      if (!conversationData) return;
+
+      const { data: settings } = await supabase
+        .from('chat_settings')
+        .select('daily_message_limit')
+        .eq('psychologist_id', conversationData.psychologist_id)
         .single();
 
-      if (conversation) {
-        const { data: settings } = await supabase
-          .from('chat_settings')
-          .select('daily_message_limit')
-          .eq('psychologist_id', conversation.psychologist_id)
-          .single();
+      setDailyLimit(settings?.daily_message_limit || 10);
 
-        setDailyLimit(settings?.daily_message_limit || 10);
+      const { data: usage } = await supabase
+        .from('daily_message_usage')
+        .select('message_count')
+        .eq('patient_id', currentUserId)
+        .eq('psychologist_id', conversationData.psychologist_id)
+        .eq('usage_date', new Date().toISOString().split('T')[0])
+        .single();
 
-        // Buscar uso diário atual
-        const { data: usage } = await supabase
-          .from('daily_message_usage')
-          .select('message_count')
-          .eq('patient_id', currentUserId)
-          .eq('psychologist_id', conversation.psychologist_id)
-          .eq('usage_date', new Date().toISOString().split('T')[0])
-          .single();
-
-        setDailyCount(usage?.message_count || 0);
-      }
+      setDailyCount(usage?.message_count || 0);
     } catch (error) {
       console.error('Erro ao verificar limites:', error);
     }
@@ -119,7 +132,7 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
 
   const subscribeToMessages = () => {
     const channel = supabase
-      .channel('chat-messages')
+      .channel(`chat-messages-${conversationId}`)
       .on(
         'postgres_changes',
         {
@@ -158,7 +171,6 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
   const sendMessage = async () => {
     if (!newMessage.trim() || isLoading) return;
 
-    // Verificar limite diário
     if (dailyLimit && dailyCount >= dailyLimit) {
       toast({
         title: "Limite diário atingido",
@@ -209,11 +221,21 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
     });
   };
 
+  const getOtherUserName = () => {
+    if (!conversationData) return otherUserName;
+    
+    if (conversationData.psychologist_id === currentUserId) {
+      return conversationData.patient?.name || 'Paciente';
+    } else {
+      return conversationData.psychologist?.name || 'Psicólogo';
+    }
+  };
+
   return (
     <Card className="h-[600px] flex flex-col">
       <CardHeader className="border-b">
         <CardTitle className="flex items-center justify-between">
-          <span>Chat com {otherUserName}</span>
+          <span>Chat com {getOtherUserName()}</span>
           {dailyLimit && (
             <Badge variant="outline">
               {dailyCount}/{dailyLimit} mensagens hoje
@@ -223,7 +245,6 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
       </CardHeader>
 
       <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div
@@ -249,7 +270,6 @@ const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInt
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Area */}
         <div className="border-t p-4">
           <div className="flex items-center space-x-2">
             <Button variant="outline" size="icon">

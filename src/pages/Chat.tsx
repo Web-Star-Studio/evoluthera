@@ -1,15 +1,24 @@
 
 import ChatPage from "@/components/chat/ChatPage";
 import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Chat = () => {
-  // Temporariamente usando IDs fixos - em produção, pegar do contexto de autenticação
-  const currentUserId = "temp-user-id";
-  const userType = "patient"; // ou "psychologist"
+  const { user, profile } = useAuth();
+
+  if (!user || !profile) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <DashboardLayout userType={userType} userName="Usuário Teste">
-      <ChatPage currentUserId={currentUserId} userType={userType} />
+    <DashboardLayout userType={profile.user_type} userName={profile.name}>
+      <ChatPage currentUserId={user.id} userType={profile.user_type} />
     </DashboardLayout>
   );
 };
