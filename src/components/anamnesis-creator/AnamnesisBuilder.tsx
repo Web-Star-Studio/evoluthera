@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Save, ArrowLeft, Plus, Eye, Publish } from "lucide-react";
+import { Save, ArrowLeft, Plus, Eye, Send } from "lucide-react";
 import { useAnamnesisTemplates } from "@/hooks/useAnamnesisTemplates";
 import { AnamnesisTemplate, AnamnesisSection } from "@/types/anamnesis";
 import SectionBuilder from "./SectionBuilder";
@@ -151,7 +151,7 @@ const AnamnesisBuilder = ({ templateId, onBack }: AnamnesisBuilderProps) => {
             {isLoading ? 'Salvando...' : 'Salvar Rascunho'}
           </Button>
           <Button onClick={() => handleSave(true)} disabled={isLoading || !currentTemplate.name}>
-            <Publish className="h-4 w-4 mr-2" />
+            <Send className="h-4 w-4 mr-2" />
             Publicar
           </Button>
         </div>

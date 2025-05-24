@@ -1,6 +1,7 @@
+
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import LoginPage from './pages/LoginPage';
 import RegistrationPage from './pages/RegistrationPage';
 import PsychologistDashboard from './pages/PsychologistDashboard';
@@ -8,18 +9,19 @@ import PatientDashboard from './pages/PatientDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Toaster } from "@/components/ui/toaster"
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from "@/components/ui/tooltip"
-import { Sonner } from './components/ui/sonner';
+import { toast } from './components/ui/sonner';
 import AnamnesisManagement from './pages/AnamnesisManagement';
 import AnamnesisCreator from "./pages/AnamnesisCreator";
 
+const queryClient = new QueryClient();
+
 function App() {
   return (
-    <QueryClient>
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Sonner />
         <AuthProvider>
           <BrowserRouter>
             <Routes>
@@ -43,7 +45,7 @@ function App() {
           </BrowserRouter>
         </AuthProvider>
       </TooltipProvider>
-    </QueryClient>
+    </QueryClientProvider>
   );
 }
 

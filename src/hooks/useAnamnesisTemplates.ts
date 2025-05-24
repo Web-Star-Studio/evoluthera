@@ -23,7 +23,14 @@ export const useAnamnesisTemplates = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTemplates(data || []);
+      
+      // Convert the data to match our types
+      const convertedTemplates: AnamnesisTemplate[] = (data || []).map(template => ({
+        ...template,
+        sections: template.sections as any, // Will be properly typed as AnamnesisSection[]
+      }));
+      
+      setTemplates(convertedTemplates);
     } catch (error) {
       console.error('Erro ao carregar templates:', error);
       toast({
@@ -44,7 +51,14 @@ export const useAnamnesisTemplates = () => {
         .order('name');
 
       if (error) throw error;
-      setDefaultTemplates(data || []);
+      
+      // Convert the data to match our types
+      const convertedDefaultTemplates: DefaultTemplate[] = (data || []).map(template => ({
+        ...template,
+        sections: template.sections as any, // Will be properly typed as AnamnesisSection[]
+      }));
+      
+      setDefaultTemplates(convertedDefaultTemplates);
     } catch (error) {
       console.error('Erro ao carregar templates padrão:', error);
     }
@@ -52,9 +66,15 @@ export const useAnamnesisTemplates = () => {
 
   const createTemplate = async (template: Partial<AnamnesisTemplate>) => {
     try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Usuário não autenticado');
+
       const { data, error } = await supabase
         .from('anamnesis_templates')
-        .insert(template)
+        .insert({
+          ...template,
+          psychologist_id: user.user.id,
+        })
         .select()
         .single();
 
@@ -134,7 +154,6 @@ export const useAnamnesisTemplates = () => {
         name: `${template.name} (Cópia)`,
         description: template.description,
         sections: template.sections,
-        psychologist_id: template.psychologist_id,
         is_default: false,
         is_published: false,
       };

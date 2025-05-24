@@ -25,7 +25,23 @@ export const useAnamnesisApplications = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setApplications(data || []);
+      
+      // Convert the data to match our types
+      const convertedApplications: AnamnesisApplication[] = (data || []).map(app => ({
+        ...app,
+        responses: app.responses as Record<string, any>,
+        psychologist_notes: app.psychologist_notes as Record<string, string>,
+        template: app.template ? {
+          name: app.template.name,
+          description: app.template.description || undefined,
+        } : undefined,
+        patient: app.patient ? {
+          name: app.patient.name,
+          email: app.patient.email,
+        } : undefined,
+      }));
+      
+      setApplications(convertedApplications);
     } catch (error) {
       console.error('Erro ao carregar aplicações:', error);
       toast({
@@ -40,11 +56,15 @@ export const useAnamnesisApplications = () => {
 
   const createApplication = async (templateId: string, patientId: string) => {
     try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Usuário não autenticado');
+
       const { data, error } = await supabase
         .from('anamnesis_applications')
         .insert({
           template_id: templateId,
           patient_id: patientId,
+          psychologist_id: user.user.id,
           status: 'sent',
         })
         .select()
@@ -112,7 +132,7 @@ export const useAnamnesisApplications = () => {
 
       if (fetchError) throw fetchError;
 
-      const currentNotes = currentApp.psychologist_notes || {};
+      const currentNotes = (currentApp.psychologist_notes as Record<string, string>) || {};
       currentNotes[fieldId] = note;
 
       const { error } = await supabase

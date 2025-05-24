@@ -37,7 +37,7 @@ interface AnamnesisTemplate {
   id: string;
   name: string;
   description: string;
-  fields: Record<string, AnamnesisSection>;
+  sections: Record<string, AnamnesisSection>; // Changed from 'fields' to 'sections'
   is_default: boolean;
 }
 
@@ -50,7 +50,7 @@ interface AnamnesisEditorProps {
 const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProps) => {
   const [templates, setTemplates] = useState<AnamnesisTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [currentFields, setCurrentFields] = useState<Record<string, AnamnesisSection>>({});
+  const [currentSections, setCurrentSections] = useState<Record<string, AnamnesisSection>>({});
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [status, setStatus] = useState<string>("draft");
   const [isLoading, setIsLoading] = useState(false);
@@ -80,7 +80,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
       // Properly convert the data from Supabase to our typed interfaces
       const convertedTemplates: AnamnesisTemplate[] = (data || []).map(template => ({
         ...template,
-        fields: safeParseFields(template.fields)
+        sections: safeParseFields(template.sections)
       }));
       
       setTemplates(convertedTemplates);
@@ -89,7 +89,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
       const defaultTemplate = convertedTemplates.find(t => t.is_default);
       if (defaultTemplate && !selectedTemplate) {
         setSelectedTemplate(defaultTemplate.id);
-        setCurrentFields(defaultTemplate.fields);
+        setCurrentSections(defaultTemplate.sections);
       }
     } catch (error) {
       console.error('Erro ao carregar templates:', error);
@@ -102,19 +102,19 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
   };
 
   // Helper function to safely parse fields from Supabase Json type
-  const safeParseFields = (fields: any): Record<string, AnamnesisSection> => {
-    if (!fields) return {};
+  const safeParseFields = (sections: any): Record<string, AnamnesisSection> => {
+    if (!sections) return {};
     
-    if (typeof fields === 'string') {
+    if (typeof sections === 'string') {
       try {
-        return JSON.parse(fields);
+        return JSON.parse(sections);
       } catch {
         return {};
       }
     }
     
-    if (typeof fields === 'object' && !Array.isArray(fields)) {
-      return fields as Record<string, AnamnesisSection>;
+    if (typeof sections === 'object' && !Array.isArray(sections)) {
+      return sections as Record<string, AnamnesisSection>;
     }
     
     return {};
@@ -155,7 +155,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
           setSelectedTemplate(data.template_id);
           const template = templates.find(t => t.id === data.template_id);
           if (template) {
-            setCurrentFields(template.fields);
+            setCurrentSections(template.sections);
           }
         }
       }
@@ -186,7 +186,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
     const template = templates.find(t => t.id === templateId);
     if (template) {
       setSelectedTemplate(templateId);
-      setCurrentFields(template.fields);
+      setCurrentSections(template.sections);
     }
   };
 
@@ -310,7 +310,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
           psychologist_id: user.user.id,
           name: newTemplateName,
           description: newTemplateDescription,
-          fields: currentFields as any, // Cast to any to satisfy Supabase Json type
+          sections: currentSections as any, // Cast to any to satisfy Supabase Json type
           is_default: false
         });
 
@@ -512,7 +512,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
             </CardContent>
           </Card>
 
-          {Object.entries(currentFields).map(([sectionKey, section]) => (
+          {Object.entries(currentSections).map(([sectionKey, section]) => (
             <Card key={sectionKey}>
               <CardHeader>
                 <CardTitle>{section.title}</CardTitle>
@@ -539,7 +539,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
               <CardDescription>Como a anamnese aparecerá para o paciente</CardDescription>
             </CardHeader>
             <CardContent>
-              {Object.entries(currentFields).map(([sectionKey, section]) => (
+              {Object.entries(currentSections).map(([sectionKey, section]) => (
                 <div key={sectionKey} className="mb-8">
                   <h3 className="text-xl font-semibold mb-4 text-emerald-700">{section.title}</h3>
                   <div className="space-y-4">
