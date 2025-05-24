@@ -1,9 +1,10 @@
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import MoodTracker from "@/components/patient/MoodTracker";
 import TasksList from "@/components/patient/TasksList";
 import DiaryEntry from "@/components/patient/DiaryEntry";
@@ -51,9 +52,10 @@ const PatientDashboard = () => {
   };
 
   return (
-    <DashboardLayout userType="patient" userName={profile?.name}>
+    <UniversalDashboardLayout userType="patient">
       <div className="space-y-6">
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="md:hidden" />
           <Brain className="h-8 w-8 text-blue-600" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -122,11 +124,15 @@ const PatientDashboard = () => {
         </div>
 
         {/* Gamificação */}
-        <GamificationCard />
+        <div data-section="achievements">
+          <GamificationCard />
+        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Rastreador de Humor */}
-          <MoodTracker />
+          <div data-section="mood">
+            <MoodTracker />
+          </div>
 
           {/* Tarefas Pendentes */}
           <TasksList />
@@ -134,13 +140,15 @@ const PatientDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Gráfico de Progresso Semanal */}
-          <WeeklyProgressChart />
+          <div data-section="progress">
+            <WeeklyProgressChart />
+          </div>
 
           {/* Entrada de Diário */}
           <DiaryEntry />
         </div>
       </div>
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 

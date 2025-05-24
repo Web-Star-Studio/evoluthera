@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 import EnhancedPatientsList from "@/components/psychologist/EnhancedPatientsList";
 import TasksManager from "@/components/psychologist/TasksManager";
 import MoodAnalytics from "@/components/psychologist/MoodAnalytics";
@@ -42,7 +43,6 @@ const PsychologistDashboard = () => {
 
       if (patientsError) throw patientsError;
 
-      // Buscar tarefas pendentes
       const { data: tasks, error: tasksError } = await supabase
         .from('tasks')
         .select('*')
@@ -51,7 +51,6 @@ const PsychologistDashboard = () => {
 
       if (tasksError) throw tasksError;
 
-      // Buscar notificações não lidas
       const { data: notifications, error: notificationsError } = await supabase
         .from('anamnesis_notifications')
         .select('*')
@@ -72,9 +71,10 @@ const PsychologistDashboard = () => {
   };
 
   return (
-    <DashboardLayout userType="psychologist" userName={profile?.name}>
+    <UniversalDashboardLayout userType="psychologist">
       <div className="space-y-6">
         <div className="flex items-center gap-3">
+          <SidebarTrigger className="md:hidden" />
           <Brain className="h-8 w-8 text-purple-600" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -181,12 +181,12 @@ const PsychologistDashboard = () => {
         {/* Tabs principais */}
         <Tabs defaultValue="patients" className="space-y-6">
           <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="patients">Pacientes</TabsTrigger>
-            <TabsTrigger value="tasks">Tarefas</TabsTrigger>
-            <TabsTrigger value="analytics">Análises</TabsTrigger>
-            <TabsTrigger value="notifications">Notificações</TabsTrigger>
-            <TabsTrigger value="reports">Relatórios</TabsTrigger>
-            <TabsTrigger value="tests">Testes</TabsTrigger>
+            <TabsTrigger value="patients" data-tab="patients">Pacientes</TabsTrigger>
+            <TabsTrigger value="tasks" data-tab="tasks">Tarefas</TabsTrigger>
+            <TabsTrigger value="analytics" data-tab="analytics">Análises</TabsTrigger>
+            <TabsTrigger value="notifications" data-tab="notifications">Notificações</TabsTrigger>
+            <TabsTrigger value="reports" data-tab="reports">Relatórios</TabsTrigger>
+            <TabsTrigger value="tests" data-tab="tests">Testes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="patients">
@@ -214,7 +214,7 @@ const PsychologistDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 
