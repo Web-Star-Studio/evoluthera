@@ -51,11 +51,11 @@ const PsychologistSidebar = () => {
 
   const fetchBadgeCounts = async () => {
     try {
-      // Simplified badge counting to avoid type issues
+      // Use existing tables to fetch badge counts
       const [tasksResult, patientsResult, notificationsResult] = await Promise.allSettled([
-        supabase.from('tasks').select('id', { count: 'exact' }).eq('status', 'pending'),
-        supabase.from('patient_psychologist_assignments').select('id', { count: 'exact' }).eq('psychologist_id', profile?.id),
-        supabase.from('notifications').select('id', { count: 'exact' }).eq('is_read', false)
+        supabase.from('tasks').select('id', { count: 'exact' }).eq('status', 'pending').eq('psychologist_id', profile?.id),
+        supabase.from('patients').select('id', { count: 'exact' }).eq('psychologist_id', profile?.id).eq('status', 'active'),
+        supabase.from('anamnesis_notifications').select('id', { count: 'exact' }).eq('recipient_id', profile?.id).is('read_at', null)
       ]);
 
       setBadges({
