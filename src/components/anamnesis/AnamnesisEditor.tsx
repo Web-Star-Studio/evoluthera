@@ -44,7 +44,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [status, setStatus] = useState<string>("draft");
   const [isLoading, setIsLoading] = useState(false);
-  const [versions, setVersions] = useState<any[]>(([]);
+  const [versions, setVersions] = useState<any[]>([]);
   const { toast } = useToast();
 
   useEffect(() => {
