@@ -90,7 +90,7 @@ const ReportExport = () => {
             Receita: record.revenue_amount,
             'Taxa (%)': record.commission_rate,
             Comissão: record.commission_amount,
-            Status: record.status
+            Status: record.status || 'pending'
           }));
           filename = 'relatorio_cobranca';
           break;

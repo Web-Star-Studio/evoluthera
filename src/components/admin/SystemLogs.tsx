@@ -134,7 +134,7 @@ const SystemLogs = () => {
                     </TableCell>
                     <TableCell>
                       {log.ip_address ? (
-                        <code className="text-xs">{log.ip_address}</code>
+                        <code className="text-xs">{String(log.ip_address)}</code>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
