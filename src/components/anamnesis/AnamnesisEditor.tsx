@@ -310,7 +310,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
           psychologist_id: user.user.id,
           name: newTemplateName,
           description: newTemplateDescription,
-          fields: currentFields,
+          fields: currentFields as any, // Cast to any to satisfy Supabase Json type
           is_default: false
         });
 
