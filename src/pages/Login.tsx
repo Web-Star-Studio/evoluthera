@@ -8,6 +8,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTestData } from "@/hooks/useTestData";
 import { useEffect } from "react";
+import { User, Stethoscope, Shield } from "lucide-react";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -15,13 +16,18 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   
   const { signIn, user } = useAuth();
-  const { createTestPatient, loading: testLoading } = useTestData();
+  const { 
+    createTestPatient, 
+    createTestPsychologist, 
+    createTestAdmin, 
+    loginAsDemoUser, 
+    loading: testLoading 
+  } = useTestData();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || '/';
 
-  // Redirect if already logged in
   useEffect(() => {
     if (user) {
       navigate(from, { replace: true });
@@ -41,15 +47,13 @@ const Login = () => {
     }
   };
 
-  const handleCreateTestData = async () => {
+  const handleCreateAllDemoAccounts = async () => {
     try {
-      const credentials = await createTestPatient();
-      if (credentials) {
-        setEmail(credentials.email);
-        setPassword(credentials.password);
-      }
+      await createTestPatient();
+      await createTestPsychologist();
+      await createTestAdmin();
     } catch (error) {
-      console.error('Error creating test data:', error);
+      console.error('Error creating demo accounts:', error);
     }
   };
 
@@ -73,85 +77,154 @@ const Login = () => {
       </div>
 
       <div className="flex items-center justify-center py-12 px-4">
-        <div className="w-full max-w-md">
+        <div className="w-full max-w-4xl">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Entrar na Evolut</h1>
-            <p className="text-gray-600">Acesse sua conta para continuar</p>
+            <p className="text-gray-600">Acesse sua conta ou teste com uma conta demo</p>
           </div>
           
-          <Card className="shadow-xl">
-            <CardHeader>
-              <CardTitle>Login</CardTitle>
-              <CardDescription>
-                Digite suas credenciais para acessar sua conta
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="seu.email@exemplo.com"
-                    required 
-                  />
-                </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Login Form */}
+            <Card className="shadow-xl">
+              <CardHeader>
+                <CardTitle>Login</CardTitle>
+                <CardDescription>
+                  Digite suas credenciais para acessar sua conta
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      type="email" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="seu.email@exemplo.com"
+                      required 
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="password">Senha</Label>
+                    <Input 
+                      id="password" 
+                      type="password" 
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Sua senha"
+                      required 
+                    />
+                  </div>
+                  
+                  <Button 
+                    type="submit" 
+                    className="w-full text-white"
+                    style={{ backgroundColor: '#1893f8' }}
+                    disabled={loading}
+                  >
+                    {loading ? "Entrando..." : "Entrar"}
+                  </Button>
+                </form>
                 
-                <div>
-                  <Label htmlFor="password">Senha</Label>
-                  <Input 
-                    id="password" 
-                    type="password" 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Sua senha"
-                    required 
-                  />
+                <div className="mt-6 text-center">
+                  <a href="#" className="text-blue-600 hover:text-blue-700 underline text-sm" style={{ color: '#1893f8' }}>
+                    Esqueceu sua senha?
+                  </a>
                 </div>
-                
-                <Button 
-                  type="submit" 
-                  className="w-full text-white"
-                  style={{ backgroundColor: '#1893f8' }}
-                  disabled={loading}
-                >
-                  {loading ? "Entrando..." : "Entrar"}
-                </Button>
-              </form>
 
-              {/* Test Data Section */}
-              <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Para Testes</h3>
-                <Button
-                  onClick={handleCreateTestData}
-                  disabled={testLoading}
-                  variant="outline"
-                  className="w-full"
-                >
-                  {testLoading ? "Criando..." : "Criar Dados de Teste"}
-                </Button>
-                <p className="text-xs text-gray-500 mt-2">
-                  Cria um paciente de teste com dados fictícios para demonstração
-                </p>
-              </div>
-              
-              <div className="mt-6 text-center">
-                <a href="#" className="text-blue-600 hover:text-blue-700 underline text-sm" style={{ color: '#1893f8' }}>
-                  Esqueceu sua senha?
-                </a>
-              </div>
+                <div className="mt-4 text-center">
+                  <span className="text-gray-600">Não tem uma conta? </span>
+                  <Link to="/register" className="text-blue-600 hover:text-blue-700 underline" style={{ color: '#1893f8' }}>
+                    Criar conta gratuita
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
 
-              <div className="mt-4 text-center">
-                <span className="text-gray-600">Não tem uma conta? </span>
-                <Link to="/register" className="text-blue-600 hover:text-blue-700 underline" style={{ color: '#1893f8' }}>
-                  Criar conta gratuita
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Demo Accounts */}
+            <Card className="shadow-xl">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="h-5 w-5" style={{ color: '#1893f8' }} />
+                  Contas Demo
+                </CardTitle>
+                <CardDescription>
+                  Acesse rapidamente com contas de demonstração pré-configuradas
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Demo User Buttons */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={() => loginAsDemoUser('patient')}
+                    disabled={testLoading}
+                    variant="outline"
+                    className="w-full justify-start gap-3 p-4 h-auto"
+                  >
+                    <User className="h-5 w-5 text-pink-600" />
+                    <div className="text-left">
+                      <div className="font-medium">Entrar como Paciente</div>
+                      <div className="text-sm text-gray-500">paciente.demo@evolut.com</div>
+                    </div>
+                  </Button>
+
+                  <Button
+                    onClick={() => loginAsDemoUser('psychologist')}
+                    disabled={testLoading}
+                    variant="outline"
+                    className="w-full justify-start gap-3 p-4 h-auto"
+                  >
+                    <Stethoscope className="h-5 w-5 text-green-600" />
+                    <div className="text-left">
+                      <div className="font-medium">Entrar como Psicólogo</div>
+                      <div className="text-sm text-gray-500">psicologo.demo@evolut.com</div>
+                    </div>
+                  </Button>
+
+                  <Button
+                    onClick={() => loginAsDemoUser('admin')}
+                    disabled={testLoading}
+                    variant="outline"
+                    className="w-full justify-start gap-3 p-4 h-auto"
+                  >
+                    <Shield className="h-5 w-5 text-purple-600" />
+                    <div className="text-left">
+                      <div className="font-medium">Entrar como Admin</div>
+                      <div className="text-sm text-gray-500">admin.demo@evolut.com</div>
+                    </div>
+                  </Button>
+                </div>
+
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">Configuração Inicial</h4>
+                  <Button
+                    onClick={handleCreateAllDemoAccounts}
+                    disabled={testLoading}
+                    variant="outline"
+                    className="w-full"
+                    style={{ borderColor: '#1893f8', color: '#1893f8' }}
+                  >
+                    {testLoading ? "Criando..." : "Criar Todas as Contas Demo"}
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Cria/atualiza as contas demo com dados fictícios para demonstração
+                  </p>
+                </div>
+
+                <div className="bg-blue-50 p-3 rounded-lg">
+                  <h4 className="text-sm font-medium text-blue-900 mb-1">Credenciais Demo</h4>
+                  <div className="text-xs text-blue-700 space-y-1">
+                    <div><strong>Senha para todas:</strong> demo123</div>
+                    <div>• Paciente: Maria Silva</div>
+                    <div>• Psicólogo: Dr. João Santos</div>
+                    <div>• Admin: Admin Sistema</div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </div>
     </div>
