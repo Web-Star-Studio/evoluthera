@@ -18,12 +18,24 @@ interface Task {
   status: string;
 }
 
-interface TasksManagerProps {
-  tasks: Task[];
-  addTask: (task: Task) => void;
-}
+const TasksManager = () => {
+  const [tasks, setTasks] = useState<Task[]>([
+    {
+      id: 1,
+      title: "Exercício de mindfulness",
+      patient: "Maria Silva",
+      dueDate: "2024-01-20",
+      status: "pendente"
+    },
+    {
+      id: 2,
+      title: "Diário de gratidão",
+      patient: "João Pereira",
+      dueDate: "2024-01-18",
+      status: "concluída"
+    }
+  ]);
 
-const TasksManager = ({ tasks, addTask }: TasksManagerProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newTask, setNewTask] = useState({
     title: "",
@@ -32,6 +44,10 @@ const TasksManager = ({ tasks, addTask }: TasksManagerProps) => {
     description: "",
     priority: "normal"
   });
+
+  const addTask = (task: Task) => {
+    setTasks(prev => [...prev, task]);
+  };
 
   const handleAddTask = () => {
     if (newTask.title && newTask.patient && newTask.dueDate) {

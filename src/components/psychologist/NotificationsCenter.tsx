@@ -13,13 +13,33 @@ interface Notification {
   read?: boolean;
 }
 
-interface NotificationsCenterProps {
-  notifications: Notification[];
-  addNotification: (notification: Notification) => void;
-}
+const NotificationsCenter = () => {
+  // Adicionar algumas notificações de exemplo relacionadas aos testes psicológicos
+  const sampleNotifications = [
+    {
+      id: Date.now() + 1,
+      message: "Maria Silva completou o teste PHQ-9 com pontuação 12 (moderada)",
+      date: new Date().toLocaleDateString('pt-BR'),
+      type: "warning",
+      read: false
+    },
+    {
+      id: Date.now() + 2,
+      message: "João Pereira iniciou o teste BDI-II há 2 horas sem finalizar",
+      date: new Date().toLocaleDateString('pt-BR'),
+      type: "info",
+      read: false
+    },
+    {
+      id: Date.now() + 3,
+      message: "Ana Souza obteve melhoria significativa no teste BAI (de 25 para 12 pontos)",
+      date: new Date().toLocaleDateString('pt-BR'),
+      type: "success",
+      read: false
+    }
+  ];
 
-const NotificationsCenter = ({ notifications, addNotification }: NotificationsCenterProps) => {
-  const [notificationsList, setNotificationsList] = useState(notifications);
+  const [notificationsList, setNotificationsList] = useState<Notification[]>(sampleNotifications);
 
   const getNotificationIcon = (type: string = "info") => {
     switch (type) {
@@ -69,33 +89,6 @@ const NotificationsCenter = ({ notifications, addNotification }: NotificationsCe
 
   const unreadCount = notificationsList.filter(notif => !notif.read).length;
 
-  // Adicionar algumas notificações de exemplo relacionadas aos testes psicológicos
-  const sampleNotifications = [
-    {
-      id: Date.now() + 1,
-      message: "Maria Silva completou o teste PHQ-9 com pontuação 12 (moderada)",
-      date: new Date().toLocaleDateString('pt-BR'),
-      type: "warning",
-      read: false
-    },
-    {
-      id: Date.now() + 2,
-      message: "João Pereira iniciou o teste BDI-II há 2 horas sem finalizar",
-      date: new Date().toLocaleDateString('pt-BR'),
-      type: "info",
-      read: false
-    },
-    {
-      id: Date.now() + 3,
-      message: "Ana Souza obteve melhoria significativa no teste BAI (de 25 para 12 pontos)",
-      date: new Date().toLocaleDateString('pt-BR'),
-      type: "success",
-      read: false
-    }
-  ];
-
-  const allNotifications = [...notificationsList, ...sampleNotifications];
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -132,7 +125,7 @@ const NotificationsCenter = ({ notifications, addNotification }: NotificationsCe
               <Bell className="h-5 w-5 text-blue-500" />
               <div>
                 <p className="text-sm text-gray-600">Total</p>
-                <p className="text-2xl font-bold">{allNotifications.length}</p>
+                <p className="text-2xl font-bold">{notificationsList.length}</p>
               </div>
             </div>
           </CardContent>
@@ -157,7 +150,7 @@ const NotificationsCenter = ({ notifications, addNotification }: NotificationsCe
               <div>
                 <p className="text-sm text-gray-600">Alertas</p>
                 <p className="text-2xl font-bold">
-                  {allNotifications.filter(n => n.type === "warning" || n.type === "error").length}
+                  {notificationsList.filter(n => n.type === "warning" || n.type === "error").length}
                 </p>
               </div>
             </div>
@@ -171,7 +164,7 @@ const NotificationsCenter = ({ notifications, addNotification }: NotificationsCe
               <div>
                 <p className="text-sm text-gray-600">Positivas</p>
                 <p className="text-2xl font-bold">
-                  {allNotifications.filter(n => n.type === "success").length}
+                  {notificationsList.filter(n => n.type === "success").length}
                 </p>
               </div>
             </div>
@@ -189,7 +182,7 @@ const NotificationsCenter = ({ notifications, addNotification }: NotificationsCe
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {allNotifications.map((notification) => (
+            {notificationsList.map((notification) => (
               <div 
                 key={notification.id} 
                 className={`p-4 border-l-4 rounded-lg ${getNotificationColor(notification.type)} ${
@@ -232,7 +225,7 @@ const NotificationsCenter = ({ notifications, addNotification }: NotificationsCe
             ))}
           </div>
 
-          {allNotifications.length === 0 && (
+          {notificationsList.length === 0 && (
             <div className="text-center py-8">
               <Bell className="h-12 w-12 text-gray-300 mx-auto mb-4" />
               <p className="text-gray-500">Nenhuma notificação encontrada</p>
