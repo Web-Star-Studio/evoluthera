@@ -40,7 +40,7 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100" style={{ background: 'linear-gradient(to bottom right, #dbeafe, #1893f8)' }}>
       {/* Header */}
       <div className="bg-white shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -100,7 +100,8 @@ const Login = () => {
                 
                 <Button 
                   type="submit" 
-                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  className="w-full text-white"
+                  style={{ backgroundColor: '#1893f8' }}
                   disabled={loading}
                 >
                   {loading ? "Entrando..." : "Entrar"}
@@ -108,14 +109,14 @@ const Login = () => {
               </form>
               
               <div className="mt-6 text-center">
-                <a href="#" className="text-emerald-600 hover:text-emerald-700 underline text-sm">
+                <a href="#" className="text-blue-600 hover:text-blue-700 underline text-sm" style={{ color: '#1893f8' }}>
                   Esqueceu sua senha?
                 </a>
               </div>
 
               <div className="mt-4 text-center">
                 <span className="text-gray-600">Não tem uma conta? </span>
-                <Link to="/register" className="text-emerald-600 hover:text-emerald-700 underline">
+                <Link to="/register" className="text-blue-600 hover:text-blue-700 underline" style={{ color: '#1893f8' }}>
                   Criar conta gratuita
                 </Link>
               </div>
