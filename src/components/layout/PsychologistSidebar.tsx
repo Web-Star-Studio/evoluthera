@@ -104,7 +104,7 @@ const PsychologistSidebar = ({ pendingTasks = 0, newResponses = 0 }: Psychologis
     <div className="flex flex-col h-full">
       <div className="p-6 border-b">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-emerald-700">TherapyFlow</h2>
+          <img src="/lovable-uploads/f22ddfd1-16b6-4226-871a-0a3f6b79261c.png" alt="Evolut Logo" className="h-8 w-auto" />
           <Button
             variant="ghost"
             size="sm"
@@ -125,9 +125,13 @@ const PsychologistSidebar = ({ pendingTasks = 0, newResponses = 0 }: Psychologis
               variant={isActivePath(item.path) ? "default" : "ghost"}
               className={`w-full justify-start ${
                 isActivePath(item.path) 
-                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200" 
+                  ? "text-white hover:bg-blue-600" 
                   : "hover:bg-gray-100"
               }`}
+              style={{ 
+                backgroundColor: isActivePath(item.path) ? '#1893f8' : undefined,
+                color: isActivePath(item.path) ? 'white' : undefined
+              }}
               onClick={() => handleNavigation(item.path)}
             >
               <item.icon className="h-5 w-5 mr-3" />

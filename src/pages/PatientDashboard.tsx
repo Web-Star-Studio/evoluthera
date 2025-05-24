@@ -14,7 +14,7 @@ const PatientDashboard = () => {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-gray-900">Meu Dashboard</h1>
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200" style={{ color: '#1893f8', borderColor: '#1893f8' }}>
             Paciente Ativo
           </Badge>
         </div>
@@ -46,10 +46,10 @@ const PatientDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Tarefas</CardTitle>
-              <CheckCircle className="h-4 w-4 text-green-600" />
+              <CheckCircle className="h-4 w-4" style={{ color: '#1893f8' }} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-green-600">8/10</div>
+              <div className="text-2xl font-bold" style={{ color: '#1893f8' }}>8/10</div>
               <p className="text-xs text-gray-600">Esta semana</p>
             </CardContent>
           </Card>
@@ -57,10 +57,10 @@ const PatientDashboard = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Próxima Sessão</CardTitle>
-              <Calendar className="h-4 w-4 text-blue-600" />
+              <Calendar className="h-4 w-4" style={{ color: '#1893f8' }} />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-blue-600">2 dias</div>
+              <div className="text-2xl font-bold" style={{ color: '#1893f8' }}>2 dias</div>
               <p className="text-xs text-gray-600">Quinta-feira, 15h</p>
             </CardContent>
           </Card>
@@ -71,7 +71,7 @@ const PatientDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5 text-emerald-600" />
+                <Target className="h-5 w-5" style={{ color: '#1893f8' }} />
                 Progresso Semanal
               </CardTitle>
             </CardHeader>
@@ -103,7 +103,7 @@ const PatientDashboard = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-blue-600" />
+                <Clock className="h-5 w-5" style={{ color: '#1893f8' }} />
                 Atividades Pendentes
               </CardTitle>
             </CardHeader>
@@ -136,22 +136,22 @@ const PatientDashboard = () => {
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#1893f8' }}></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">Registro de humor concluído</p>
                   <p className="text-xs text-gray-500">Hoje, 14:30</p>
                 </div>
-                <Badge variant="outline" className="text-green-600 border-green-200">
+                <Badge variant="outline" className="border-blue-200" style={{ color: '#1893f8', borderColor: '#1893f8' }}>
                   Humor: 8/10
                 </Badge>
               </div>
               <div className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#1893f8' }}></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">Tarefa "Reflexão Diária" concluída</p>
                   <p className="text-xs text-gray-500">Ontem, 20:15</p>
                 </div>
-                <Badge variant="outline" className="text-blue-600 border-blue-200">
+                <Badge variant="outline" className="border-blue-200" style={{ color: '#1893f8', borderColor: '#1893f8' }}>
                   Concluída
                 </Badge>
               </div>

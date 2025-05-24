@@ -60,8 +60,8 @@ const DashboardLayout = ({ children, userType, userName }: DashboardLayoutProps)
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <Link to="/" className="text-2xl font-bold text-emerald-600">
-              Evolua
+            <Link to="/" className="flex items-center">
+              <img src="/lovable-uploads/f22ddfd1-16b6-4226-871a-0a3f6b79261c.png" alt="Evolut Logo" className="h-8 w-auto" />
             </Link>
             
             <nav className="hidden md:flex space-x-8">
@@ -69,7 +69,8 @@ const DashboardLayout = ({ children, userType, userName }: DashboardLayoutProps)
                 <Link
                   key={item.path}
                   to={item.path}
-                  className="text-gray-600 hover:text-emerald-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="text-gray-600 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  style={{ color: item.path === window.location.pathname ? '#1893f8' : undefined }}
                 >
                   {item.label}
                 </Link>
@@ -81,7 +82,8 @@ const DashboardLayout = ({ children, userType, userName }: DashboardLayoutProps)
               <Button
                 variant="outline"
                 onClick={handleSignOut}
-                className="text-gray-600 border-gray-300"
+                className="text-gray-600 border-gray-300 hover:bg-blue-50 hover:border-blue-300"
+                style={{ color: '#1893f8' }}
               >
                 Sair
               </Button>
