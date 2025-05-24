@@ -83,30 +83,51 @@ export type Database = {
       anamnesis: {
         Row: {
           completed: boolean | null
+          completed_at: string | null
           created_at: string
           data: Json
+          encrypted_data: string | null
           id: string
+          locked_at: string | null
           patient_id: string
           psychologist_id: string
+          sent_at: string | null
+          status: string | null
+          template_id: string | null
           updated_at: string
+          version: number | null
         }
         Insert: {
           completed?: boolean | null
+          completed_at?: string | null
           created_at?: string
           data: Json
+          encrypted_data?: string | null
           id?: string
+          locked_at?: string | null
           patient_id: string
           psychologist_id: string
+          sent_at?: string | null
+          status?: string | null
+          template_id?: string | null
           updated_at?: string
+          version?: number | null
         }
         Update: {
           completed?: boolean | null
+          completed_at?: string | null
           created_at?: string
           data?: Json
+          encrypted_data?: string | null
           id?: string
+          locked_at?: string | null
           patient_id?: string
           psychologist_id?: string
+          sent_at?: string | null
+          status?: string | null
+          template_id?: string | null
           updated_at?: string
+          version?: number | null
         }
         Relationships: [
           {
@@ -119,6 +140,147 @@ export type Database = {
           {
             foreignKeyName: "anamnesis_psychologist_id_fkey"
             columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anamnesis_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "anamnesis_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anamnesis_notifications: {
+        Row: {
+          anamnesis_id: string
+          created_at: string
+          id: string
+          message: string
+          read_at: string | null
+          recipient_id: string
+          type: string
+        }
+        Insert: {
+          anamnesis_id: string
+          created_at?: string
+          id?: string
+          message: string
+          read_at?: string | null
+          recipient_id: string
+          type: string
+        }
+        Update: {
+          anamnesis_id?: string
+          created_at?: string
+          id?: string
+          message?: string
+          read_at?: string | null
+          recipient_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamnesis_notifications_anamnesis_id_fkey"
+            columns: ["anamnesis_id"]
+            isOneToOne: false
+            referencedRelation: "anamnesis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anamnesis_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anamnesis_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          fields: Json
+          id: string
+          is_default: boolean | null
+          name: string
+          psychologist_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          fields?: Json
+          id?: string
+          is_default?: boolean | null
+          name: string
+          psychologist_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          fields?: Json
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          psychologist_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamnesis_templates_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      anamnesis_versions: {
+        Row: {
+          anamnesis_id: string
+          created_at: string
+          created_by: string
+          data: Json
+          encrypted_data: string | null
+          id: string
+          status: string
+          version: number
+        }
+        Insert: {
+          anamnesis_id: string
+          created_at?: string
+          created_by: string
+          data: Json
+          encrypted_data?: string | null
+          id?: string
+          status: string
+          version: number
+        }
+        Update: {
+          anamnesis_id?: string
+          created_at?: string
+          created_by?: string
+          data?: Json
+          encrypted_data?: string | null
+          id?: string
+          status?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anamnesis_versions_anamnesis_id_fkey"
+            columns: ["anamnesis_id"]
+            isOneToOne: false
+            referencedRelation: "anamnesis"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "anamnesis_versions_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -540,6 +702,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_default_anamnesis_template: {
+        Args: { psychologist_uuid: string }
+        Returns: string
+      }
       is_admin: {
         Args: { user_id: string }
         Returns: boolean

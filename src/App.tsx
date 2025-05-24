@@ -4,13 +4,16 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { navItems } from "./nav-items";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import PsychologistDashboard from "./pages/PsychologistDashboard";
 import PatientDashboard from "./pages/PatientDashboard";
+import PsychologistDashboard from "./pages/PsychologistDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
-import Anamnesis from "./pages/Anamnesis";
 import MedicalRecord from "./pages/MedicalRecord";
+import Anamnesis from "./pages/Anamnesis";
+import PatientAnamnesis from "./pages/PatientAnamnesis";
+import AnamnesisManagement from "./pages/AnamnesisManagement";
 import Activities from "./pages/Activities";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
@@ -26,11 +29,13 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/psychologist-dashboard" element={<PsychologistDashboard />} />
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
+          <Route path="/psychologist-dashboard" element={<PsychologistDashboard />} />
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/anamnesis" element={<Anamnesis />} />
           <Route path="/medical-record" element={<MedicalRecord />} />
+          <Route path="/anamnesis" element={<Anamnesis />} />
+          <Route path="/anamnesis/:anamnesisId" element={<PatientAnamnesis />} />
+          <Route path="/anamnesis-management" element={<AnamnesisManagement />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
