@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,7 +44,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [status, setStatus] = useState<string>("draft");
   const [isLoading, setIsLoading] = useState(false);
-  const [versions, setVersions] = useState<any[]>([]);
+  const [versions, setVersions] = useState<any[]>(([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -65,12 +64,10 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
 
       if (error) throw error;
       
-      // Converter os dados do Supabase para o tipo correto
+      // Properly convert the data from Supabase to our typed interfaces
       const convertedTemplates: AnamnesisTemplate[] = (data || []).map(template => ({
         ...template,
-        fields: typeof template.fields === 'string' 
-          ? JSON.parse(template.fields) 
-          : (template.fields as Record<string, AnamnesisSection>) || {}
+        fields: safeParseFields(template.fields)
       }));
       
       setTemplates(convertedTemplates);
@@ -91,6 +88,44 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
     }
   };
 
+  // Helper function to safely parse fields from Supabase Json type
+  const safeParseFields = (fields: any): Record<string, AnamnesisSection> => {
+    if (!fields) return {};
+    
+    if (typeof fields === 'string') {
+      try {
+        return JSON.parse(fields);
+      } catch {
+        return {};
+      }
+    }
+    
+    if (typeof fields === 'object' && !Array.isArray(fields)) {
+      return fields as Record<string, AnamnesisSection>;
+    }
+    
+    return {};
+  };
+
+  // Helper function to safely parse responses
+  const safeParseResponses = (data: any): Record<string, any> => {
+    if (!data) return {};
+    
+    if (typeof data === 'string') {
+      try {
+        return JSON.parse(data);
+      } catch {
+        return {};
+      }
+    }
+    
+    if (typeof data === 'object' && !Array.isArray(data)) {
+      return data as Record<string, any>;
+    }
+    
+    return {};
+  };
+
   const loadAnamnesis = async () => {
     try {
       const { data, error } = await supabase
@@ -101,12 +136,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
 
       if (error) throw error;
       if (data) {
-        // Converter dados do Supabase
-        const convertedData = typeof data.data === 'string' 
-          ? JSON.parse(data.data) 
-          : (data.data as Record<string, any>) || {};
-        
-        setResponses(convertedData);
+        setResponses(safeParseResponses(data.data));
         setStatus(data.status);
         if (data.template_id) {
           setSelectedTemplate(data.template_id);
