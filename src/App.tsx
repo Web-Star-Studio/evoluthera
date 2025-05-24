@@ -35,9 +35,9 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/" element={<AutoRedirect />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/dashboard" element={<AutoRedirect />} />
             <Route path="/landing" element={<LandingPage />} />
-            <Route path="/index" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/unauthorized" element={<Unauthorized />} />

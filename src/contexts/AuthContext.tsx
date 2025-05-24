@@ -240,12 +240,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: "Bem-vindo de volta!",
         });
         
-        // Get user profile to determine redirect
-        const profileData = await fetchProfile(data.user.id);
-        const redirectRoute = getDashboardRoute(profileData?.user_type);
-        
-        // Redirect to appropriate dashboard
-        window.location.href = redirectRoute;
+        // Redirect to dashboard route which will handle user type routing
+        window.location.href = '/dashboard';
       }
     } catch (error: any) {
       console.error('Sign in error:', error);

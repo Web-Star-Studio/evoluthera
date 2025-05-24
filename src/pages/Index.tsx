@@ -1,8 +1,22 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
+  const { user, profile, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Carregando...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center">
       <div className="max-w-4xl mx-auto px-6 text-center">
@@ -24,11 +38,27 @@ const Index = () => {
           <p className="text-lg text-gray-600 mb-6">
             Conectamos pacientes e profissionais de psicologia em uma jornada de crescimento pessoal e saúde mental.
           </p>
-          <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700">
-            <Link to="/login">
-              Começar Agora
-            </Link>
-          </Button>
+          
+          {user && profile ? (
+            <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700">
+              <Link to="/dashboard">
+                Ir para Dashboard
+              </Link>
+            </Button>
+          ) : (
+            <div className="flex gap-4 justify-center">
+              <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700">
+                <Link to="/login">
+                  Fazer Login
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link to="/register">
+                  Criar Conta
+                </Link>
+              </Button>
+            </div>
+          )}
         </div>
         
         <div className="grid md:grid-cols-3 gap-6">
