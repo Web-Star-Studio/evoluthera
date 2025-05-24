@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ interface TaskResponse {
   psychologist_comment: string | null;
   commented_at: string | null;
   created_at: string;
+  patient_id: string;
   task: {
     id: string;
     title: string;

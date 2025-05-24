@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -61,7 +60,14 @@ const EnhancedSendTaskModal = ({ isOpen, onClose, patientId, patientName, onSend
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setTemplates(data || []);
+      
+      const typedTemplates = (data || []).map(template => ({
+        ...template,
+        task_type: template.task_type as 'text' | 'multiple_choice' | 'audio',
+        category: template.category as 'reflection' | 'writing' | 'meditation' | 'self_assessment' | 'custom'
+      }));
+      
+      setTemplates(typedTemplates);
     } catch (error) {
       console.error('Erro ao buscar templates:', error);
     }

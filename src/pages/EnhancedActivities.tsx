@@ -4,7 +4,7 @@ import DashboardLayout from "@/components/layout/DashboardLayout";
 
 const EnhancedActivities = () => {
   return (
-    <DashboardLayout>
+    <DashboardLayout userType="patient" userName="Usuário">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           <div className="mb-8">

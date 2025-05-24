@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +22,7 @@ interface Task {
   status: string;
   created_at: string;
   completed_at: string | null;
+  psychologist_id: string;
   psychologist_comment?: string;
 }
 
@@ -50,6 +50,7 @@ const EnhancedTasksList = () => {
       
       const tasksWithComments = (data || []).map(task => ({
         ...task,
+        task_type: task.task_type as 'text' | 'multiple_choice' | 'audio',
         psychologist_comment: task.task_responses?.[0]?.psychologist_comment
       }));
       
