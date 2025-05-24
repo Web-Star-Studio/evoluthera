@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -206,7 +205,7 @@ const PatientMoodAnalytics = ({ patientId, patientName }: PatientMoodAnalyticsPr
                   />
                   <Bar 
                     dataKey="average" 
-                    fill={(entry: any) => getTrendColor(entry.trend)}
+                    fill="#10b981"
                     radius={[4, 4, 0, 0]}
                   />
                 </BarChart>
