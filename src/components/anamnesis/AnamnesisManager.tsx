@@ -1,48 +1,49 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import AnamnesisEditor from "./AnamnesisEditor";
+import { Plus, FileText, Settings, Users } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AnamnesisTemplateBuilder from "./AnamnesisTemplateBuilder";
+import AnamnesisTemplatesList from "./AnamnesisTemplatesList";
+import AnamnesisApplicationsList from "./AnamnesisApplicationsList";
 import AnamnesisSearch from "./AnamnesisSearch";
-import AnamnesissList from "./AnamnesissList";
-import { useAnamnesisManager } from "@/hooks/useAnamnesisManager";
+
+type ViewMode = 'dashboard' | 'template-builder' | 'template-editor';
 
 const AnamnesisManager = () => {
-  const [selectedAnamnesis, setSelectedAnamnesis] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>('dashboard');
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const {
-    anamneses,
-    searchTerm,
-    setSearchTerm,
-    isLoading,
-    handleStatusChange,
-    handleDeleteAnamnesis,
-    handleDuplicateAnamnesis,
-    handleSaveAsTemplate,
-    loadAnamneses,
-  } = useAnamnesisManager();
+  const handleCreateTemplate = () => {
+    setSelectedTemplateId(null);
+    setViewMode('template-builder');
+  };
 
-  if (isEditing || selectedAnamnesis) {
+  const handleEditTemplate = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    setViewMode('template-editor');
+  };
+
+  const handleBackToDashboard = () => {
+    setViewMode('dashboard');
+    setSelectedTemplateId(null);
+  };
+
+  if (viewMode === 'template-builder' || viewMode === 'template-editor') {
     return (
       <div>
         <Button
-          onClick={() => {
-            setIsEditing(false);
-            setSelectedAnamnesis(null);
-          }}
+          onClick={handleBackToDashboard}
           variant="outline"
           className="mb-4"
         >
-          ← Voltar para Lista
+          ← Voltar para Dashboard
         </Button>
-        <AnamnesisEditor
-          anamnesisId={selectedAnamnesis || undefined}
-          onSave={() => {
-            loadAnamneses();
-            setIsEditing(false);
-            setSelectedAnamnesis(null);
-          }}
+        <AnamnesisTemplateBuilder
+          templateId={selectedTemplateId || undefined}
+          onSave={handleBackToDashboard}
+          onCancel={handleBackToDashboard}
         />
       </div>
     );
@@ -52,12 +53,14 @@ const AnamnesisManager = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Gerenciar Anamneses</h2>
-          <p className="text-gray-600">Visualize e gerencie todas as anamneses dos pacientes</p>
+          <h2 className="text-2xl font-bold">Gerenciamento de Anamneses</h2>
+          <p className="text-gray-600">
+            Crie templates personalizados e gerencie anamneses dos pacientes
+          </p>
         </div>
-        <Button onClick={() => setIsEditing(true)}>
+        <Button onClick={handleCreateTemplate}>
           <Plus className="h-4 w-4 mr-2" />
-          Nova Anamnese
+          Novo Template
         </Button>
       </div>
 
@@ -66,17 +69,43 @@ const AnamnesisManager = () => {
         onSearchChange={setSearchTerm}
       />
 
-      <AnamnesissList
-        anamneses={anamneses}
-        isLoading={isLoading}
-        onView={setSelectedAnamnesis}
-        onEdit={setSelectedAnamnesis}
-        onDuplicate={handleDuplicateAnamnesis}
-        onSaveAsTemplate={handleSaveAsTemplate}
-        onStatusChange={handleStatusChange}
-        onDelete={handleDeleteAnamnesis}
-        onCreateNew={() => setIsEditing(true)}
-      />
+      <Tabs defaultValue="templates" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="templates" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Meus Templates
+          </TabsTrigger>
+          <TabsTrigger value="applications" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Aplicações
+          </TabsTrigger>
+          <TabsTrigger value="default-templates" className="flex items-center gap-2">
+            <Settings className="h-4 w-4" />
+            Templates Padrão
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="templates" className="space-y-4">
+          <AnamnesisTemplatesList
+            searchTerm={searchTerm}
+            onEdit={handleEditTemplate}
+            onCreate={handleCreateTemplate}
+          />
+        </TabsContent>
+
+        <TabsContent value="applications" className="space-y-4">
+          <AnamnesisApplicationsList searchTerm={searchTerm} />
+        </TabsContent>
+
+        <TabsContent value="default-templates" className="space-y-4">
+          <AnamnesisTemplatesList
+            searchTerm={searchTerm}
+            onEdit={handleEditTemplate}
+            onCreate={handleCreateTemplate}
+            showDefaultTemplates={true}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
