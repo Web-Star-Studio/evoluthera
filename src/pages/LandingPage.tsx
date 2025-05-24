@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, Users, TrendingUp, Shield, MessageCircle, Calendar, FileText, BarChart3, Heart, Award, CheckCircle, ArrowRight, Mail, Phone, ChevronDown, ChevronUp, Star, Gamepad2, Clock, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const LandingPage = () => {
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
@@ -90,8 +92,8 @@ const LandingPage = () => {
               <a href="#depoimentos" className="text-gray-600 hover:text-blue-600 transition-colors">Depoimentos</a>
               <a href="#contato" className="text-gray-600 hover:text-blue-600 transition-colors">Contato</a>
             </div>
-            <Button className="bg-blue-600 hover:bg-blue-700">
-              Começar Agora
+            <Button asChild className="bg-blue-600 hover:bg-blue-700">
+              <Link to="/register">Começar Agora</Link>
             </Button>
           </div>
         </div>
@@ -111,9 +113,11 @@ const LandingPage = () => {
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
                 A plataforma inteligente que transforma o acompanhamento terapêutico.
               </p>
-              <Button size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4">
-                Quero conhecer a Evolut
-                <ArrowRight className="ml-2 h-5 w-5" />
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4">
+                <Link to="/register">
+                  Quero conhecer a Evolut
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </Button>
             </div>
             <div className="relative">

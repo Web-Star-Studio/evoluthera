@@ -4,20 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEffect } from "react";
 
 const Login = () => {
-  const [isLogin, setIsLogin] = useState(true);
-  const [userType, setUserType] = useState("patient");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   
-  const { signIn, signUp, user } = useAuth();
+  const { signIn, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -35,15 +31,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      if (isLogin) {
-        await signIn(email, password);
-      } else {
-        await signUp(email, password, { name, user_type: userType });
-        setIsLogin(true); // Switch to login after successful signup
-        setEmail("");
-        setPassword("");
-        setName("");
-      }
+      await signIn(email, password);
     } catch (error) {
       // Error handling is done in the auth context
     } finally {
@@ -52,99 +40,88 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link to="/">
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Evolua</h1>
-          </Link>
-          <p className="text-gray-600">Sua jornada de bem-estar começa aqui</p>
-        </div>
-        
-        <Card className="shadow-xl">
-          <CardHeader>
-            <CardTitle>{isLogin ? "Entrar" : "Criar Conta"}</CardTitle>
-            <CardDescription>
-              {isLogin ? "Acesse sua conta" : "Junte-se à nossa plataforma"}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {!isLogin && (
-                <>
-                  <div>
-                    <Label htmlFor="name">Nome completo</Label>
-                    <Input 
-                      id="name" 
-                      type="text" 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      required 
-                    />
-                  </div>
-                  
-                  <div>
-                    <Label>Tipo de usuário</Label>
-                    <RadioGroup value={userType} onValueChange={setUserType} className="mt-2">
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="patient" id="patient" />
-                        <Label htmlFor="patient">Paciente</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="psychologist" id="psychologist" />
-                        <Label htmlFor="psychologist">Psicólogo</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="admin" id="admin" />
-                        <Label htmlFor="admin">Administrador</Label>
-                      </div>
-                    </RadioGroup>
-                  </div>
-                </>
-              )}
-              
-              <div>
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required 
-                />
-              </div>
-              
-              <div>
-                <Label htmlFor="password">Senha</Label>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required 
-                />
-              </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-emerald-600 hover:bg-emerald-700"
-                disabled={loading}
-              >
-                {loading ? "Carregando..." : (isLogin ? "Entrar" : "Criar Conta")}
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100">
+      {/* Header */}
+      <div className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <Link to="/" className="flex items-center">
+              <img src="/lovable-uploads/af7620ff-fa7a-44e1-b147-674b8fe0caca.png" alt="Evolut Logo" className="h-8 w-auto" />
+            </Link>
+            <div className="flex items-center space-x-4">
+              <span className="text-gray-600">Novo por aqui?</span>
+              <Button asChild variant="outline">
+                <Link to="/register">Criar conta gratuita</Link>
               </Button>
-            </form>
-            
-            <div className="mt-4 text-center">
-              <button
-                onClick={() => setIsLogin(!isLogin)}
-                className="text-emerald-600 hover:text-emerald-700 underline"
-                disabled={loading}
-              >
-                {isLogin ? "Criar nova conta" : "Já tenho uma conta"}
-              </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-center py-12 px-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Entrar na Evolut</h1>
+            <p className="text-gray-600">Acesse sua conta para continuar</p>
+          </div>
+          
+          <Card className="shadow-xl">
+            <CardHeader>
+              <CardTitle>Login</CardTitle>
+              <CardDescription>
+                Digite suas credenciais para acessar sua conta
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="seu.email@exemplo.com"
+                    required 
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="password">Senha</Label>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Sua senha"
+                    required 
+                  />
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full bg-emerald-600 hover:bg-emerald-700"
+                  disabled={loading}
+                >
+                  {loading ? "Entrando..." : "Entrar"}
+                </Button>
+              </form>
+              
+              <div className="mt-6 text-center">
+                <a href="#" className="text-emerald-600 hover:text-emerald-700 underline text-sm">
+                  Esqueceu sua senha?
+                </a>
+              </div>
+
+              <div className="mt-4 text-center">
+                <span className="text-gray-600">Não tem uma conta? </span>
+                <Link to="/register" className="text-emerald-600 hover:text-emerald-700 underline">
+                  Criar conta gratuita
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
