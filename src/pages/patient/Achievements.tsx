@@ -1,7 +1,7 @@
 
 import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import GamificationCard from "@/components/patient/GamificationCard";
-import PatientAchievements from "@/components/gamification/PatientAchievements";
+import PatientAchievementsComponent from "@/components/gamification/PatientAchievements";
 import { Trophy } from "lucide-react";
 
 const PatientAchievements = () => {
@@ -17,7 +17,7 @@ const PatientAchievements = () => {
         </div>
 
         <GamificationCard />
-        <PatientAchievements />
+        <PatientAchievementsComponent patientId="temp-user-id" />
       </div>
     </UniversalDashboardLayout>
   );

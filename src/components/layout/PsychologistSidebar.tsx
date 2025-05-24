@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigation } from "@/hooks/useNavigation";
@@ -8,7 +9,6 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -19,15 +19,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  BarChart3, 
-  Users, 
+  Home, 
   FileText, 
-  UserCheck, 
-  ClipboardList, 
-  Bell, 
+  Activity, 
+  Heart, 
   Calendar, 
-  TrendingUp, 
   MessageSquare, 
+  Users, 
+  BarChart3, 
+  Bell,
   Settings,
   LogOut,
   Brain
@@ -38,118 +38,86 @@ const PsychologistSidebar = () => {
   const { navigateToSection, isActivePath } = useNavigation();
   const { state } = useSidebar();
   const [badges, setBadges] = useState({
-    pendingTasks: 0,
-    unreadNotifications: 0,
-    activePatients: 0,
-    unreadMessages: 0
+    activeTasks: 0,
+    pendingPatients: 0,
+    newNotifications: 0
   });
 
   useEffect(() => {
     if (profile?.id) {
       fetchBadgeCounts();
-      const interval = setInterval(fetchBadgeCounts, 30000); // Update every 30 seconds
-      return () => clearInterval(interval);
     }
   }, [profile?.id]);
 
   const fetchBadgeCounts = async () => {
     try {
-      const [tasksResult, notificationsResult, patientsResult, messagesResult] = await Promise.all([
-        supabase
-          .from('tasks')
-          .select('*')
-          .eq('psychologist_id', profile?.id)
-          .eq('status', 'pending'),
-        
-        supabase
-          .from('anamnesis_notifications')
-          .select('*')
-          .eq('recipient_id', profile?.id)
-          .is('read_at', null),
-        
-        supabase
-          .from('patients')
-          .select('*')
-          .eq('psychologist_id', profile?.id)
-          .eq('status', 'active'),
-        
-        supabase
-          .from('chat_messages')
-          .select('*')
-          .eq('recipient_id', profile?.id)
-          .eq('is_read', false)
+      // Simplified badge counting to avoid type issues
+      const [tasksResult, patientsResult, notificationsResult] = await Promise.allSettled([
+        supabase.from('tasks').select('id', { count: 'exact' }).eq('status', 'pending'),
+        supabase.from('patient_psychologist_assignments').select('id', { count: 'exact' }).eq('psychologist_id', profile?.id),
+        supabase.from('notifications').select('id', { count: 'exact' }).eq('is_read', false)
       ]);
 
       setBadges({
-        pendingTasks: tasksResult.data?.length || 0,
-        unreadNotifications: notificationsResult.data?.length || 0,
-        activePatients: patientsResult.data?.length || 0,
-        unreadMessages: messagesResult.data?.length || 0
+        activeTasks: tasksResult.status === 'fulfilled' ? (tasksResult.value.count || 0) : 0,
+        pendingPatients: patientsResult.status === 'fulfilled' ? (patientsResult.value.count || 0) : 0,
+        newNotifications: notificationsResult.status === 'fulfilled' ? (notificationsResult.value.count || 0) : 0
       });
     } catch (error) {
       console.error('Error fetching badge counts:', error);
+      setBadges({ activeTasks: 0, pendingPatients: 0, newNotifications: 0 });
     }
   };
 
-  const patientManagementItems = [
+  const menuItems = [
     {
       title: "Dashboard",
-      icon: BarChart3,
+      icon: Home,
       path: "/psychologist-dashboard",
     },
     {
       title: "Pacientes",
       icon: Users,
       path: "/psychologist/patients",
-      badge: badges.activePatients,
-    },
-    {
-      title: "Prontuários",
-      icon: FileText,
-      path: "/medical-record",
-    }
-  ];
-
-  const toolsItems = [
-    {
-      title: "Anamneses",
-      icon: UserCheck,
-      path: "/anamnesis-management",
-    },
-    {
-      title: "Tarefas",
-      icon: ClipboardList,
-      path: "/activities",
-      badge: badges.pendingTasks > 0 ? badges.pendingTasks : undefined,
+      badge: badges.pendingPatients > 0 ? badges.pendingPatients : undefined,
     },
     {
       title: "Relatórios",
-      icon: TrendingUp,
+      icon: BarChart3,
       path: "/psychologist/reports",
     },
-  ];
-
-  const communicationItems = [
     {
       title: "Notificações",
       icon: Bell,
       path: "/psychologist/notifications",
-      badge: badges.unreadNotifications > 0 ? badges.unreadNotifications : undefined,
+      badge: badges.newNotifications > 0 ? badges.newNotifications : undefined,
+    },
+    {
+      title: "Anamnese",
+      icon: FileText,
+      path: "/anamnesis-management",
+    },
+    {
+      title: "Atividades",
+      icon: Activity,
+      path: "/activities",
+      badge: badges.activeTasks > 0 ? badges.activeTasks : undefined,
+    },
+    {
+      title: "Histórico Médico",
+      icon: Heart,
+      path: "/medical-record",
+    },
+    {
+      title: "Calendário",
+      icon: Calendar,
+      path: "/calendar",
     },
     {
       title: "Chat",
       icon: MessageSquare,
       path: "/chat",
-      badge: badges.unreadMessages > 0 ? badges.unreadMessages : undefined,
     },
-    {
-      title: "Agenda",
-      icon: Calendar,
-      path: "/calendar",
-    },
-  ];
-
-  const systemItems = [
     {
       title: "Configurações",
       icon: Settings,
@@ -165,62 +133,54 @@ const PsychologistSidebar = () => {
     }
   };
 
-  const renderMenuGroup = (title: string, items: any[], isExpanded: boolean = true) => (
-    <SidebarGroup>
-      {isExpanded && <SidebarGroupLabel className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{title}</SidebarGroupLabel>}
-      <SidebarGroupContent>
-        <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.path}>
-              <SidebarMenuButton
-                onClick={() => navigateToSection(item.path)}
-                isActive={isActivePath(item.path)}
-                tooltip={state === "collapsed" ? item.title : undefined}
-                className="transition-all duration-200 hover:bg-purple-50 hover:text-purple-700"
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.title}</span>
-                {item.badge && state === "expanded" && (
-                  <Badge variant="destructive" className="ml-auto animate-pulse">
-                    {item.badge}
-                  </Badge>
-                )}
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarGroupContent>
-    </SidebarGroup>
-  );
-
   return (
     <Sidebar>
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-3">
           <SidebarTrigger className="md:hidden" />
-          <Brain className="h-8 w-8 text-purple-600" />
+          <Brain className="h-8 w-8 text-green-600" />
           {state === "expanded" && (
             <div className="flex flex-col">
-              <span className="font-semibold text-sm">Painel Profissional</span>
-              <span className="text-xs text-muted-foreground">Psicologia Digital</span>
+              <span className="font-semibold text-sm">Psicólogo</span>
+              <span className="text-xs text-muted-foreground">Painel Profissional</span>
             </div>
           )}
         </div>
       </SidebarHeader>
 
-      <SidebarContent className="space-y-2">
-        {renderMenuGroup("Pacientes", patientManagementItems, state === "expanded")}
-        {renderMenuGroup("Ferramentas", toolsItems, state === "expanded")}
-        {renderMenuGroup("Comunicação", communicationItems, state === "expanded")}
-        {renderMenuGroup("Sistema", systemItems, state === "expanded")}
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.map((item) => (
+                <SidebarMenuItem key={item.path}>
+                  <SidebarMenuButton
+                    onClick={() => navigateToSection(item.path)}
+                    isActive={isActivePath(item.path)}
+                    tooltip={state === "collapsed" ? item.title : undefined}
+                    className="transition-all duration-200 hover:bg-green-50 hover:text-green-700"
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.title}</span>
+                    {item.badge && state === "expanded" && (
+                      <Badge variant="destructive" className="ml-auto animate-pulse">
+                        {item.badge}
+                      </Badge>
+                    )}
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       <SidebarFooter className="border-t p-4">
         <div className="space-y-2">
           {state === "expanded" && (
-            <div className="px-2 py-1 bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg">
-              <p className="text-sm font-medium text-purple-900">Dr(a). {profile?.name || 'Psicólogo'}</p>
-              <p className="text-xs text-purple-700">CRP: 06/123456</p>
+            <div className="px-2 py-1 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg">
+              <p className="text-sm font-medium text-green-900">Dr(a). {profile?.name || 'Psicólogo'}</p>
+              <p className="text-xs text-green-700">Acompanhando seus pacientes</p>
             </div>
           )}
           <Button
