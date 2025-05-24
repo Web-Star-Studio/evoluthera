@@ -1,4 +1,3 @@
-
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +6,7 @@ import MonthlyEvolutionChart from "@/components/admin/MonthlyEvolutionChart";
 import RevenueChart from "@/components/admin/RevenueChart";
 import UsersTable from "@/components/admin/UsersTable";
 import BillingMetrics from "@/components/admin/BillingMetrics";
+import BillingDashboard from "@/components/admin/BillingDashboard";
 import SystemLogs from "@/components/admin/SystemLogs";
 import ReportExport from "@/components/admin/ReportExport";
 import { 
@@ -16,7 +16,8 @@ import {
   FileText, 
   Download,
   Shield,
-  TrendingUp
+  TrendingUp,
+  Receipt
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -68,7 +69,7 @@ const AdminDashboard = () => {
         
         {/* Tabs para diferentes funcionalidades administrativas */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
@@ -81,6 +82,10 @@ const AdminDashboard = () => {
               <DollarSign className="h-4 w-4" />
               Cobrança
             </TabsTrigger>
+            <TabsTrigger value="billing-full" className="flex items-center gap-2">
+              <Receipt className="h-4 w-4" />
+              Faturamento
+            </TabsTrigger>
             <TabsTrigger value="logs" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Logs
@@ -92,6 +97,7 @@ const AdminDashboard = () => {
           </TabsList>
 
           <TabsContent value="overview">
+            
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -165,6 +171,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="billing">
             <BillingMetrics />
+          </TabsContent>
+
+          <TabsContent value="billing-full">
+            <BillingDashboard />
           </TabsContent>
 
           <TabsContent value="logs">

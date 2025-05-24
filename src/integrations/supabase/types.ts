@@ -566,6 +566,65 @@ export type Database = {
           },
         ]
       }
+      monthly_invoices: {
+        Row: {
+          active_patients_count: number
+          amount_per_patient: number
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          notes: string | null
+          paid_at: string | null
+          payment_method: string | null
+          psychologist_id: string
+          reference_month: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          active_patients_count?: number
+          amount_per_patient?: number
+          created_at?: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          psychologist_id: string
+          reference_month: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          active_patients_count?: number
+          amount_per_patient?: number
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          notes?: string | null
+          paid_at?: string | null
+          payment_method?: string | null
+          psychologist_id?: string
+          reference_month?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_invoices_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mood_records: {
         Row: {
           created_at: string
@@ -1347,6 +1406,19 @@ export type Database = {
         }
         Relationships: []
       }
+      billing_dashboard_stats: {
+        Row: {
+          month: string | null
+          overdue_invoices: number | null
+          paid_invoices: number | null
+          pending_invoices: number | null
+          total_active_patients: number | null
+          total_billed: number | null
+          total_invoices: number | null
+          total_received: number | null
+        }
+        Relationships: []
+      }
       monthly_evolution: {
         Row: {
           count: number | null
@@ -1369,6 +1441,14 @@ export type Database = {
       create_default_anamnesis_template: {
         Args: { psychologist_uuid: string }
         Returns: string
+      }
+      generate_invoice_number: {
+        Args: { psychologist_uuid: string; ref_month: string }
+        Returns: string
+      }
+      generate_monthly_invoices: {
+        Args: { target_month?: string }
+        Returns: number
       }
       generate_temp_password: {
         Args: Record<PropertyKey, never>
