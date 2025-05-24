@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, BarChart3, Target, Bell, TrendingUp, Trophy, FileText } from "lucide-react";
+import { Users, BarChart3, Target, Bell, TrendingUp, Trophy, FileText, MessageCircle } from "lucide-react";
 import PatientsList from "@/components/psychologist/PatientsList";
 import MoodAnalytics from "@/components/psychologist/MoodAnalytics";
 import TasksManager from "@/components/psychologist/TasksManager";
@@ -12,6 +11,7 @@ import NotificationsCenter from "@/components/psychologist/NotificationsCenter";
 import ReportsDashboard from "@/components/psychologist/ReportsDashboard";
 import PsychologistGamificationView from "@/components/gamification/PsychologistGamificationView";
 import PsychologicalTestsManager from "@/components/psychologist/PsychologicalTestsManager";
+import ChatPage from "@/components/chat/ChatPage";
 
 const PsychologistDashboard = () => {
   const [patients, setPatients] = useState([

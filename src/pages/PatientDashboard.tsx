@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,8 +12,9 @@ import SimplifiedMoodChart from "@/components/patient/SimplifiedMoodChart";
 import GamificationCard from "@/components/patient/GamificationCard";
 import DailyMoodTracker from "@/components/patient/DailyMoodTracker";
 import MoodHistory from "@/components/patient/MoodHistory";
+import ChatPage from "@/components/chat/ChatPage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, BookOpen, Target, TrendingUp, Award, BarChart3, Smile, History } from "lucide-react";
+import { Heart, BookOpen, Target, TrendingUp, Award, BarChart3, Smile, History, MessageCircle } from "lucide-react";
 
 const PatientDashboard = () => {
   const [activeStreak, setActiveStreak] = useState(7);

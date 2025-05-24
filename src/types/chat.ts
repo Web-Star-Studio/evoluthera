@@ -14,7 +14,7 @@ export interface ChatMessage {
   conversation_id: string;
   sender_id: string;
   message_content: string;
-  encrypted_content?: Uint8Array;
+  encrypted_content?: string | null; // Mudança: aceitar string do Supabase
   message_type: 'text' | 'file' | 'image';
   attachment_url?: string;
   attachment_name?: string;

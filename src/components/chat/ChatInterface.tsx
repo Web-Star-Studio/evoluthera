@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,25 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      setMessages(data || []);
+      
+      // Transformar dados do Supabase para o tipo ChatMessage
+      const transformedMessages: ChatMessage[] = (data || []).map(msg => ({
+        id: msg.id,
+        conversation_id: msg.conversation_id,
+        sender_id: msg.sender_id,
+        message_content: msg.message_content,
+        encrypted_content: msg.encrypted_content,
+        message_type: msg.message_type,
+        attachment_url: msg.attachment_url,
+        attachment_name: msg.attachment_name,
+        attachment_size: msg.attachment_size,
+        is_read: msg.is_read,
+        read_at: msg.read_at,
+        created_at: msg.created_at,
+        edited_at: msg.edited_at
+      }));
+      
+      setMessages(transformedMessages);
     } catch (error) {
       console.error('Erro ao carregar mensagens:', error);
       toast({
@@ -115,7 +132,23 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
           filter: `conversation_id=eq.${conversationId}`
         },
         (payload) => {
-          setMessages(prev => [...prev, payload.new as ChatMessage]);
+          const newMsg = payload.new as any;
+          const transformedMessage: ChatMessage = {
+            id: newMsg.id,
+            conversation_id: newMsg.conversation_id,
+            sender_id: newMsg.sender_id,
+            message_content: newMsg.message_content,
+            encrypted_content: newMsg.encrypted_content,
+            message_type: newMsg.message_type,
+            attachment_url: newMsg.attachment_url,
+            attachment_name: newMsg.attachment_name,
+            attachment_size: newMsg.attachment_size,
+            is_read: newMsg.is_read,
+            read_at: newMsg.read_at,
+            created_at: newMsg.created_at,
+            edited_at: newMsg.edited_at
+          };
+          setMessages(prev => [...prev, transformedMessage]);
         }
       )
       .subscribe();
