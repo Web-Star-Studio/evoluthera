@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, BarChart3, Target, Bell, TrendingUp, Trophy, FileText, MessageCircle } from "lucide-react";
+import { Users, BarChart3, Target, Bell, TrendingUp, Trophy, FileText, MessageCircle, Brain } from "lucide-react";
 import PatientsList from "@/components/psychologist/PatientsList";
 import MoodAnalytics from "@/components/psychologist/MoodAnalytics";
 import TasksManager from "@/components/psychologist/TasksManager";
@@ -12,6 +13,7 @@ import ReportsDashboard from "@/components/psychologist/ReportsDashboard";
 import PsychologistGamificationView from "@/components/gamification/PsychologistGamificationView";
 import PsychologicalTestsManager from "@/components/psychologist/PsychologicalTestsManager";
 import ChatPage from "@/components/chat/ChatPage";
+import AIInsights from "@/components/psychologist/AIInsights";
 
 const PsychologistDashboard = () => {
   const [patients, setPatients] = useState([
@@ -54,7 +56,7 @@ const PsychologistDashboard = () => {
 
         {/* Tabs Navigation */}
         <Tabs defaultValue="patients" className="w-full">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="patients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Pacientes
@@ -74,6 +76,10 @@ const PsychologistDashboard = () => {
             <TabsTrigger value="chat" className="flex items-center gap-2">
               <MessageCircle className="h-4 w-4" />
               Chat
+            </TabsTrigger>
+            <TabsTrigger value="ai-insights" className="flex items-center gap-2">
+              <Brain className="h-4 w-4" />
+              IA Insights
             </TabsTrigger>
             <TabsTrigger value="gamification" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
@@ -107,6 +113,10 @@ const PsychologistDashboard = () => {
 
           <TabsContent value="chat" className="mt-6">
             <ChatPage currentUserId="temp-psychologist-id" userType="psychologist" />
+          </TabsContent>
+
+          <TabsContent value="ai-insights" className="mt-6">
+            <AIInsights />
           </TabsContent>
 
           <TabsContent value="gamification" className="mt-6">

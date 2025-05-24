@@ -1,33 +1,35 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { Send, Paperclip, Smile, MessageCircle, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { ChatMessage, Conversation, ChatSettings } from "@/types/chat";
+import { Send, Paperclip, MoreVertical } from "lucide-react";
+import { ChatMessage } from "@/types/chat";
 
 interface ChatInterfaceProps {
   conversationId: string;
   currentUserId: string;
-  userType: 'patient' | 'psychologist';
+  otherUserName: string;
 }
 
-const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfaceProps) => {
+const ChatInterface = ({ conversationId, currentUserId, otherUserName }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [chatSettings, setChatSettings] = useState<ChatSettings | null>(null);
-  const [dailyMessageCount, setDailyMessageCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [dailyLimit, setDailyLimit] = useState<number | null>(null);
+  const [dailyCount, setDailyCount] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    fetchMessages();
-    fetchChatSettings();
-    fetchDailyUsage();
-    subscribeToMessages();
+    if (conversationId) {
+      fetchMessages();
+      checkDailyLimits();
+      subscribeToMessages();
+    }
   }, [conversationId]);
 
   useEffect(() => {
@@ -44,7 +46,10 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
         .from('chat_messages')
         .select(`
           *,
-          profiles:sender_id (name, avatar_url)
+          profiles:sender_id (
+            name,
+            user_type
+          )
         `)
         .eq('conversation_id', conversationId)
         .order('created_at', { ascending: true });
@@ -58,7 +63,7 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
         sender_id: msg.sender_id,
         message_content: msg.message_content,
         encrypted_content: msg.encrypted_content,
-        message_type: msg.message_type,
+        message_type: (msg.message_type as 'text' | 'file' | 'image') || 'text',
         attachment_url: msg.attachment_url,
         attachment_name: msg.attachment_name,
         attachment_size: msg.attachment_size,
@@ -73,50 +78,43 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
       console.error('Erro ao carregar mensagens:', error);
       toast({
         title: "Erro",
-        description: "Erro ao carregar mensagens",
+        description: "Não foi possível carregar as mensagens",
         variant: "destructive",
       });
     }
   };
 
-  const fetchChatSettings = async () => {
-    if (userType === 'patient') {
-      try {
-        const { data: conversation } = await supabase
-          .from('conversations')
-          .select('psychologist_id')
-          .eq('id', conversationId)
+  const checkDailyLimits = async () => {
+    try {
+      // Buscar configurações do psicólogo
+      const { data: conversation } = await supabase
+        .from('conversations')
+        .select('psychologist_id')
+        .eq('id', conversationId)
+        .single();
+
+      if (conversation) {
+        const { data: settings } = await supabase
+          .from('chat_settings')
+          .select('daily_message_limit')
+          .eq('psychologist_id', conversation.psychologist_id)
           .single();
 
-        if (conversation) {
-          const { data: settings } = await supabase
-            .from('chat_settings')
-            .select('*')
-            .eq('psychologist_id', conversation.psychologist_id)
-            .single();
+        setDailyLimit(settings?.daily_message_limit || 10);
 
-          setChatSettings(settings);
-        }
-      } catch (error) {
-        console.error('Erro ao carregar configurações do chat:', error);
-      }
-    }
-  };
-
-  const fetchDailyUsage = async () => {
-    if (userType === 'patient') {
-      try {
-        const { data } = await supabase
+        // Buscar uso diário atual
+        const { data: usage } = await supabase
           .from('daily_message_usage')
           .select('message_count')
           .eq('patient_id', currentUserId)
+          .eq('psychologist_id', conversation.psychologist_id)
           .eq('usage_date', new Date().toISOString().split('T')[0])
           .single();
 
-        setDailyMessageCount(data?.message_count || 0);
-      } catch (error) {
-        console.error('Erro ao carregar uso diário:', error);
+        setDailyCount(usage?.message_count || 0);
       }
+    } catch (error) {
+      console.error('Erro ao verificar limites:', error);
     }
   };
 
@@ -139,7 +137,7 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
             sender_id: newMsg.sender_id,
             message_content: newMsg.message_content,
             encrypted_content: newMsg.encrypted_content,
-            message_type: newMsg.message_type,
+            message_type: (newMsg.message_type as 'text' | 'file' | 'image') || 'text',
             attachment_url: newMsg.attachment_url,
             attachment_name: newMsg.attachment_name,
             attachment_size: newMsg.attachment_size,
@@ -158,63 +156,43 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
     };
   };
 
-  const canSendMessage = () => {
-    if (userType === 'psychologist') return true;
-    
-    const limit = chatSettings?.daily_message_limit || 10;
-    return dailyMessageCount < limit;
-  };
-
   const sendMessage = async () => {
-    if (!newMessage.trim() || loading) return;
+    if (!newMessage.trim() || isLoading) return;
 
-    const messageLength = newMessage.length;
-    const maxLength = chatSettings?.max_message_length || 1000;
-
-    if (messageLength > maxLength) {
-      toast({
-        title: "Mensagem muito longa",
-        description: `A mensagem deve ter no máximo ${maxLength} caracteres`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!canSendMessage()) {
+    // Verificar limite diário
+    if (dailyLimit && dailyCount >= dailyLimit) {
       toast({
         title: "Limite diário atingido",
-        description: "Você atingiu o limite de mensagens para hoje",
+        description: `Você atingiu o limite de ${dailyLimit} mensagens por dia`,
         variant: "destructive",
       });
       return;
     }
 
-    setLoading(true);
+    setIsLoading(true);
     try {
       const { error } = await supabase
         .from('chat_messages')
         .insert({
           conversation_id: conversationId,
           sender_id: currentUserId,
-          message_content: newMessage,
+          message_content: newMessage.trim(),
           message_type: 'text'
         });
 
       if (error) throw error;
 
       setNewMessage("");
-      if (userType === 'patient') {
-        setDailyMessageCount(prev => prev + 1);
-      }
+      setDailyCount(prev => prev + 1);
     } catch (error) {
       console.error('Erro ao enviar mensagem:', error);
       toast({
         title: "Erro",
-        description: "Erro ao enviar mensagem",
+        description: "Não foi possível enviar a mensagem",
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -232,17 +210,14 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
     });
   };
 
-  const isMyMessage = (senderId: string) => senderId === currentUserId;
-
   return (
     <Card className="h-[600px] flex flex-col">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center gap-2">
-          <MessageCircle className="h-5 w-5" />
-          Chat Terapêutico
-          {userType === 'patient' && chatSettings && (
-            <Badge variant="outline" className="ml-auto">
-              {dailyMessageCount}/{chatSettings.daily_message_limit} mensagens hoje
+      <CardHeader className="border-b">
+        <CardTitle className="flex items-center justify-between">
+          <span>Chat com {otherUserName}</span>
+          {dailyLimit && (
+            <Badge variant="outline">
+              {dailyCount}/{dailyLimit} mensagens hoje
             </Badge>
           )}
         </CardTitle>
@@ -251,96 +226,51 @@ const ChatInterface = ({ conversationId, currentUserId, userType }: ChatInterfac
       <CardContent className="flex-1 flex flex-col p-0">
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
-              <MessageCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>Nenhuma mensagem ainda</p>
-              <p className="text-sm">Comece a conversa!</p>
-            </div>
-          ) : (
-            messages.map((message) => (
+          {messages.map((message) => (
+            <div
+              key={message.id}
+              className={`flex ${message.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
+            >
               <div
-                key={message.id}
-                className={`flex ${isMyMessage(message.sender_id) ? 'justify-end' : 'justify-start'}`}
+                className={`max-w-[70%] p-3 rounded-lg ${
+                  message.sender_id === currentUserId
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-900'
+                }`}
               >
-                <div
-                  className={`max-w-[70%] p-3 rounded-lg ${
-                    isMyMessage(message.sender_id)
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-gray-100 text-gray-900'
-                  }`}
-                >
-                  <p className="text-sm">{message.message_content}</p>
-                  <div className={`flex items-center gap-1 mt-1 text-xs ${
-                    isMyMessage(message.sender_id) ? 'text-blue-100' : 'text-gray-500'
-                  }`}>
-                    <Clock className="h-3 w-3" />
-                    {formatTime(message.created_at)}
-                  </div>
-                </div>
+                <p className="text-sm">{message.message_content}</p>
+                <p className={`text-xs mt-1 ${
+                  message.sender_id === currentUserId ? 'text-blue-100' : 'text-gray-500'
+                }`}>
+                  {formatTime(message.created_at)}
+                </p>
               </div>
-            ))
-          )}
+            </div>
+          ))}
           <div ref={messagesEndRef} />
         </div>
 
         {/* Input Area */}
         <div className="border-t p-4">
-          {chatSettings && !chatSettings.chat_enabled ? (
-            <div className="text-center text-gray-500 py-4">
-              <p>O chat está desativado pelo psicólogo</p>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Textarea
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  placeholder={
-                    canSendMessage() 
-                      ? "Digite sua mensagem..." 
-                      : "Limite diário de mensagens atingido"
-                  }
-                  disabled={!canSendMessage() || loading}
-                  rows={2}
-                  className="resize-none"
-                />
-                {chatSettings && (
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>
-                      {newMessage.length}/{chatSettings.max_message_length} caracteres
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="flex flex-col gap-2">
-                <Button
-                  size="icon"
-                  variant="outline"
-                  disabled
-                  title="Anexos (em breve)"
-                >
-                  <Paperclip className="h-4 w-4" />
-                </Button>
-                <Button
-                  size="icon"
-                  variant="outline"
-                  disabled
-                  title="Emojis (em breve)"
-                >
-                  <Smile className="h-4 w-4" />
-                </Button>
-                <Button
-                  onClick={sendMessage}
-                  disabled={!newMessage.trim() || !canSendMessage() || loading}
-                  size="icon"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+          <div className="flex items-center space-x-2">
+            <Button variant="outline" size="icon">
+              <Paperclip className="h-4 w-4" />
+            </Button>
+            <Input
+              value={newMessage}
+              onChange={(e) => setNewMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Digite sua mensagem..."
+              disabled={isLoading || (dailyLimit !== null && dailyCount >= dailyLimit)}
+              className="flex-1"
+            />
+            <Button
+              onClick={sendMessage}
+              disabled={!newMessage.trim() || isLoading || (dailyLimit !== null && dailyCount >= dailyLimit)}
+            >
+              <Send className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
