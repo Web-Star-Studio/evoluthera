@@ -16,9 +16,23 @@ const Chat = () => {
     );
   }
 
+  // Handle admin users - they should be treated as psychologists for chat purposes
+  const chatUserType = profile.user_type === 'admin' ? 'psychologist' : profile.user_type;
+
+  // Ensure the user type is valid for chat
+  if (chatUserType !== 'patient' && chatUserType !== 'psychologist') {
+    return (
+      <DashboardLayout userType={profile.user_type} userName={profile.name}>
+        <div className="text-center py-8">
+          <p className="text-gray-600">Chat não disponível para este tipo de usuário.</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout userType={profile.user_type} userName={profile.name}>
-      <ChatPage currentUserId={user.id} userType={profile.user_type} />
+      <ChatPage currentUserId={user.id} userType={chatUserType} />
     </DashboardLayout>
   );
 };
