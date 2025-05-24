@@ -14,23 +14,46 @@ interface UserRelationshipsModalProps {
 }
 
 const UserRelationshipsModal = ({ user, isOpen, onClose }: UserRelationshipsModalProps) => {
-  const { data: relationships, isLoading } = useQuery({
+  const { data: relationships, isLoading, error } = useQuery({
     queryKey: ['user-relationships', user.id],
     queryFn: async () => {
       if (user.user_type === 'psychologist') {
-        // Buscar pacientes do psicólogo
-        const { data: patients } = await supabase
+        // Buscar pacientes do psicólogo com dados das ativações separadamente
+        const { data: patients, error: patientsError } = await supabase
           .from('patients')
           .select(`
             *,
-            patient:profiles!patients_patient_id_fkey(name, email, created_at),
-            patient_activations(status, activated_at, deactivated_at)
+            patient:profiles!patients_patient_id_fkey(name, email, created_at)
           `)
           .eq('psychologist_id', user.id);
 
+        if (patientsError) {
+          console.error('Error fetching patients:', patientsError);
+          throw patientsError;
+        }
+
+        if (!patients || patients.length === 0) {
+          return [];
+        }
+
+        // Buscar ativações para cada paciente
+        const patientsWithActivations = await Promise.all(
+          patients.map(async (patient) => {
+            const { data: activations } = await supabase
+              .from('patient_activations')
+              .select('status, activated_at, deactivated_at')
+              .eq('patient_id', patient.patient_id);
+
+            return {
+              ...patient,
+              patient_activations: activations || []
+            };
+          })
+        );
+
         // Buscar estatísticas de cada paciente
         const patientsWithStats = await Promise.all(
-          (patients || []).map(async (patient) => {
+          patientsWithActivations.map(async (patient) => {
             const { data: stats } = await supabase
               .from('patient_stats')
               .select('*')
@@ -73,6 +96,10 @@ const UserRelationshipsModal = ({ user, isOpen, onClose }: UserRelationshipsModa
     return null;
   }
 
+  if (error) {
+    console.error('Error in relationships query:', error);
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -102,7 +129,7 @@ const UserRelationshipsModal = ({ user, isOpen, onClose }: UserRelationshipsModa
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <div className="text-2xl font-bold text-green-600">
-                    {relationships?.filter(r => getActivationStatus(r.patient_activations).status === 'active').length || 0}
+                    {relationships?.filter(r => getActivationStatus(r.patient_activations || []).status === 'active').length || 0}
                   </div>
                   <div className="text-sm text-green-800">Pacientes Ativos</div>
                 </div>
@@ -129,7 +156,12 @@ const UserRelationshipsModal = ({ user, isOpen, onClose }: UserRelationshipsModa
             <CardContent>
               {isLoading ? (
                 <div className="text-center py-8">Carregando pacientes...</div>
-              ) : relationships?.length === 0 ? (
+              ) : error ? (
+                <div className="text-center py-8 text-red-500">
+                  <p>Erro ao carregar pacientes</p>
+                  <p className="text-sm">{error.message}</p>
+                </div>
+              ) : !relationships || relationships.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
                   <User className="h-12 w-12 mx-auto mb-4 text-gray-300" />
                   <p>Nenhum paciente encontrado</p>
@@ -148,8 +180,8 @@ const UserRelationshipsModal = ({ user, isOpen, onClose }: UserRelationshipsModa
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {relationships?.map((relationship) => {
-                        const activationStatus = getActivationStatus(relationship.patient_activations);
+                      {relationships.map((relationship) => {
+                        const activationStatus = getActivationStatus(relationship.patient_activations || []);
                         const lastActivity = relationship.last_activity 
                           ? new Date(relationship.last_activity)
                           : null;

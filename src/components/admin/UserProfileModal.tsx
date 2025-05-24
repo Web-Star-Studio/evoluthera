@@ -37,7 +37,8 @@ const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
         return {
           ...stats,
           mood_records_total: moodCount?.length || 0,
-          tasks_total: taskCount?.length || 0
+          tasks_total: taskCount?.length || 0,
+          user_type: 'patient'
         };
       } else if (user.user_type === 'psychologist') {
         // Buscar estatísticas do psicólogo
@@ -59,7 +60,8 @@ const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
         return {
           patients_count: patientsCount?.length || 0,
           sessions_count: sessionsCount?.length || 0,
-          templates_count: templatesCount?.length || 0
+          templates_count: templatesCount?.length || 0,
+          user_type: 'psychologist'
         };
       }
       return null;
@@ -144,7 +146,7 @@ const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {user.user_type === 'patient' ? (
+                {userStats.user_type === 'patient' ? (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">{userStats.tasks_completed || 0}</div>
@@ -163,7 +165,7 @@ const UserProfileModal = ({ user, isOpen, onClose }: UserProfileModalProps) => {
                       <div className="text-sm text-orange-800">Total de Pontos</div>
                     </div>
                   </div>
-                ) : user.user_type === 'psychologist' ? (
+                ) : userStats.user_type === 'psychologist' ? (
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">{userStats.patients_count}</div>
