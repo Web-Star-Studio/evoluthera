@@ -10,6 +10,7 @@ import {
   BarChart3, 
   Bell,
   Settings,
+  Clipboard,
 } from "lucide-react";
 import { BadgeCounts } from "./usePsychologistBadges";
 
@@ -42,6 +43,11 @@ export const getPsychologistMenuItems = (badges: BadgeCounts): MenuItem[] => [
     icon: Bell,
     path: "/psychologist/notifications",
     badge: badges.newNotifications > 0 ? badges.newNotifications : undefined,
+  },
+  {
+    title: "Criador de Anamneses",
+    icon: Clipboard,
+    path: "/anamnesis-creator",
   },
   {
     title: "Anamnese",
