@@ -64,10 +64,19 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
         .order('is_default', { ascending: false });
 
       if (error) throw error;
-      setTemplates(data || []);
+      
+      // Converter os dados do Supabase para o tipo correto
+      const convertedTemplates: AnamnesisTemplate[] = (data || []).map(template => ({
+        ...template,
+        fields: typeof template.fields === 'string' 
+          ? JSON.parse(template.fields) 
+          : (template.fields as Record<string, AnamnesisSection>) || {}
+      }));
+      
+      setTemplates(convertedTemplates);
 
       // Selecionar template padrão automaticamente
-      const defaultTemplate = data?.find(t => t.is_default);
+      const defaultTemplate = convertedTemplates.find(t => t.is_default);
       if (defaultTemplate && !selectedTemplate) {
         setSelectedTemplate(defaultTemplate.id);
         setCurrentFields(defaultTemplate.fields);
@@ -92,7 +101,12 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
 
       if (error) throw error;
       if (data) {
-        setResponses(data.data || {});
+        // Converter dados do Supabase
+        const convertedData = typeof data.data === 'string' 
+          ? JSON.parse(data.data) 
+          : (data.data as Record<string, any>) || {};
+        
+        setResponses(convertedData);
         setStatus(data.status);
         if (data.template_id) {
           setSelectedTemplate(data.template_id);
@@ -235,7 +249,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
 
   const renderField = (sectionKey: string, fieldKey: string, field: AnamnesisField) => {
     const value = responses[sectionKey]?.[fieldKey] || '';
-    const isReadOnly = status === 'locked' || (status === 'completed' && patientId);
+    const isReadOnly = status === 'locked' || (status === 'completed' && Boolean(patientId));
 
     switch (field.type) {
       case 'text':
@@ -247,7 +261,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
             value={value}
             onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
             disabled={isReadOnly}
-            required={field.required}
+            required={Boolean(field.required)}
           />
         );
       case 'date':
@@ -257,7 +271,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
             value={value}
             onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
             disabled={isReadOnly}
-            required={field.required}
+            required={Boolean(field.required)}
           />
         );
       case 'textarea':
@@ -266,7 +280,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
             value={value}
             onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
             disabled={isReadOnly}
-            required={field.required}
+            required={Boolean(field.required)}
             rows={3}
           />
         );

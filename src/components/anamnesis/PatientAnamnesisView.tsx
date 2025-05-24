@@ -68,7 +68,13 @@ const PatientAnamnesisView = ({ anamnesisId }: PatientAnamnesisViewProps) => {
 
       setAnamnesis(anamnesisData);
       setTemplate(anamnesisData.template);
-      setResponses(anamnesisData.data || {});
+      
+      // Converter dados do Supabase
+      const convertedData = typeof anamnesisData.data === 'string' 
+        ? JSON.parse(anamnesisData.data) 
+        : (anamnesisData.data as Record<string, any>) || {};
+      
+      setResponses(convertedData);
     } catch (error) {
       console.error('Erro ao carregar anamnese:', error);
       toast({
@@ -163,9 +169,16 @@ const PatientAnamnesisView = ({ anamnesisId }: PatientAnamnesisViewProps) => {
   const validateForm = () => {
     if (!template?.fields) return false;
 
-    for (const [sectionKey, section] of Object.entries(template.fields)) {
-      for (const [fieldKey, field] of Object.entries(section.fields)) {
-        if (field.required && !responses[sectionKey]?.[fieldKey]) {
+    // Converter campos do template
+    const templateFields = typeof template.fields === 'string' 
+      ? JSON.parse(template.fields) 
+      : (template.fields as Record<string, AnamnesisSection>) || {};
+
+    for (const [sectionKey, section] of Object.entries(templateFields)) {
+      const sectionData = section as AnamnesisSection;
+      for (const [fieldKey, field] of Object.entries(sectionData.fields)) {
+        const fieldData = field as AnamnesisField;
+        if (fieldData.required && !responses[sectionKey]?.[fieldKey]) {
           return false;
         }
       }
@@ -187,7 +200,7 @@ const PatientAnamnesisView = ({ anamnesisId }: PatientAnamnesisViewProps) => {
             value={value}
             onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
             disabled={isReadOnly}
-            required={field.required}
+            required={Boolean(field.required)}
           />
         );
       case 'date':
@@ -197,7 +210,7 @@ const PatientAnamnesisView = ({ anamnesisId }: PatientAnamnesisViewProps) => {
             value={value}
             onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
             disabled={isReadOnly}
-            required={field.required}
+            required={Boolean(field.required)}
           />
         );
       case 'textarea':
@@ -206,7 +219,7 @@ const PatientAnamnesisView = ({ anamnesisId }: PatientAnamnesisViewProps) => {
             value={value}
             onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
             disabled={isReadOnly}
-            required={field.required}
+            required={Boolean(field.required)}
             rows={3}
           />
         );
@@ -290,6 +303,11 @@ const PatientAnamnesisView = ({ anamnesisId }: PatientAnamnesisViewProps) => {
   const isFormValid = validateForm();
   const canEdit = anamnesis.status === 'sent' || anamnesis.status === 'in_progress';
 
+  // Converter campos do template
+  const templateFields = typeof template.fields === 'string' 
+    ? JSON.parse(template.fields) 
+    : (template.fields as Record<string, AnamnesisSection>) || {};
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       <Card>
@@ -328,24 +346,30 @@ const PatientAnamnesisView = ({ anamnesisId }: PatientAnamnesisViewProps) => {
         </Card>
       )}
 
-      {template.fields && Object.entries(template.fields).map(([sectionKey, section]) => (
-        <Card key={sectionKey}>
-          <CardHeader>
-            <CardTitle className="text-emerald-700">{section.title}</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {Object.entries(section.fields).map(([fieldKey, field]) => (
-              <div key={fieldKey} className="space-y-2">
-                <Label htmlFor={`${sectionKey}-${fieldKey}`}>
-                  {field.label}
-                  {field.required && <span className="text-red-500 ml-1">*</span>}
-                </Label>
-                {renderField(sectionKey, fieldKey, field)}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      ))}
+      {Object.entries(templateFields).map(([sectionKey, section]) => {
+        const sectionData = section as AnamnesisSection;
+        return (
+          <Card key={sectionKey}>
+            <CardHeader>
+              <CardTitle className="text-emerald-700">{sectionData.title}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {Object.entries(sectionData.fields).map(([fieldKey, field]) => {
+                const fieldData = field as AnamnesisField;
+                return (
+                  <div key={fieldKey} className="space-y-2">
+                    <Label htmlFor={`${sectionKey}-${fieldKey}`}>
+                      {fieldData.label}
+                      {fieldData.required && <span className="text-red-500 ml-1">*</span>}
+                    </Label>
+                    {renderField(sectionKey, fieldKey, fieldData)}
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        );
+      })}
 
       {canEdit && (
         <Card>
