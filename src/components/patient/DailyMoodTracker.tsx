@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart, Smile, Meh, Frown, Zap, Calendar, Plus } from "lucide-react";
+import { incrementMoodRecord } from "@/utils/supabaseRpc";
 
 interface MoodRecord {
   id: string;
@@ -62,12 +62,8 @@ const DailyMoodTracker = () => {
 
       if (error) throw error;
 
-      // Atualizar estatísticas do paciente
-      await supabase
-        .rpc('increment_mood_record', { patient_uuid: patientId })
-        .then(() => {
-          console.log('Estatísticas atualizadas');
-        });
+      // Atualizar estatísticas do paciente usando a nova função
+      await incrementMoodRecord(patientId);
 
       // Resetar formulário
       setSelectedMood(null);

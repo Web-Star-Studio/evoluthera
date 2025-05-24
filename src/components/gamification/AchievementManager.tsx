@@ -1,38 +1,94 @@
-
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Trophy, Star, Target, Calendar, Flame, Heart } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { Trophy, Star, Target, Calendar, BookOpen, Heart } from "lucide-react";
 
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-  icon: string;
-  earned_at: string;
-}
+export const AVAILABLE_ACHIEVEMENTS = [
+  {
+    id: "first_mood_record",
+    type: "mood_records",
+    title: "Primeiro Registro",
+    description: "Complete seu primeiro registro de humor",
+    icon: "😊",
+    requirement: 1,
+    points: 10
+  },
+  {
+    id: "mood_streak_3",
+    type: "streak", 
+    title: "3 Dias Consecutivos",
+    description: "Registre seu humor por 3 dias seguidos",
+    icon: "🔥",
+    requirement: 3,
+    points: 25
+  },
+  {
+    id: "mood_streak_7",
+    type: "streak",
+    title: "Uma Semana Ativa",
+    description: "Registre seu humor por 7 dias seguidos",
+    icon: "⭐",
+    requirement: 7,
+    points: 50
+  },
+  {
+    id: "mood_records_10",
+    type: "mood_records",
+    title: "10 Registros",
+    description: "Complete 10 registros de humor",
+    icon: "🎯",
+    requirement: 10,
+    points: 30
+  },
+  {
+    id: "tasks_completed_5",
+    type: "tasks_completed",
+    title: "5 Tarefas Concluídas",
+    description: "Complete 5 tarefas terapêuticas",
+    icon: "✅",
+    requirement: 5,
+    points: 40
+  },
+  {
+    id: "diary_entries_5",
+    type: "diary_entries",
+    title: "Escritor Iniciante",
+    description: "Escreva 5 entradas no diário",
+    icon: "📝",
+    requirement: 5,
+    points: 35
+  }
+];
 
 interface AchievementManagerProps {
   patientId: string;
 }
 
 const AchievementManager = ({ patientId }: AchievementManagerProps) => {
-  const [achievements, setAchievements] = useState<Achievement[]>([]);
-  const [stats, setStats] = useState({
-    streak_days: 0,
-    total_points: 0,
-    tasks_completed: 0,
-    diary_entries_count: 0,
-    mood_records_count: 0,
-  });
+  const [stats, setStats] = useState<any>(null);
+  const [earnedAchievements, setEarnedAchievements] = useState<any[]>([]);
 
   useEffect(() => {
-    fetchAchievements();
     fetchStats();
+    fetchAchievements();
   }, [patientId]);
+
+  const fetchStats = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('patient_stats')
+        .select('*')
+        .eq('patient_id', patientId)
+        .single();
+
+      if (error) throw error;
+      setStats(data);
+    } catch (error) {
+      console.error('Erro ao buscar estatísticas:', error);
+    }
+  };
 
   const fetchAchievements = async () => {
     try {
@@ -43,207 +99,100 @@ const AchievementManager = ({ patientId }: AchievementManagerProps) => {
         .order('earned_at', { ascending: false });
 
       if (error) throw error;
-      setAchievements(data || []);
+      setEarnedAchievements(data || []);
     } catch (error) {
       console.error('Erro ao buscar conquistas:', error);
     }
   };
 
-  const fetchStats = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('patient_stats')
-        .select('*')
-        .eq('patient_id', patientId)
-        .single();
+  const checkAndAwardAchievements = async () => {
+    if (!stats) return;
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      if (data) {
-        setStats(data);
+    for (const achievement of AVAILABLE_ACHIEVEMENTS) {
+      const achievementId = `${achievement.type}_${achievement.title}`;
+      const alreadyEarned = earnedAchievements.find(a => `${a.type}_${a.title}` === achievementId);
+
+      if (!alreadyEarned) {
+        let currentValue = 0;
+        switch (achievement.type) {
+          case 'streak':
+            currentValue = stats.streak_days || 0;
+            break;
+          case 'mood_records':
+            currentValue = stats.mood_records_count || 0;
+            break;
+          case 'tasks_completed':
+            currentValue = stats.tasks_completed || 0;
+            break;
+          case 'diary_entries':
+            currentValue = stats.diary_entries_count || 0;
+            break;
+        }
+
+        if (currentValue >= achievement.requirement) {
+          // Conquista desbloqueada!
+          try {
+            const { error } = await supabase
+              .from('achievements')
+              .insert({
+                patient_id: patientId,
+                title: achievement.title,
+                description: achievement.description,
+                type: achievement.type,
+                icon: achievement.icon,
+                points: achievement.points
+              });
+
+            if (error) throw error;
+
+            // Atualizar a lista de conquistas obtidas
+            fetchAchievements();
+
+            // Dar pontos ao paciente
+            await supabase
+              .from('patient_stats')
+              .update({
+                total_points: (stats.total_points || 0) + achievement.points
+              })
+              .eq('patient_id', patientId);
+
+            // Recarregar estatísticas
+            fetchStats();
+
+            alert(`Parabéns! Você desbloqueou a conquista "${achievement.title}" e ganhou ${achievement.points} pontos!`);
+          } catch (error) {
+            console.error('Erro ao salvar conquista:', error);
+          }
+        }
       }
-    } catch (error) {
-      console.error('Erro ao buscar estatísticas:', error);
     }
   };
 
-  const checkAchievements = async () => {
-    try {
-      // Verificar conquista de primeira semana ativa
-      if (stats.streak_days >= 7) {
-        await createAchievement("primeira_semana", "Primeira Semana Ativa", "Manteve atividade por 7 dias consecutivos", "streak");
-      }
-
-      // Verificar conquista de 10 registros consecutivos
-      if (stats.mood_records_count >= 10) {
-        await createAchievement("dez_registros", "10 Registros de Humor", "Registrou seu humor 10 vezes", "mood");
-      }
-
-      // Verificar conquista de 5 tarefas concluídas
-      if (stats.tasks_completed >= 5) {
-        await createAchievement("cinco_tarefas", "5 Tarefas Concluídas", "Completou 5 tarefas terapêuticas", "tasks");
-      }
-
-      // Verificar conquista de primeiro diário
-      if (stats.diary_entries_count >= 1) {
-        await createAchievement("primeiro_diario", "Primeira Reflexão", "Escreveu sua primeira entrada no diário", "diary");
-      }
-
-    } catch (error) {
-      console.error('Erro ao verificar conquistas:', error);
-    }
-  };
-
-  const createAchievement = async (type: string, title: string, description: string, category: string) => {
-    try {
-      // Verificar se a conquista já existe
-      const { data: existing } = await supabase
-        .from('achievements')
-        .select('id')
-        .eq('patient_id', patientId)
-        .eq('type', type)
-        .single();
-
-      if (existing) return; // Conquista já existe
-
-      const { error } = await supabase
-        .from('achievements')
-        .insert({
-          patient_id: patientId,
-          title,
-          description,
-          type,
-          icon: getIconForCategory(category)
-        });
-
-      if (error) throw error;
-      
-      fetchAchievements(); // Recarregar conquistas
-    } catch (error) {
-      console.error('Erro ao criar conquista:', error);
-    }
-  };
-
-  const getIconForCategory = (category: string) => {
-    switch (category) {
-      case "streak": return "🔥";
-      case "mood": return "❤️";
-      case "tasks": return "🎯";
-      case "diary": return "📝";
-      default: return "⭐";
-    }
-  };
-
-  const getAchievementIcon = (iconString: string) => {
-    switch (iconString) {
-      case "🔥": return <Flame className="h-6 w-6 text-orange-500" />;
-      case "❤️": return <Heart className="h-6 w-6 text-red-500" />;
-      case "🎯": return <Target className="h-6 w-6 text-blue-500" />;
-      case "📝": return <Calendar className="h-6 w-6 text-purple-500" />;
-      default: return <Star className="h-6 w-6 text-yellow-500" />;
-    }
-  };
+  useEffect(() => {
+    checkAndAwardAchievements();
+  }, [stats, earnedAchievements]);
+  
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Trophy className="h-6 w-6 text-yellow-500" />
-            Conquistas
-          </h3>
-          <p className="text-gray-600">Suas realizações e marcos importantes</p>
-        </div>
-        
-        <Button onClick={checkAchievements} variant="outline" size="sm">
-          Verificar Novas Conquistas
-        </Button>
-      </div>
-
-      {/* Lista de Conquistas */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {achievements.map((achievement) => (
-          <Card key={achievement.id} className="bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-200">
-            <CardContent className="p-4">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  {getAchievementIcon(achievement.icon)}
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold text-gray-900">{achievement.title}</h4>
-                  <p className="text-sm text-gray-600 mt-1">{achievement.description}</p>
-                  <div className="flex items-center justify-between mt-3">
-                    <Badge className="bg-yellow-100 text-yellow-800">
-                      Conquistada
-                    </Badge>
-                    <span className="text-xs text-gray-500">
-                      {new Date(achievement.earned_at).toLocaleDateString('pt-BR')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {achievements.length === 0 && (
-        <Card className="text-center py-8">
-          <CardContent>
-            <Trophy className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma conquista ainda</h3>
-            <p className="text-gray-600 mb-4">
-              Continue se envolvendo com suas atividades terapêuticas para desbloquear conquistas!
-            </p>
-            <Button onClick={checkAchievements} className="bg-emerald-600 hover:bg-emerald-700">
-              Verificar Conquistas
-            </Button>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Conquistas Disponíveis */}
+      {/* Achievement management UI */}
       <Card>
         <CardHeader>
-          <CardTitle>Próximas Conquistas</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Trophy className="h-5 w-5 text-yellow-500" />
+            Gerenciador de Conquistas
+          </CardTitle>
           <CardDescription>
-            Continue progredindo para desbloquear estas conquistas
+            Sistema automático de conquistas baseado nas atividades do paciente
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 border border-dashed border-gray-300 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Flame className="h-5 w-5 text-gray-400" />
-                <div>
-                  <p className="font-medium text-gray-700">Primeira Semana Ativa</p>
-                  <p className="text-sm text-gray-500">Mantenha atividade por 7 dias consecutivos</p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-500">{stats.streak_days}/7 dias</span>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 border border-dashed border-gray-300 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Heart className="h-5 w-5 text-gray-400" />
-                <div>
-                  <p className="font-medium text-gray-700">10 Registros de Humor</p>
-                  <p className="text-sm text-gray-500">Registre seu humor 10 vezes</p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-500">{stats.mood_records_count}/10 registros</span>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 border border-dashed border-gray-300 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Target className="h-5 w-5 text-gray-400" />
-                <div>
-                  <p className="font-medium text-gray-700">5 Tarefas Concluídas</p>
-                  <p className="text-sm text-gray-500">Complete 5 tarefas terapêuticas</p>
-                </div>
-              </div>
-              <span className="text-sm text-gray-500">{stats.tasks_completed}/5 tarefas</span>
-            </div>
+          <div className="text-center py-8">
+            <Trophy className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Sistema de Conquistas Ativo</h3>
+            <p className="text-gray-600">
+              As conquistas são verificadas automaticamente quando o paciente completa atividades.
+            </p>
           </div>
         </CardContent>
       </Card>

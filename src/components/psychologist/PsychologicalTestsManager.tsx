@@ -25,7 +25,7 @@ interface TestApplication {
   score: number;
   interpretation: string;
   completed_at: string;
-  psychological_tests: PsychologicalTest;
+  psychological_tests: PsychologicalTest; // Corrigido para aceitar o tipo correto
   profiles: { name: string };
 }
 
@@ -70,14 +70,30 @@ const PsychologicalTestsManager = () => {
         .from('test_applications')
         .select(`
           *,
-          psychological_tests(name, code, category),
+          psychological_tests(id, name, code, category, description),
           profiles(name)
         `)
         .eq('psychologist_id', psychologistId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setApplications(data || []);
+      
+      // Converter os dados para o formato esperado, garantindo que todos os campos necessários existam
+      const formattedApplications = (data || []).map(app => ({
+        ...app,
+        psychological_tests: {
+          id: app.psychological_tests?.id || '',
+          name: app.psychological_tests?.name || '',
+          code: app.psychological_tests?.code || '',
+          category: app.psychological_tests?.category || '',
+          description: app.psychological_tests?.description || ''
+        },
+        profiles: {
+          name: app.profiles?.name || 'Nome não disponível'
+        }
+      }));
+      
+      setApplications(formattedApplications);
     } catch (error) {
       console.error('Erro ao buscar aplicações:', error);
     }

@@ -24,23 +24,9 @@ interface TestApplication {
     name: string;
     code: string;
     description: string;
-    questions: {
-      instructions: string;
-      items: TestQuestion[];
-    };
-    scoring_rules: {
-      method: string;
-      total_possible: number;
-    };
-    interpretation_ranges: {
-      ranges: Array<{
-        min: number;
-        max: number;
-        level: string;
-        color: string;
-        description: string;
-      }>;
-    };
+    questions: any; // Mudado para any para aceitar Json do Supabase
+    scoring_rules: any;
+    interpretation_ranges: any;
   };
 }
 
@@ -77,7 +63,25 @@ const PsychologicalTestInterface = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setApplications(data || []);
+      
+      // Converter os dados para o formato esperado
+      const formattedApplications = (data || []).map(app => ({
+        ...app,
+        psychological_tests: {
+          ...app.psychological_tests,
+          questions: typeof app.psychological_tests.questions === 'string' 
+            ? JSON.parse(app.psychological_tests.questions)
+            : app.psychological_tests.questions,
+          scoring_rules: typeof app.psychological_tests.scoring_rules === 'string'
+            ? JSON.parse(app.psychological_tests.scoring_rules)
+            : app.psychological_tests.scoring_rules,
+          interpretation_ranges: typeof app.psychological_tests.interpretation_ranges === 'string'
+            ? JSON.parse(app.psychological_tests.interpretation_ranges)
+            : app.psychological_tests.interpretation_ranges
+        }
+      }));
+      
+      setApplications(formattedApplications);
     } catch (error) {
       console.error('Erro ao buscar testes:', error);
     }

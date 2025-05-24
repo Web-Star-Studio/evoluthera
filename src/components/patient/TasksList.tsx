@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle, Clock, AlertCircle, Target, Calendar, MessageSquare } from "lucide-react";
+import { incrementTaskCompleted } from "@/utils/supabaseRpc";
 
 interface Task {
   id: string;
@@ -70,12 +70,8 @@ const TasksList = () => {
         if (responseError) throw responseError;
       }
 
-      // Atualizar estatísticas do paciente
-      await supabase
-        .rpc('increment_task_completed', { patient_uuid: patientId })
-        .then(() => {
-          console.log('Estatísticas de tarefas atualizadas');
-        });
+      // Atualizar estatísticas do paciente usando a nova função
+      await incrementTaskCompleted(patientId);
 
       // Resetar formulário e recarregar tarefas
       setSelectedTask(null);
