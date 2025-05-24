@@ -111,12 +111,12 @@ const PatientSidebar = () => {
     {
       title: "Humor",
       icon: Heart,
-      path: "/patient-dashboard#mood",
+      path: "/patient/mood",
     },
     {
       title: "Progresso",
       icon: Calendar,
-      path: "/patient-dashboard#progress",
+      path: "/patient/progress",
     },
     {
       title: "Chat",
@@ -127,7 +127,7 @@ const PatientSidebar = () => {
     {
       title: "Conquistas",
       icon: Trophy,
-      path: "/patient-dashboard#achievements",
+      path: "/patient/achievements",
       badge: badges.newAchievements > 0 ? badges.newAchievements : undefined,
     },
     {

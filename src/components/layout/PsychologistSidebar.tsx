@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigation } from "@/hooks/useNavigation";
@@ -101,7 +100,7 @@ const PsychologistSidebar = () => {
     {
       title: "Pacientes",
       icon: Users,
-      path: "/psychologist-dashboard#patients",
+      path: "/psychologist/patients",
       badge: badges.activePatients,
     },
     {
@@ -126,7 +125,7 @@ const PsychologistSidebar = () => {
     {
       title: "Relatórios",
       icon: TrendingUp,
-      path: "/psychologist-dashboard#reports",
+      path: "/psychologist/reports",
     },
   ];
 
@@ -134,7 +133,7 @@ const PsychologistSidebar = () => {
     {
       title: "Notificações",
       icon: Bell,
-      path: "/psychologist-dashboard#notifications",
+      path: "/psychologist/notifications",
       badge: badges.unreadNotifications > 0 ? badges.unreadNotifications : undefined,
     },
     {

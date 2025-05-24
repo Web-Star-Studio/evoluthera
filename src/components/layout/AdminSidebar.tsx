@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigation } from "@/hooks/useNavigation";
@@ -75,7 +74,7 @@ const AdminSidebar = () => {
     {
       title: "Visão Geral",
       icon: BarChart3,
-      path: "/admin-dashboard#overview",
+      path: "/admin/overview",
     },
   ];
 
@@ -83,7 +82,7 @@ const AdminSidebar = () => {
     {
       title: "Usuários",
       icon: Users,
-      path: "/admin-dashboard#users",
+      path: "/admin/users",
     },
   ];
 
@@ -91,12 +90,12 @@ const AdminSidebar = () => {
     {
       title: "Cobrança",
       icon: DollarSign,
-      path: "/admin-dashboard#billing",
+      path: "/admin/billing",
     },
     {
       title: "Faturamento",
       icon: Receipt,
-      path: "/admin-dashboard#billing-full",
+      path: "/admin/billing-full",
     },
   ];
 
@@ -104,13 +103,13 @@ const AdminSidebar = () => {
     {
       title: "Suporte",
       icon: MessageSquare,
-      path: "/admin-dashboard#support",
+      path: "/admin/support",
       badge: badges.supportTickets > 0 ? badges.supportTickets : undefined,
     },
     {
       title: "Comunicados",
       icon: Megaphone,
-      path: "/admin-dashboard#communications",
+      path: "/admin/communications",
     },
   ];
 
@@ -118,7 +117,7 @@ const AdminSidebar = () => {
     {
       title: "Documentos",
       icon: Scale,
-      path: "/admin-dashboard#documents",
+      path: "/admin/documents",
     },
     {
       title: "Configurações",
@@ -128,13 +127,13 @@ const AdminSidebar = () => {
     {
       title: "Logs",
       icon: FileText,
-      path: "/admin-dashboard#logs",
+      path: "/admin/logs",
       badge: badges.systemAlerts > 0 ? badges.systemAlerts : undefined,
     },
     {
       title: "Relatórios",
       icon: Download,
-      path: "/admin-dashboard#reports",
+      path: "/admin/reports",
     },
   ];
 
