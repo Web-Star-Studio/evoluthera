@@ -18,45 +18,51 @@ export const useAnamnesisData = () => {
       const [oldAnamnesisResult, applicationsResult] = await Promise.all([
         supabase
           .from('anamnesis')
-          .select(`
-            *,
-            patient:profiles!anamnesis_patient_id_fkey(name, email),
-            template:anamnesis_templates(name)
-          `)
+          .select('*')
           .eq('psychologist_id', user.user.id)
           .order('created_at', { ascending: false }),
         
         supabase
           .from('anamnesis_applications')
-          .select(`
-            *,
-            patient:profiles!anamnesis_applications_patient_id_fkey(name, email),
-            template:anamnesis_templates(name)
-          `)
+          .select('*')
           .eq('psychologist_id', user.user.id)
           .order('created_at', { ascending: false })
       ]);
+
+      // Get patient and template data separately to avoid complex joins
+      const [patientsResult, templatesResult] = await Promise.all([
+        supabase.from('profiles').select('id, name, email'),
+        supabase.from('anamnesis_templates').select('id, name')
+      ]);
+
+      const patients = patientsResult.data || [];
+      const templates = templatesResult.data || [];
 
       const combinedData = [
         ...(oldAnamnesisResult.data || []),
         ...(applicationsResult.data || [])
       ];
 
-      const typedAnamneses: Anamnesis[] = combinedData.map(item => ({
-        id: item.id,
-        status: item.status || 'draft',
-        created_at: item.created_at,
-        sent_at: item.sent_at,
-        completed_at: item.completed_at,
-        locked_at: item.locked_at,
-        patient: {
-          name: item.patient?.name || 'Paciente não encontrado',
-          email: item.patient?.email || ''
-        },
-        template: {
-          name: item.template?.name || 'Template não encontrado'
-        }
-      }));
+      const typedAnamneses: Anamnesis[] = combinedData.map(item => {
+        const patient = patients.find(p => p.id === item.patient_id);
+        const template = templates.find(t => t.id === item.template_id);
+
+        return {
+          id: item.id,
+          status: item.status || 'draft',
+          created_at: item.created_at,
+          sent_at: item.sent_at,
+          completed_at: item.completed_at,
+          locked_at: item.locked_at,
+          patient: {
+            name: patient?.name || 'Paciente não encontrado',
+            email: patient?.email || ''
+          },
+          template: {
+            name: template?.name || 'Template não encontrado'
+          }
+        };
+      });
 
       setAnamneses(typedAnamneses);
     } catch (error) {

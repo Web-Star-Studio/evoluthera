@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,38 +24,34 @@ const UsersTable = () => {
   const { data: users = [], isLoading, error } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async (): Promise<UserData[]> => {
-      const { data, error } = await supabase
+      // First get all profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          id,
-          name,
-          email,
-          user_type,
-          created_at,
-          avatar_url,
-          account_controls!left(
-            status,
-            suspension_reason
-          )
-        `)
+        .select('id, name, email, user_type, created_at, avatar_url')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
-      
-      return (data || []).map(user => ({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        user_type: user.user_type,
-        created_at: user.created_at,
-        avatar_url: user.avatar_url,
-        account_control: Array.isArray(user.account_controls) && user.account_controls.length > 0 
-          ? {
-              status: user.account_controls[0].status || 'active',
-              suspension_reason: user.account_controls[0].suspension_reason
-            }
-          : { status: 'active' }
-      }));
+      if (profilesError) throw profilesError;
+
+      if (!profiles) return [];
+
+      // Then get account controls separately
+      const { data: accountControls, error: controlsError } = await supabase
+        .from('account_controls')
+        .select('user_id, status, suspension_reason');
+
+      if (controlsError) throw controlsError;
+
+      // Map the data together
+      return profiles.map(profile => {
+        const control = accountControls?.find(ac => ac.user_id === profile.id);
+        return {
+          ...profile,
+          account_control: control ? {
+            status: control.status || 'active',
+            suspension_reason: control.suspension_reason
+          } : { status: 'active' }
+        };
+      });
     },
   });
 
