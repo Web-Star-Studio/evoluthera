@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, Users, TrendingUp, Shield, MessageCircle, Calendar, FileText, BarChart3, Heart, Award, CheckCircle, ArrowRight, Mail, Phone, ChevronDown, ChevronUp, Star, Gamepad2, Clock, Lock } from "lucide-react";
+
 const LandingPage = () => {
   const [expandedFAQ, setExpandedFAQ] = useState<number | null>(null);
   const [formData, setFormData] = useState({
@@ -14,50 +15,67 @@ const LandingPage = () => {
     category: "",
     message: ""
   });
+
   const toggleFAQ = (index: number) => {
     setExpandedFAQ(expandedFAQ === index ? null : index);
   };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Form submitted:", formData);
     // Handle form submission
   };
-  const testimonials = [{
-    quote: "A Evolut me permite acompanhar meus pacientes mesmo nos intervalos das sessões. Sinto que minha prática ficou mais completa.",
-    author: "Dra. Juliana Ribeiro",
-    role: "Psicóloga Clínica",
-    location: "Recife"
-  }, {
-    quote: "O prontuário eletrônico e os gráficos de progresso revolucionaram minha forma de trabalhar. Consigo ver padrões que antes passavam despercebidos.",
-    author: "Dr. Carlos Santos",
-    role: "Psicólogo Comportamental",
-    location: "São Paulo"
-  }, {
-    quote: "Meus pacientes adoraram o diário emocional e as tarefas gamificadas. O engajamento aumentou 70% desde que comecei a usar.",
-    author: "Dra. Marina Costa",
-    role: "Psicóloga Clínica",
-    location: "Rio de Janeiro"
-  }];
-  const faqs = [{
-    question: "Quanto custa para usar a Evolut?",
-    answer: "A Evolut cobra apenas R$ 5,00 por mês para cada paciente ativo. Não há taxa de adesão ou mensalidade fixa. Você só paga pelo que usar."
-  }, {
-    question: "O paciente precisa pagar alguma coisa?",
-    answer: "Não! O paciente não paga nada para usar a plataforma. Todo o custo é responsabilidade do psicólogo, que pode incluir esse valor no honorário da terapia."
-  }, {
-    question: "A Evolut substitui a terapia?",
-    answer: "Absolutamente não. A Evolut é uma ferramenta de apoio que potencializa o trabalho terapêutico, mas nunca substitui o profissional ou as sessões presenciais/online."
-  }, {
-    question: "Os dados dos pacientes são seguros?",
-    answer: "Sim! Utilizamos criptografia de ponta a ponta e seguimos rigorosamente a LGPD. Todos os dados são armazenados em servidores seguros no Brasil."
-  }, {
-    question: "Como funciona a cobrança?",
-    answer: "A cobrança é automática e mensal. Você recebe uma fatura com o valor correspondente ao número de pacientes ativos no período."
-  }, {
-    question: "Posso usar a Evolut com pacientes presenciais?",
-    answer: "Claro! A Evolut funciona perfeitamente tanto com pacientes presenciais quanto online, potencializando o acompanhamento entre as sessões."
-  }];
-  return <div className="min-h-screen bg-white">
+
+  const testimonials = [
+    {
+      quote: "A Evolut me permite acompanhar meus pacientes mesmo nos intervalos das sessões. Sinto que minha prática ficou mais completa.",
+      author: "Dra. Juliana Ribeiro",
+      role: "Psicóloga Clínica",
+      location: "Recife"
+    },
+    {
+      quote: "O prontuário eletrônico e os gráficos de progresso revolucionaram minha forma de trabalhar. Consigo ver padrões que antes passavam despercebidos.",
+      author: "Dr. Carlos Santos",
+      role: "Psicólogo Comportamental",
+      location: "São Paulo"
+    },
+    {
+      quote: "Meus pacientes adoraram o diário emocional e as tarefas gamificadas. O engajamento aumentou 70% desde que comecei a usar.",
+      author: "Dra. Marina Costa",
+      role: "Psicóloga Clínica",
+      location: "Rio de Janeiro"
+    }
+  ];
+
+  const faqs = [
+    {
+      question: "Quanto custa para usar a Evolut?",
+      answer: "A Evolut cobra apenas R$ 20,00 por mês para cada paciente ativo. Não há taxa de adesão ou mensalidade fixa. Você só paga pelo que usar."
+    },
+    {
+      question: "O paciente precisa pagar alguma coisa?",
+      answer: "Não! O paciente não paga nada para usar a plataforma. Todo o custo é responsabilidade do psicólogo, que pode incluir esse valor no honorário da terapia."
+    },
+    {
+      question: "A Evolut substitui a terapia?",
+      answer: "Absolutamente não. A Evolut é uma ferramenta de apoio que potencializa o trabalho terapêutico, mas nunca substitui o profissional ou as sessões presenciais/online."
+    },
+    {
+      question: "Os dados dos pacientes são seguros?",
+      answer: "Sim! Utilizamos criptografia de ponta a ponta e seguimos rigorosamente a LGPD. Todos os dados são armazenados em servidores seguros no Brasil."
+    },
+    {
+      question: "Como funciona a cobrança?",
+      answer: "A cobrança é automática e mensal. Você recebe uma fatura com o valor correspondente ao número de pacientes ativos no período."
+    },
+    {
+      question: "Posso usar a Evolut com pacientes presenciais?",
+      answer: "Claro! A Evolut funciona perfeitamente tanto com pacientes presenciais quanto online, potencializando o acompanhamento entre as sessões."
+    }
+  ];
+
+  return (
+    <div className="min-h-screen bg-white">
       {/* Navigation */}
       <nav className="fixed top-0 w-full bg-white/95 backdrop-blur-sm border-b z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -85,7 +103,7 @@ const LandingPage = () => {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <Badge className="mb-6 bg-blue-100 text-blue-800 border-blue-200">
-                R$5/mês por paciente ativo
+                R$20/mês por paciente ativo
               </Badge>
               <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
                 Acompanhe. <span className="text-blue-600">Evolua.</span> Conecte.
@@ -299,10 +317,13 @@ const LandingPage = () => {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => <Card key={index} className="bg-white shadow-lg">
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="bg-white shadow-lg">
                 <CardContent className="p-6">
                   <div className="flex mb-4">
-                    {[...Array(5)].map((_, i) => <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />)}
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} className="h-5 w-5 text-yellow-400 fill-current" />
+                    ))}
                   </div>
                   <p className="text-gray-600 mb-6 italic">"{testimonial.quote}"</p>
                   <div>
@@ -311,7 +332,8 @@ const LandingPage = () => {
                     <p className="text-sm text-gray-500">{testimonial.location}</p>
                   </div>
                 </CardContent>
-              </Card>)}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -325,17 +347,28 @@ const LandingPage = () => {
           </div>
           
           <div className="space-y-4">
-            {faqs.map((faq, index) => <Card key={index} className="border border-gray-200">
-                <CardHeader className="cursor-pointer hover:bg-gray-50 transition-colors" onClick={() => toggleFAQ(index)}>
+            {faqs.map((faq, index) => (
+              <Card key={index} className="border border-gray-200">
+                <CardHeader 
+                  className="cursor-pointer hover:bg-gray-50 transition-colors" 
+                  onClick={() => toggleFAQ(index)}
+                >
                   <div className="flex justify-between items-center">
                     <h3 className="text-lg font-semibold text-gray-900">{faq.question}</h3>
-                    {expandedFAQ === index ? <ChevronUp className="h-5 w-5 text-gray-500" /> : <ChevronDown className="h-5 w-5 text-gray-500" />}
+                    {expandedFAQ === index ? (
+                      <ChevronUp className="h-5 w-5 text-gray-500" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-gray-500" />
+                    )}
                   </div>
                 </CardHeader>
-                {expandedFAQ === index && <CardContent className="pt-0">
+                {expandedFAQ === index && (
+                  <CardContent className="pt-0">
                     <p className="text-gray-600">{faq.answer}</p>
-                  </CardContent>}
-              </Card>)}
+                  </CardContent>
+                )}
+              </Card>
+            ))}
           </div>
         </div>
       </section>
@@ -353,24 +386,24 @@ const LandingPage = () => {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Nome</label>
-                  <Input value={formData.name} onChange={e => setFormData({
-                  ...formData,
-                  name: e.target.value
-                })} required />
+                  <Input 
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
-                  <Input type="email" value={formData.email} onChange={e => setFormData({
-                  ...formData,
-                  email: e.target.value
-                })} required />
+                  <Input 
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required 
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                  <Select value={formData.category} onValueChange={value => setFormData({
-                  ...formData,
-                  category: value
-                })}>
+                  <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione uma opção" />
                     </SelectTrigger>
@@ -384,10 +417,12 @@ const LandingPage = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Mensagem</label>
-                  <Textarea value={formData.message} onChange={e => setFormData({
-                  ...formData,
-                  message: e.target.value
-                })} rows={4} required />
+                  <Textarea 
+                    value={formData.message}
+                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    rows={4}
+                    required 
+                  />
                 </div>
                 <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700">
                   Enviar Mensagem
@@ -449,6 +484,8 @@ const LandingPage = () => {
           </div>
         </div>
       </footer>
-    </div>;
+    </div>
+  );
 };
+
 export default LandingPage;
