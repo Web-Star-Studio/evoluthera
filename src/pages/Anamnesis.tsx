@@ -1,6 +1,6 @@
 
 import { useParams } from "react-router-dom";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import PatientAnamnesisView from "@/components/anamnesis/PatientAnamnesisView";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertCircle, FileText } from "lucide-react";
@@ -9,7 +9,7 @@ const Anamnesis = () => {
   const { anamnesisId } = useParams<{ anamnesisId: string }>();
 
   return (
-    <DashboardLayout userType="patient" userName="Maria Silva">
+    <UniversalDashboardLayout userType="patient">
       {anamnesisId ? (
         <PatientAnamnesisView anamnesisId={anamnesisId} />
       ) : (
@@ -28,7 +28,7 @@ const Anamnesis = () => {
           </Card>
         </div>
       )}
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 

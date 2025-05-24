@@ -1,15 +1,17 @@
 
 import { useState } from "react";
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Activities = () => {
-  const [userType] = useState<"patient" | "psychologist">("patient"); // This would come from auth context
+  const { profile } = useAuth();
+  const userType = profile?.user_type || "patient";
   
   const activities = [
     {
@@ -168,12 +170,9 @@ const Activities = () => {
   );
 
   return (
-    <DashboardLayout 
-      userType={userType} 
-      userName={userType === "patient" ? "Maria Silva" : "Dr. João Santos"}
-    >
+    <UniversalDashboardLayout userType={userType}>
       {userType === "patient" ? <PatientView /> : <PsychologistView />}
-    </DashboardLayout>
+    </UniversalDashboardLayout>
   );
 };
 

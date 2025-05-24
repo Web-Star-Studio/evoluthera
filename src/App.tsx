@@ -20,6 +20,7 @@ import PatientAnamnesis from "./pages/PatientAnamnesis";
 import AnamnesisManagement from "./pages/AnamnesisManagement";
 import Activities from "./pages/Activities";
 import EnhancedActivities from "./pages/EnhancedActivities";
+import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Chat from "./pages/Chat";
@@ -94,6 +95,11 @@ const App = () => (
             } />
 
             {/* Shared Routes (require authentication) */}
+            <Route path="/calendar" element={
+              <ProtectedRoute>
+                <Calendar />
+              </ProtectedRoute>
+            } />
             <Route path="/chat" element={
               <ProtectedRoute>
                 <Chat />
