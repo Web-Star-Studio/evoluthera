@@ -4,7 +4,6 @@ import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayo
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import MoodTracker from "@/components/patient/MoodTracker";
 import TasksList from "@/components/patient/TasksList";
 import DiaryEntry from "@/components/patient/DiaryEntry";
@@ -54,8 +53,8 @@ const PatientDashboard = () => {
   return (
     <UniversalDashboardLayout userType="patient">
       <div className="space-y-6">
+        {/* Header simples */}
         <div className="flex items-center gap-3">
-          <SidebarTrigger className="md:hidden" />
           <Brain className="h-8 w-8 text-blue-600" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -70,7 +69,7 @@ const PatientDashboard = () => {
 
         {/* Cards de estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Sequência Atual</CardTitle>
               <Zap className="h-4 w-4 text-orange-600" />
@@ -83,7 +82,7 @@ const PatientDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Tarefas Completas</CardTitle>
               <Target className="h-4 w-4 text-green-600" />
@@ -96,7 +95,7 @@ const PatientDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Registros de Humor</CardTitle>
               <TrendingUp className="h-4 w-4 text-blue-600" />
@@ -109,7 +108,7 @@ const PatientDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pontos Totais</CardTitle>
               <Users className="h-4 w-4 text-purple-600" />

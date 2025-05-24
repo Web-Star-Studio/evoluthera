@@ -1,6 +1,8 @@
 
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNavigation } from "@/hooks/useNavigation";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Sidebar,
   SidebarContent,
@@ -25,14 +27,58 @@ import {
   MessageSquare, 
   Trophy, 
   Settings,
-  LogOut 
+  LogOut,
+  Brain
 } from "lucide-react";
 
 const PatientSidebar = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
   const { signOut, profile } = useAuth();
+  const { navigateToSection, isActivePath } = useNavigation();
   const { state } = useSidebar();
+  const [badges, setBadges] = useState({
+    pendingTasks: 0,
+    newAchievements: 0,
+    unreadMessages: 0
+  });
+
+  useEffect(() => {
+    if (profile?.id) {
+      fetchBadgeCounts();
+    }
+  }, [profile?.id]);
+
+  const fetchBadgeCounts = async () => {
+    try {
+      // Fetch pending tasks
+      const { data: tasks } = await supabase
+        .from('tasks')
+        .select('*')
+        .eq('patient_id', profile?.id)
+        .eq('status', 'pending');
+
+      // Fetch new achievements (example query)
+      const { data: achievements } = await supabase
+        .from('patient_achievements')
+        .select('*')
+        .eq('patient_id', profile?.id)
+        .eq('is_new', true);
+
+      // Fetch unread messages
+      const { data: messages } = await supabase
+        .from('chat_messages')
+        .select('*')
+        .eq('recipient_id', profile?.id)
+        .eq('is_read', false);
+
+      setBadges({
+        pendingTasks: tasks?.length || 0,
+        newAchievements: achievements?.length || 0,
+        unreadMessages: messages?.length || 0
+      });
+    } catch (error) {
+      console.error('Error fetching badge counts:', error);
+    }
+  };
 
   const menuItems = [
     {
@@ -48,8 +94,8 @@ const PatientSidebar = () => {
     {
       title: "Atividades",
       icon: Activity,
-      path: "/activities",
-      badge: 3, // Example badge count
+      path: "/enhanced-activities",
+      badge: badges.pendingTasks > 0 ? badges.pendingTasks : undefined,
     },
     {
       title: "Humor",
@@ -65,11 +111,13 @@ const PatientSidebar = () => {
       title: "Chat",
       icon: MessageSquare,
       path: "/chat",
+      badge: badges.unreadMessages > 0 ? badges.unreadMessages : undefined,
     },
     {
       title: "Conquistas",
       icon: Trophy,
       path: "/patient-dashboard#achievements",
+      badge: badges.newAchievements > 0 ? badges.newAchievements : undefined,
     },
     {
       title: "Configurações",
@@ -77,21 +125,6 @@ const PatientSidebar = () => {
       path: "/settings",
     },
   ];
-
-  const handleNavigation = (path: string) => {
-    if (path.includes("#")) {
-      const [route, hash] = path.split("#");
-      navigate(route);
-      setTimeout(() => {
-        const element = document.querySelector(`[data-section="${hash}"]`);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 100);
-    } else {
-      navigate(path);
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -101,24 +134,12 @@ const PatientSidebar = () => {
     }
   };
 
-  const isActivePath = (path: string) => {
-    if (path.includes("#")) {
-      const route = path.split("#")[0];
-      return location.pathname === route;
-    }
-    return location.pathname === path;
-  };
-
   return (
     <Sidebar>
       <SidebarHeader className="border-b p-4">
         <div className="flex items-center gap-3">
           <SidebarTrigger className="md:hidden" />
-          <img 
-            src="/lovable-uploads/2efc273a-5ee9-4b8d-9f84-75c1295f89eb.png" 
-            alt="Evoluthera Logo" 
-            className={`transition-all ${state === "collapsed" ? "h-8 w-8" : "h-8 w-auto"}`}
-          />
+          <Brain className="h-8 w-8 text-blue-600" />
           {state === "expanded" && (
             <div className="flex flex-col">
               <span className="font-semibold text-sm">Meu Espaço</span>
@@ -135,14 +156,15 @@ const PatientSidebar = () => {
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton
-                    onClick={() => handleNavigation(item.path)}
+                    onClick={() => navigateToSection(item.path)}
                     isActive={isActivePath(item.path)}
                     tooltip={state === "collapsed" ? item.title : undefined}
+                    className="transition-all duration-200 hover:bg-blue-50 hover:text-blue-700"
                   >
                     <item.icon className="h-4 w-4" />
                     <span>{item.title}</span>
                     {item.badge && state === "expanded" && (
-                      <Badge variant="secondary" className="ml-auto">
+                      <Badge variant="destructive" className="ml-auto animate-pulse">
                         {item.badge}
                       </Badge>
                     )}
@@ -157,14 +179,14 @@ const PatientSidebar = () => {
       <SidebarFooter className="border-t p-4">
         <div className="space-y-2">
           {state === "expanded" && (
-            <div className="px-2 py-1">
-              <p className="text-sm font-medium">Olá, {profile?.name || 'Paciente'}</p>
-              <p className="text-xs text-muted-foreground">Continue sua jornada</p>
+            <div className="px-2 py-1 bg-gradient-to-r from-blue-50 to-green-50 rounded-lg">
+              <p className="text-sm font-medium text-blue-900">Olá, {profile?.name || 'Paciente'}</p>
+              <p className="text-xs text-blue-700">Continue sua jornada de crescimento</p>
             </div>
           )}
           <Button
             variant="ghost"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
             onClick={handleSignOut}
           >
             <LogOut className="h-4 w-4" />

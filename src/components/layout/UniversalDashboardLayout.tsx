@@ -1,6 +1,7 @@
 
 import { ReactNode } from "react";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider as CustomSidebarProvider } from "@/contexts/SidebarContext";
 import AdminSidebar from "./AdminSidebar";
 import PatientSidebar from "./PatientSidebar";
 import PsychologistSidebar from "./PsychologistSidebar";
@@ -30,16 +31,18 @@ const UniversalDashboardLayout = ({ children, userType }: UniversalDashboardLayo
   };
 
   return (
-    <SidebarProvider defaultOpen={true}>
-      <div className="min-h-screen flex w-full">
-        {getSidebar()}
-        <main className="flex-1 overflow-auto">
-          <div className="p-6">
-            {children}
-          </div>
-        </main>
-      </div>
-    </SidebarProvider>
+    <CustomSidebarProvider>
+      <SidebarProvider defaultOpen={true}>
+        <div className="min-h-screen flex w-full">
+          {getSidebar()}
+          <main className="flex-1 overflow-auto bg-gray-50">
+            <div className="p-4 md:p-6">
+              {children}
+            </div>
+          </main>
+        </div>
+      </SidebarProvider>
+    </CustomSidebarProvider>
   );
 };
 

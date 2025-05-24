@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import EnhancedPatientsList from "@/components/psychologist/EnhancedPatientsList";
 import TasksManager from "@/components/psychologist/TasksManager";
 import MoodAnalytics from "@/components/psychologist/MoodAnalytics";
@@ -73,8 +72,8 @@ const PsychologistDashboard = () => {
   return (
     <UniversalDashboardLayout userType="psychologist">
       <div className="space-y-6">
+        {/* Header limpo */}
         <div className="flex items-center gap-3">
-          <SidebarTrigger className="md:hidden" />
           <Brain className="h-8 w-8 text-purple-600" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">
@@ -89,7 +88,7 @@ const PsychologistDashboard = () => {
 
         {/* Cards de estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total de Pacientes</CardTitle>
               <Users className="h-4 w-4 text-blue-600" />
@@ -102,7 +101,7 @@ const PsychologistDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Pacientes Ativos</CardTitle>
               <Users className="h-4 w-4 text-green-600" />
@@ -115,7 +114,7 @@ const PsychologistDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Tarefas Pendentes</CardTitle>
               <ClipboardList className="h-4 w-4 text-orange-600" />
@@ -128,7 +127,7 @@ const PsychologistDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Notificações</CardTitle>
               <Bell className="h-4 w-4 text-red-600" />
@@ -142,51 +141,54 @@ const PsychologistDashboard = () => {
           </Card>
         </div>
 
-        {/* Seção de acesso rápido */}
-        <Card>
+        {/* Seção de acesso rápido melhorada */}
+        <Card className="border-purple-200 bg-gradient-to-r from-purple-50 to-blue-50">
           <CardHeader>
-            <CardTitle>Acesso Rápido</CardTitle>
-            <CardDescription>Ferramentas mais utilizadas</CardDescription>
+            <CardTitle className="flex items-center gap-2 text-purple-800">
+              <BarChart3 className="h-5 w-5" />
+              Ferramentas Profissionais
+            </CardTitle>
+            <CardDescription>Acesso rápido às principais funcionalidades</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <Link to="/anamnesis-management">
-                <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                  <FileText className="h-6 w-6" />
-                  <span className="text-xs">Anamneses</span>
+                <Button variant="outline" className="w-full h-20 flex-col gap-2 hover:bg-purple-50 border-purple-200">
+                  <FileText className="h-6 w-6 text-purple-600" />
+                  <span className="text-xs font-medium">Anamneses</span>
                 </Button>
               </Link>
               <Link to="/medical-record">
-                <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                  <ClipboardList className="h-6 w-6" />
-                  <span className="text-xs">Prontuários</span>
+                <Button variant="outline" className="w-full h-20 flex-col gap-2 hover:bg-blue-50 border-blue-200">
+                  <ClipboardList className="h-6 w-6 text-blue-600" />
+                  <span className="text-xs font-medium">Prontuários</span>
                 </Button>
               </Link>
               <Link to="/activities">
-                <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                  <TestTube className="h-6 w-6" />
-                  <span className="text-xs">Atividades</span>
+                <Button variant="outline" className="w-full h-20 flex-col gap-2 hover:bg-green-50 border-green-200">
+                  <TestTube className="h-6 w-6 text-green-600" />
+                  <span className="text-xs font-medium">Atividades</span>
                 </Button>
               </Link>
               <Link to="/chat">
-                <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                  <Bell className="h-6 w-6" />
-                  <span className="text-xs">Chat</span>
+                <Button variant="outline" className="w-full h-20 flex-col gap-2 hover:bg-orange-50 border-orange-200">
+                  <Bell className="h-6 w-6 text-orange-600" />
+                  <span className="text-xs font-medium">Chat</span>
                 </Button>
               </Link>
             </div>
           </CardContent>
         </Card>
 
-        {/* Tabs principais */}
+        {/* Tabs simplificados - removido sistema de navegação duplicado */}
         <Tabs defaultValue="patients" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
-            <TabsTrigger value="patients" data-tab="patients">Pacientes</TabsTrigger>
-            <TabsTrigger value="tasks" data-tab="tasks">Tarefas</TabsTrigger>
-            <TabsTrigger value="analytics" data-tab="analytics">Análises</TabsTrigger>
-            <TabsTrigger value="notifications" data-tab="notifications">Notificações</TabsTrigger>
-            <TabsTrigger value="reports" data-tab="reports">Relatórios</TabsTrigger>
-            <TabsTrigger value="tests" data-tab="tests">Testes</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-6 bg-white border border-gray-200">
+            <TabsTrigger value="patients" data-tab="patients" className="data-[state=active]:bg-purple-100">Pacientes</TabsTrigger>
+            <TabsTrigger value="tasks" data-tab="tasks" className="data-[state=active]:bg-blue-100">Tarefas</TabsTrigger>
+            <TabsTrigger value="analytics" data-tab="analytics" className="data-[state=active]:bg-green-100">Análises</TabsTrigger>
+            <TabsTrigger value="notifications" data-tab="notifications" className="data-[state=active]:bg-yellow-100">Notificações</TabsTrigger>
+            <TabsTrigger value="reports" data-tab="reports" className="data-[state=active]:bg-orange-100">Relatórios</TabsTrigger>
+            <TabsTrigger value="tests" data-tab="tests" className="data-[state=active]:bg-indigo-100">Testes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="patients">
