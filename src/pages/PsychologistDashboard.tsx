@@ -13,9 +13,10 @@ import PatientMoodAnalytics from "@/components/psychologist/PatientMoodAnalytics
 import NotificationCard from "@/components/psychologist/NotificationCard";
 import EnhancedSendTaskModal from "@/components/psychologist/EnhancedSendTaskModal";
 import TaskResponsesModal from "@/components/psychologist/TaskResponsesModal";
+import PatientMoodMonitor from "@/components/psychologist/PatientMoodMonitor";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, ClipboardList, AlertTriangle, TrendingUp, Search, BarChart3, MessageCircle } from "lucide-react";
+import { Users, ClipboardList, AlertTriangle, TrendingUp, Search, BarChart3, MessageCircle, Heart } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const PsychologistDashboard = () => {
@@ -236,55 +237,71 @@ const PsychologistDashboard = () => {
               </Card>
             </div>
             
-            {/* Main Content */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Patients List */}
-              <div className="lg:col-span-2">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Pacientes</CardTitle>
-                    <CardDescription>Gerencie seus pacientes ativos</CardDescription>
-                    <div className="relative">
-                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                      <Input
-                        placeholder="Buscar pacientes..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10"
-                      />
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {filteredPatients.map((patient) => (
-                        <PatientCard
-                          key={patient.id}
-                          patient={patient}
-                          onStatusChange={handleStatusChange}
-                          onViewRecord={handleViewRecord}
-                          onSendTask={handleSendTask}
-                          onViewMoodChart={handleViewMoodChart}
-                        />
-                      ))}
-                      {filteredPatients.length === 0 && (
-                        <div className="text-center py-8 text-gray-500">
-                          <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                          <p>Nenhum paciente encontrado</p>
+            {/* Main Content Tabs */}
+            <Tabs defaultValue="patients" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="patients">Gerenciar Pacientes</TabsTrigger>
+                <TabsTrigger value="mood-monitor" className="flex items-center gap-2">
+                  <Heart className="h-4 w-4" />
+                  Monitor de Humor
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="patients" className="mt-6">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {/* Patients List */}
+                  <div className="lg:col-span-2">
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Pacientes</CardTitle>
+                        <CardDescription>Gerencie seus pacientes ativos</CardDescription>
+                        <div className="relative">
+                          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                          <Input
+                            placeholder="Buscar pacientes..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10"
+                          />
                         </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-              
-              {/* Notifications */}
-              <div>
-                <NotificationCard 
-                  notifications={notifications}
-                  onMarkAsRead={handleMarkNotificationAsRead}
-                />
-              </div>
-            </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-4">
+                          {filteredPatients.map((patient) => (
+                            <PatientCard
+                              key={patient.id}
+                              patient={patient}
+                              onStatusChange={handleStatusChange}
+                              onViewRecord={handleViewRecord}
+                              onSendTask={handleSendTask}
+                              onViewMoodChart={handleViewMoodChart}
+                            />
+                          ))}
+                          {filteredPatients.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">
+                              <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                              <p>Nenhum paciente encontrado</p>
+                            </div>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* Notifications */}
+                  <div>
+                    <NotificationCard 
+                      notifications={notifications}
+                      onMarkAsRead={handleMarkNotificationAsRead}
+                    />
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="mood-monitor" className="mt-6">
+                <PatientMoodMonitor />
+              </TabsContent>
+            </Tabs>
           </div>
         </main>
       </div>
