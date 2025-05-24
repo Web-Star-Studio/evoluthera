@@ -620,6 +620,117 @@ export type Database = {
           },
         ]
       }
+      legal_document_versions: {
+        Row: {
+          changes_summary: string | null
+          content: string
+          content_type: string
+          created_at: string
+          created_by: string
+          document_id: string
+          id: string
+          title: string
+          version: number
+        }
+        Insert: {
+          changes_summary?: string | null
+          content: string
+          content_type?: string
+          created_at?: string
+          created_by: string
+          document_id: string
+          id?: string
+          title: string
+          version: number
+        }
+        Update: {
+          changes_summary?: string | null
+          content?: string
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          document_id?: string
+          id?: string
+          title?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_document_versions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legal_document_versions_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "legal_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legal_documents: {
+        Row: {
+          content: string
+          content_type: string
+          created_at: string
+          created_by: string
+          document_type: string
+          id: string
+          is_active: boolean
+          published_at: string | null
+          title: string
+          updated_at: string
+          updated_by: string
+          version: number
+        }
+        Insert: {
+          content: string
+          content_type?: string
+          created_at?: string
+          created_by: string
+          document_type: string
+          id?: string
+          is_active?: boolean
+          published_at?: string | null
+          title: string
+          updated_at?: string
+          updated_by: string
+          version?: number
+        }
+        Update: {
+          content?: string
+          content_type?: string
+          created_at?: string
+          created_by?: string
+          document_type?: string
+          id?: string
+          is_active?: boolean
+          published_at?: string | null
+          title?: string
+          updated_at?: string
+          updated_by?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_documents_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "legal_documents_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_invoices: {
         Row: {
           active_patients_count: number
@@ -1496,6 +1607,17 @@ export type Database = {
         Args: { psychologist_uuid: string }
         Returns: string
       }
+      create_document_version: {
+        Args: {
+          doc_type: string
+          new_title: string
+          new_content: string
+          new_content_type?: string
+          changes_summary?: string
+          creator_id?: string
+        }
+        Returns: string
+      }
       generate_invoice_number: {
         Args: { psychologist_uuid: string; ref_month: string }
         Returns: string
@@ -1507,6 +1629,18 @@ export type Database = {
       generate_temp_password: {
         Args: Record<PropertyKey, never>
         Returns: string
+      }
+      get_active_document: {
+        Args: { doc_type: string }
+        Returns: {
+          id: string
+          title: string
+          content: string
+          content_type: string
+          version: number
+          published_at: string
+          updated_at: string
+        }[]
       }
       get_admin_setting: {
         Args: { key_name: string }

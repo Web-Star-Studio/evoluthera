@@ -11,6 +11,7 @@ import BillingDashboard from "@/components/admin/BillingDashboard";
 import SystemLogs from "@/components/admin/SystemLogs";
 import ReportExport from "@/components/admin/ReportExport";
 import AdminSettings from "@/components/admin/AdminSettings";
+import LegalDocumentsManager from "@/components/admin/LegalDocumentsManager";
 import { 
   BarChart3, 
   Users, 
@@ -20,7 +21,8 @@ import {
   Shield,
   TrendingUp,
   Receipt,
-  Settings
+  Settings,
+  Scale
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -72,7 +74,7 @@ const AdminDashboard = () => {
         
         {/* Tabs para diferentes funcionalidades administrativas */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
@@ -88,6 +90,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="billing-full" className="flex items-center gap-2">
               <Receipt className="h-4 w-4" />
               Faturamento
+            </TabsTrigger>
+            <TabsTrigger value="documents" className="flex items-center gap-2">
+              <Scale className="h-4 w-4" />
+              Documentos
             </TabsTrigger>
             <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
@@ -182,6 +188,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="billing-full">
             <BillingDashboard />
+          </TabsContent>
+
+          <TabsContent value="documents">
+            <LegalDocumentsManager />
           </TabsContent>
 
           <TabsContent value="settings">
