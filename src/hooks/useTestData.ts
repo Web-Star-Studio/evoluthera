@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -350,7 +349,14 @@ export const useTestData = () => {
           description: `Conectado como ${userType === 'patient' ? 'Paciente' : userType === 'psychologist' ? 'Psicólogo' : 'Admin'}`,
         });
         
-        window.location.href = '/';
+        // Determine dashboard route based on user type
+        const dashboardRoutes = {
+          patient: '/patient-dashboard',
+          psychologist: '/psychologist-dashboard',
+          admin: '/admin-dashboard'
+        };
+        
+        window.location.href = dashboardRoutes[userType];
       }
     } catch (error: any) {
       console.error('Error logging in as demo user:', error);

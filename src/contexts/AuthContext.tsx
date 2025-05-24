@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -22,6 +21,7 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
   cleanupAuthState: () => void;
+  getDashboardRoute: (userType?: string) => string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,6 +40,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+
+  const getDashboardRoute = (userType?: string) => {
+    const type = userType || profile?.user_type;
+    switch (type) {
+      case 'patient':
+        return '/patient-dashboard';
+      case 'psychologist':
+        return '/psychologist-dashboard';
+      case 'admin':
+        return '/admin-dashboard';
+      default:
+        return '/';
+    }
+  };
 
   const cleanupAuthState = () => {
     console.log('Cleaning up auth state');
@@ -226,8 +240,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           description: "Bem-vindo de volta!",
         });
         
-        // Force page reload for clean state
-        window.location.href = '/';
+        // Get user profile to determine redirect
+        const profileData = await fetchProfile(data.user.id);
+        const redirectRoute = getDashboardRoute(profileData?.user_type);
+        
+        // Redirect to appropriate dashboard
+        window.location.href = redirectRoute;
       }
     } catch (error: any) {
       console.error('Sign in error:', error);
@@ -311,6 +329,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signOut,
     updateProfile,
     cleanupAuthState,
+    getDashboardRoute,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
