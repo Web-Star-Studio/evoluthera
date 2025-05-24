@@ -9,7 +9,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useForm } from "react-hook-form";
-import { Plus, User, Calendar, TrendingUp, CreditCard, CheckCircle, Clock, AlertCircle } from "lucide-react";
+import { Plus, User, Calendar, TrendingUp, CreditCard, CheckCircle, Clock, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 interface PatientActivation {
   id: string;
@@ -44,10 +44,12 @@ interface Patient {
 interface PatientFormData {
   name: string;
   email: string;
+  password: string;
 }
 
 const EnhancedPatientsList = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -55,6 +57,7 @@ const EnhancedPatientsList = () => {
     defaultValues: {
       name: "",
       email: "",
+      password: "",
     },
   });
 
@@ -202,7 +205,7 @@ const EnhancedPatientsList = () => {
             <DialogHeader>
               <DialogTitle>Adicionar Novo Paciente</DialogTitle>
               <DialogDescription>
-                Adicione um novo paciente. Uma senha temporária será gerada e enviada por email. 
+                Adicione um novo paciente definindo nome, email e senha. 
                 Taxa de ativação: R$ 20,00.
               </DialogDescription>
             </DialogHeader>
@@ -237,6 +240,45 @@ const EnhancedPatientsList = () => {
                       <FormLabel>Email</FormLabel>
                       <FormControl>
                         <Input type="email" placeholder="email@exemplo.com" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="password"
+                  rules={{ 
+                    required: "Senha é obrigatória",
+                    minLength: {
+                      value: 6,
+                      message: "Senha deve ter pelo menos 6 caracteres"
+                    }
+                  }}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Senha</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input 
+                            type={showPassword ? "text" : "password"} 
+                            placeholder="Senha do paciente" 
+                            {...field} 
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>

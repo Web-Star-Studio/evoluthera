@@ -13,6 +13,7 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 interface AddPatientRequest {
   name: string;
   email: string;
+  password: string;
 }
 
 const logStep = (step: string, details?: any) => {
@@ -55,7 +56,7 @@ serve(async (req) => {
       throw new Error("Only psychologists can add patients");
     }
 
-    const { name, email }: AddPatientRequest = await req.json();
+    const { name, email, password }: AddPatientRequest = await req.json();
     logStep("Request data received", { name, email });
 
     // Verificar se o email já existe
@@ -64,14 +65,10 @@ serve(async (req) => {
       throw new Error("Um usuário com este email já existe no sistema");
     }
 
-    // Gerar senha temporária
-    const { data: tempPassword } = await supabaseClient.rpc('generate_temp_password');
-    logStep("Temporary password generated");
-
-    // Criar usuário no auth
+    // Criar usuário no auth com a senha definida pelo psicólogo
     const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
       email,
-      password: tempPassword,
+      password,
       email_confirm: true,
       user_metadata: {
         name,
@@ -107,17 +104,6 @@ serve(async (req) => {
     if (relationError) throw new Error(`Error creating patient relationship: ${relationError.message}`);
     logStep("Patient-psychologist relationship created");
 
-    // Salvar senha temporária
-    const { error: tempPassError } = await supabaseClient
-      .from('temporary_passwords')
-      .insert({
-        user_id: newUser.user!.id,
-        temp_password: tempPassword
-      });
-
-    if (tempPassError) throw new Error(`Error saving temporary password: ${tempPassError.message}`);
-    logStep("Temporary password saved");
-
     // Criar registro de ativação
     const { data: activation, error: activationError } = await supabaseClient
       .from('patient_activations')
@@ -146,10 +132,8 @@ serve(async (req) => {
             
             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <p><strong>Email:</strong> ${email}</p>
-              <p><strong>Senha temporária:</strong> <code style="background-color: #e9ecef; padding: 4px 8px; border-radius: 4px;">${tempPassword}</code></p>
+              <p><strong>Senha:</strong> A senha foi definida pelo seu psicólogo</p>
             </div>
-            
-            <p style="color: #dc3545;"><strong>Importante:</strong> Esta senha é temporária e expira em 24 horas. Recomendamos que você faça login e altere sua senha o mais breve possível.</p>
             
             <p>Para acessar a plataforma, clique no link abaixo:</p>
             <p style="text-align: center;">
