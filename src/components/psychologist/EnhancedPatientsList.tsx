@@ -16,6 +16,7 @@ interface PatientActivation {
   status: string;
   activation_fee: number;
   activated_at: string | null;
+  patient_id: string;
 }
 
 interface PatientProfile {
@@ -28,7 +29,6 @@ interface PatientData {
   patient_id: string;
   status: string;
   profiles: PatientProfile;
-  patient_activations: PatientActivation[];
 }
 
 interface Patient {
@@ -62,28 +62,47 @@ const EnhancedPatientsList = () => {
   const { data: patients = [], isLoading } = useQuery({
     queryKey: ['psychologist-patients'],
     queryFn: async () => {
-      const { data: patientsData, error } = await supabase
+      // First get the patients with their profiles
+      const { data: patientsData, error: patientsError } = await supabase
         .from('patients')
         .select(`
           patient_id,
           status,
-          profiles!patients_patient_id_fkey(id, name, email),
-          patient_activations(id, status, activation_fee, activated_at)
+          profiles!patients_patient_id_fkey(id, name, email)
         `)
         .eq('status', 'active');
 
-      if (error) throw error;
+      if (patientsError) throw patientsError;
 
-      return (patientsData as PatientData[]).map(p => ({
-        id: p.profiles.id,
-        name: p.profiles.name,
-        email: p.profiles.email,
-        lastSession: "N/A",
-        progress: Math.floor(Math.random() * 100), // Placeholder
-        status: p.patient_activations?.[0]?.status === 'active' ? 'active' : 
-                p.patient_activations?.[0]?.status === 'pending' ? 'pending_payment' : 'inactive',
-        activationId: p.patient_activations?.[0]?.id
-      })) as Patient[];
+      // Then get the patient activations separately
+      const patientIds = patientsData?.map(p => p.patient_id) || [];
+      
+      let activationsData: PatientActivation[] = [];
+      if (patientIds.length > 0) {
+        const { data: activations, error: activationsError } = await supabase
+          .from('patient_activations')
+          .select('id, status, activation_fee, activated_at, patient_id')
+          .in('patient_id', patientIds);
+
+        if (activationsError) throw activationsError;
+        activationsData = activations || [];
+      }
+
+      // Combine the data
+      return (patientsData as PatientData[]).map(p => {
+        const activation = activationsData.find(a => a.patient_id === p.patient_id);
+        
+        return {
+          id: p.profiles.id,
+          name: p.profiles.name,
+          email: p.profiles.email,
+          lastSession: "N/A",
+          progress: Math.floor(Math.random() * 100), // Placeholder
+          status: activation?.status === 'active' ? 'active' : 
+                  activation?.status === 'pending' ? 'pending_payment' : 'inactive',
+          activationId: activation?.id
+        } as Patient;
+      });
     }
   });
 
