@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import PsychologistSidebar from "@/components/psychologist/PsychologistSidebar";
+import PsychologistSidebar from "@/components/layout/PsychologistSidebar";
 import PatientCard from "@/components/psychologist/PatientCard";
 import MoodChart from "@/components/psychologist/MoodChart";
 import NotificationCard from "@/components/psychologist/NotificationCard";
