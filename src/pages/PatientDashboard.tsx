@@ -69,7 +69,7 @@ const PatientDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="daily-mood" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="daily-mood" className="flex items-center gap-2">
               <Smile className="h-4 w-4" />
               Humor Diário
@@ -89,6 +89,10 @@ const PatientDashboard = () => {
             <TabsTrigger value="tasks" className="flex items-center gap-2">
               <Target className="h-4 w-4" />
               Tarefas
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Chat
             </TabsTrigger>
             <TabsTrigger value="progress" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -118,6 +122,10 @@ const PatientDashboard = () => {
 
           <TabsContent value="tasks" className="mt-6">
             <TasksList />
+          </TabsContent>
+
+          <TabsContent value="chat" className="mt-6">
+            <ChatPage currentUserId="temp-patient-id" userType="patient" />
           </TabsContent>
 
           <TabsContent value="progress" className="mt-6">

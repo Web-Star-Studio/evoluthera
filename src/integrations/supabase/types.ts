@@ -334,6 +334,203 @@ export type Database = {
           },
         ]
       }
+      chat_messages: {
+        Row: {
+          attachment_name: string | null
+          attachment_size: number | null
+          attachment_url: string | null
+          conversation_id: string
+          created_at: string
+          edited_at: string | null
+          encrypted_content: string | null
+          id: string
+          is_read: boolean | null
+          message_content: string
+          message_type: string | null
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
+          conversation_id: string
+          created_at?: string
+          edited_at?: string | null
+          encrypted_content?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_content: string
+          message_type?: string | null
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          attachment_name?: string | null
+          attachment_size?: number | null
+          attachment_url?: string | null
+          conversation_id?: string
+          created_at?: string
+          edited_at?: string | null
+          encrypted_content?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_content?: string
+          message_type?: string | null
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_settings: {
+        Row: {
+          auto_response_enabled: boolean | null
+          auto_response_message: string | null
+          chat_enabled: boolean | null
+          created_at: string
+          daily_message_limit: number | null
+          id: string
+          max_message_length: number | null
+          psychologist_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_response_enabled?: boolean | null
+          auto_response_message?: string | null
+          chat_enabled?: boolean | null
+          created_at?: string
+          daily_message_limit?: number | null
+          id?: string
+          max_message_length?: number | null
+          psychologist_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_response_enabled?: boolean | null
+          auto_response_message?: string | null
+          chat_enabled?: boolean | null
+          created_at?: string
+          daily_message_limit?: number | null
+          id?: string
+          max_message_length?: number | null
+          psychologist_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_settings_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean | null
+          last_message_at: string | null
+          patient_id: string
+          psychologist_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_message_at?: string | null
+          patient_id: string
+          psychologist_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          last_message_at?: string | null
+          patient_id?: string
+          psychologist_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_message_usage: {
+        Row: {
+          created_at: string
+          id: string
+          message_count: number | null
+          patient_id: string
+          psychologist_id: string
+          updated_at: string
+          usage_date: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message_count?: number | null
+          patient_id: string
+          psychologist_id: string
+          updated_at?: string
+          usage_date?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message_count?: number | null
+          patient_id?: string
+          psychologist_id?: string
+          updated_at?: string
+          usage_date?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_message_usage_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_message_usage_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       diary_entries: {
         Row: {
           content: string
@@ -990,6 +1187,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_daily_message_limit: {
+        Args: { p_patient_id: string; p_psychologist_id: string }
+        Returns: boolean
+      }
       create_default_anamnesis_template: {
         Args: { psychologist_uuid: string }
         Returns: string

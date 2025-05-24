@@ -54,7 +54,7 @@ const PsychologistDashboard = () => {
 
         {/* Tabs Navigation */}
         <Tabs defaultValue="patients" className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="patients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Pacientes
@@ -70,6 +70,10 @@ const PsychologistDashboard = () => {
             <TabsTrigger value="tests" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Testes
+            </TabsTrigger>
+            <TabsTrigger value="chat" className="flex items-center gap-2">
+              <MessageCircle className="h-4 w-4" />
+              Chat
             </TabsTrigger>
             <TabsTrigger value="gamification" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
@@ -99,6 +103,10 @@ const PsychologistDashboard = () => {
 
           <TabsContent value="tests" className="mt-6">
             <PsychologicalTestsManager />
+          </TabsContent>
+
+          <TabsContent value="chat" className="mt-6">
+            <ChatPage currentUserId="temp-psychologist-id" userType="psychologist" />
           </TabsContent>
 
           <TabsContent value="gamification" className="mt-6">

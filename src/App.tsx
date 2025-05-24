@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import Activities from "./pages/Activities";
 import EnhancedActivities from "./pages/EnhancedActivities";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Chat from "./pages/Chat";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +39,7 @@ const App = () => (
           <Route path="/anamnesis-management" element={<AnamnesisManagement />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/enhanced-activities" element={<EnhancedActivities />} />
+          <Route path="/chat" element={<Chat />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
