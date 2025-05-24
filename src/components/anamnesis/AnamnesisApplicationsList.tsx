@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,26 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Eye, Send, MessageSquare, Lock, Unlock, Calendar, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-interface AnamnesisApplication {
-  id: string;
-  status: 'sent' | 'in_progress' | 'completed' | 'locked';
-  created_at: string;
-  sent_at: string;
-  completed_at: string;
-  locked_at: string;
-  started_at: string;
-  patient: {
-    name: string;
-    email: string;
-  };
-  template: {
-    name: string;
-    description: string;
-  };
-  responses: Record<string, any>;
-  psychologist_notes: Record<string, string>;
-}
+import { AnamnesisApplication, parseJsonField } from "@/types/anamnesis";
 
 interface AnamnesisApplicationsListProps {
   searchTerm: string;
@@ -80,8 +60,8 @@ const AnamnesisApplicationsList = ({ searchTerm }: AnamnesisApplicationsListProp
           name: app.template?.name || 'Template não encontrado',
           description: app.template?.description || ''
         },
-        responses: app.responses || {},
-        psychologist_notes: app.psychologist_notes || {}
+        responses: parseJsonField<Record<string, any>>(app.responses),
+        psychologist_notes: parseJsonField<Record<string, string>>(app.psychologist_notes)
       }));
       
       setApplications(typedApplications);

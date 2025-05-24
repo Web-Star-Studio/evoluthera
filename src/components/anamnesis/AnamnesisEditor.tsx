@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Save, Send, Eye, History, Plus, Trash2, Settings } from "lucide-react";
+import { AnamnesisField, AnamnesisSection, AnamnesisTemplate, parseJsonField, stringifyForSupabase } from "@/types/anamnesis";
 import {
   Dialog,
   DialogContent,
@@ -21,26 +21,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-interface AnamnesisField {
-  type: string;
-  label: string;
-  required?: boolean;
-  options?: string[];
-}
-
-interface AnamnesisSection {
-  title: string;
-  fields: Record<string, AnamnesisField>;
-}
-
-interface AnamnesisTemplate {
-  id: string;
-  name: string;
-  description: string;
-  fields: Record<string, AnamnesisSection>;
-  is_default: boolean;
-}
-
 interface AnamnesisEditorProps {
   patientId?: string;
   anamnesisId?: string;
@@ -50,7 +30,7 @@ interface AnamnesisEditorProps {
 const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProps) => {
   const [templates, setTemplates] = useState<AnamnesisTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<string>("");
-  const [currentFields, setCurrentFields] = useState<Record<string, AnamnesisSection>>({});
+  const [currentSections, setCurrentSections] = useState<AnamnesisSection[]>([]);
   const [responses, setResponses] = useState<Record<string, any>>({});
   const [status, setStatus] = useState<string>("draft");
   const [isLoading, setIsLoading] = useState(false);
@@ -77,10 +57,16 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
 
       if (error) throw error;
       
-      // Properly convert the data from Supabase to our typed interfaces
       const convertedTemplates: AnamnesisTemplate[] = (data || []).map(template => ({
-        ...template,
-        fields: safeParseFields(template.fields)
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        sections: parseJsonField<AnamnesisSection[]>(template.sections),
+        psychologist_id: template.psychologist_id,
+        is_default: template.is_default,
+        is_published: template.is_published,
+        created_at: template.created_at,
+        updated_at: template.updated_at
       }));
       
       setTemplates(convertedTemplates);
@@ -89,7 +75,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
       const defaultTemplate = convertedTemplates.find(t => t.is_default);
       if (defaultTemplate && !selectedTemplate) {
         setSelectedTemplate(defaultTemplate.id);
-        setCurrentFields(defaultTemplate.fields);
+        setCurrentSections(defaultTemplate.sections);
       }
     } catch (error) {
       console.error('Erro ao carregar templates:', error);
@@ -99,44 +85,6 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
         variant: "destructive",
       });
     }
-  };
-
-  // Helper function to safely parse fields from Supabase Json type
-  const safeParseFields = (fields: any): Record<string, AnamnesisSection> => {
-    if (!fields) return {};
-    
-    if (typeof fields === 'string') {
-      try {
-        return JSON.parse(fields);
-      } catch {
-        return {};
-      }
-    }
-    
-    if (typeof fields === 'object' && !Array.isArray(fields)) {
-      return fields as Record<string, AnamnesisSection>;
-    }
-    
-    return {};
-  };
-
-  // Helper function to safely parse responses
-  const safeParseResponses = (data: any): Record<string, any> => {
-    if (!data) return {};
-    
-    if (typeof data === 'string') {
-      try {
-        return JSON.parse(data);
-      } catch {
-        return {};
-      }
-    }
-    
-    if (typeof data === 'object' && !Array.isArray(data)) {
-      return data as Record<string, any>;
-    }
-    
-    return {};
   };
 
   const loadAnamnesis = async () => {
@@ -149,13 +97,13 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
 
       if (error) throw error;
       if (data) {
-        setResponses(safeParseResponses(data.data));
+        setResponses(parseJsonField<Record<string, any>>(data.data));
         setStatus(data.status);
         if (data.template_id) {
           setSelectedTemplate(data.template_id);
           const template = templates.find(t => t.id === data.template_id);
           if (template) {
-            setCurrentFields(template.fields);
+            setCurrentSections(template.sections);
           }
         }
       }
@@ -186,16 +134,16 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
     const template = templates.find(t => t.id === templateId);
     if (template) {
       setSelectedTemplate(templateId);
-      setCurrentFields(template.fields);
+      setCurrentSections(template.sections);
     }
   };
 
-  const handleFieldChange = (sectionKey: string, fieldKey: string, value: any) => {
+  const handleFieldChange = (sectionId: string, fieldId: string, value: any) => {
     setResponses(prev => ({
       ...prev,
-      [sectionKey]: {
-        ...prev[sectionKey],
-        [fieldKey]: value
+      [sectionId]: {
+        ...prev[sectionId],
+        [fieldId]: value
       }
     }));
   };
@@ -206,7 +154,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
     setIsLoading(true);
     try {
       const anamnesisData = {
-        data: responses,
+        data: stringifyForSupabase(responses),
         status: newStatus || status,
         template_id: selectedTemplate,
         ...(newStatus === 'sent' && { sent_at: new Date().toISOString() }),
@@ -232,7 +180,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
           .insert({
             anamnesis_id: anamnesisId,
             version: versions.length + 1,
-            data: responses,
+            data: stringifyForSupabase(responses),
             status: newStatus || status,
             created_by: (await supabase.auth.getUser()).data.user?.id
           });
@@ -310,7 +258,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
           psychologist_id: user.user.id,
           name: newTemplateName,
           description: newTemplateDescription,
-          fields: currentFields as any, // Cast to any to satisfy Supabase Json type
+          sections: stringifyForSupabase(currentSections),
           is_default: false
         });
 
@@ -335,21 +283,21 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
     }
   };
 
-  const renderField = (sectionKey: string, fieldKey: string, field: AnamnesisField) => {
-    const value = responses[sectionKey]?.[fieldKey] || '';
+  const renderField = (sectionId: string, fieldId: string, field: AnamnesisField) => {
+    const value = responses[sectionId]?.[fieldId] || '';
     const isReadOnly = status === 'locked' || (status === 'completed' && Boolean(patientId));
 
     switch (field.type) {
       case 'text':
-      case 'tel':
-      case 'email':
+      case 'number':
         return (
           <Input
             type={field.type}
             value={value}
-            onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
+            onChange={(e) => handleFieldChange(sectionId, fieldId, e.target.value)}
             disabled={isReadOnly}
             required={Boolean(field.required)}
+            placeholder={field.placeholder}
           />
         );
       case 'date':
@@ -357,7 +305,7 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
           <Input
             type="date"
             value={value}
-            onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
+            onChange={(e) => handleFieldChange(sectionId, fieldId, e.target.value)}
             disabled={isReadOnly}
             required={Boolean(field.required)}
           />
@@ -366,9 +314,10 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
         return (
           <Textarea
             value={value}
-            onChange={(e) => handleFieldChange(sectionKey, fieldKey, e.target.value)}
+            onChange={(e) => handleFieldChange(sectionId, fieldId, e.target.value)}
             disabled={isReadOnly}
             required={Boolean(field.required)}
+            placeholder={field.placeholder}
             rows={3}
           />
         );
@@ -376,11 +325,11 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
         return (
           <Select
             value={value}
-            onValueChange={(val) => handleFieldChange(sectionKey, fieldKey, val)}
+            onValueChange={(val) => handleFieldChange(sectionId, fieldId, val)}
             disabled={isReadOnly}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Selecione uma opção" />
+              <SelectValue placeholder={field.placeholder || "Selecione uma opção"} />
             </SelectTrigger>
             <SelectContent>
               {field.options?.map((option) => (
@@ -512,19 +461,25 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
             </CardContent>
           </Card>
 
-          {Object.entries(currentFields).map(([sectionKey, section]) => (
-            <Card key={sectionKey}>
+          {currentSections.map((section) => (
+            <Card key={section.id}>
               <CardHeader>
                 <CardTitle>{section.title}</CardTitle>
+                {section.description && (
+                  <CardDescription>{section.description}</CardDescription>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(section.fields).map(([fieldKey, field]) => (
-                  <div key={fieldKey} className="space-y-2">
-                    <Label htmlFor={`${sectionKey}-${fieldKey}`}>
+                {section.fields.map((field) => (
+                  <div key={field.id} className="space-y-2">
+                    <Label htmlFor={`${section.id}-${field.id}`}>
                       {field.label}
                       {field.required && <span className="text-red-500 ml-1">*</span>}
                     </Label>
-                    {renderField(sectionKey, fieldKey, field)}
+                    {renderField(section.id, field.id, field)}
+                    {field.description && (
+                      <p className="text-sm text-gray-500">{field.description}</p>
+                    )}
                   </div>
                 ))}
               </CardContent>
@@ -539,14 +494,17 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
               <CardDescription>Como a anamnese aparecerá para o paciente</CardDescription>
             </CardHeader>
             <CardContent>
-              {Object.entries(currentFields).map(([sectionKey, section]) => (
-                <div key={sectionKey} className="mb-8">
+              {currentSections.map((section) => (
+                <div key={section.id} className="mb-8">
                   <h3 className="text-xl font-semibold mb-4 text-emerald-700">{section.title}</h3>
+                  {section.description && (
+                    <p className="text-gray-600 mb-4">{section.description}</p>
+                  )}
                   <div className="space-y-4">
-                    {Object.entries(section.fields).map(([fieldKey, field]) => {
-                      const response = responses[sectionKey]?.[fieldKey];
+                    {section.fields.map((field) => {
+                      const response = responses[section.id]?.[field.id];
                       return (
-                        <div key={fieldKey} className="border-l-4 border-emerald-200 pl-4">
+                        <div key={field.id} className="border-l-4 border-emerald-200 pl-4">
                           <p className="font-medium text-gray-700">{field.label}</p>
                           <p className="text-gray-600 mt-1">
                             {response || <span className="italic text-gray-400">Não respondido</span>}

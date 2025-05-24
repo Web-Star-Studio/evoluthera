@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, GripVertical, Save, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AnamnesisField, AnamnesisSection, stringifyForSupabase } from "@/types/anamnesis";
 import {
   Dialog,
   DialogContent,
@@ -19,23 +20,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface AnamnesisField {
-  id: string;
-  type: 'text' | 'textarea' | 'select' | 'radio' | 'checkbox' | 'date' | 'number' | 'scale';
-  label: string;
-  required: boolean;
-  placeholder?: string;
-  options?: string[];
-  description?: string;
-}
-
-interface AnamnesisSection {
-  id: string;
-  title: string;
-  description?: string;
-  fields: AnamnesisField[];
-}
 
 interface AnamnesisTemplateBuilderProps {
   templateId?: string;
@@ -138,12 +122,11 @@ const AnamnesisTemplateBuilder = ({ templateId, onSave, onCancel }: AnamnesisTem
         psychologist_id: user.user.id,
         name: templateName,
         description: templateDescription,
-        sections: sections,
+        sections: stringifyForSupabase(sections),
         is_default: false,
         is_published: false
       };
 
-      let result;
       if (templateId) {
         const { error } = await supabase
           .from('anamnesis_templates')
@@ -392,7 +375,7 @@ const AnamnesisTemplateBuilder = ({ templateId, onSave, onCancel }: AnamnesisTem
               {section.fields.map(field => renderFieldEditor(section.id, field))}
               
               <Button
-                variant="dashed"
+                variant="outline"
                 onClick={() => addField(section.id)}
                 className="w-full border-dashed"
               >

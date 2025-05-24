@@ -1,36 +1,7 @@
-
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-interface AnamnesisField {
-  id: string;
-  type: string;
-  label: string;
-  required: boolean;
-  placeholder?: string;
-  options?: string[];
-  description?: string;
-}
-
-interface AnamnesisSection {
-  id: string;
-  title: string;
-  description?: string;
-  fields: AnamnesisField[];
-}
-
-interface AnamnesisTemplate {
-  id: string;
-  name: string;
-  description?: string;
-  sections: AnamnesisSection[];
-  psychologist_id: string;
-  is_default: boolean;
-  is_published: boolean;
-  created_at: string;
-  updated_at: string;
-}
+import { AnamnesisTemplate, AnamnesisSection, parseJsonField, stringifyForSupabase } from "@/types/anamnesis";
 
 export const useAnamnesisTemplates = () => {
   const [templates, setTemplates] = useState<AnamnesisTemplate[]>([]);
@@ -60,7 +31,7 @@ export const useAnamnesisTemplates = () => {
         id: template.id,
         name: template.name,
         description: template.description,
-        sections: Array.isArray(template.sections) ? template.sections : [],
+        sections: parseJsonField<AnamnesisSection[]>(template.sections),
         psychologist_id: template.psychologist_id,
         is_default: template.is_default,
         is_published: template.is_published,
@@ -103,8 +74,12 @@ export const useAnamnesisTemplates = () => {
       const { data, error } = await supabase
         .from('anamnesis_templates')
         .insert({
-          ...templateData,
+          name: templateData.name,
+          description: templateData.description,
+          sections: stringifyForSupabase(templateData.sections),
           psychologist_id: user.user.id,
+          is_default: templateData.is_default,
+          is_published: templateData.is_published
         })
         .select()
         .single();
@@ -131,9 +106,17 @@ export const useAnamnesisTemplates = () => {
 
   const updateTemplate = async (templateId: string, updates: Partial<AnamnesisTemplate>) => {
     try {
+      const updateData: any = {};
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.sections !== undefined) updateData.sections = stringifyForSupabase(updates.sections);
+      if (updates.is_default !== undefined) updateData.is_default = updates.is_default;
+      if (updates.is_published !== undefined) updateData.is_published = updates.is_published;
+
       const { error } = await supabase
         .from('anamnesis_templates')
-        .update(updates)
+        .update(updateData)
         .eq('id', templateId);
 
       if (error) throw error;
@@ -210,7 +193,7 @@ export const useAnamnesisTemplates = () => {
       await createTemplate({
         name: `${defaultTemplate.name} (Personalizado)`,
         description: defaultTemplate.description,
-        sections: defaultTemplate.sections || [],
+        sections: parseJsonField<AnamnesisSection[]>(defaultTemplate.sections),
         is_default: false,
         is_published: false,
       });

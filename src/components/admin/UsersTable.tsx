@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -49,7 +48,12 @@ const UsersTable = () => {
         user_type: user.user_type,
         created_at: user.created_at,
         avatar_url: user.avatar_url,
-        account_control: user.account_controls?.[0] || null
+        account_control: Array.isArray(user.account_controls) && user.account_controls.length > 0 
+          ? {
+              status: user.account_controls[0].status || 'active',
+              suspension_reason: user.account_controls[0].suspension_reason
+            }
+          : { status: 'active' }
       }));
     },
   });
