@@ -9,9 +9,10 @@ import MoodTracker from "@/components/patient/MoodTracker";
 import DiaryEntry from "@/components/patient/DiaryEntry";
 import TasksList from "@/components/patient/TasksList";
 import WeeklyProgressChart from "@/components/patient/WeeklyProgressChart";
+import SimplifiedMoodChart from "@/components/patient/SimplifiedMoodChart";
 import GamificationCard from "@/components/patient/GamificationCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Heart, BookOpen, Target, TrendingUp, Award } from "lucide-react";
+import { Heart, BookOpen, Target, TrendingUp, Award, BarChart3 } from "lucide-react";
 
 const PatientDashboard = () => {
   const [activeStreak, setActiveStreak] = useState(7);
@@ -66,7 +67,7 @@ const PatientDashboard = () => {
 
         {/* Main Content Tabs */}
         <Tabs defaultValue="mood" className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="mood" className="flex items-center gap-2">
               <Heart className="h-4 w-4" />
               Humor
@@ -78,6 +79,10 @@ const PatientDashboard = () => {
             <TabsTrigger value="tasks" className="flex items-center gap-2">
               <Target className="h-4 w-4" />
               Tarefas
+            </TabsTrigger>
+            <TabsTrigger value="evolution" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Evolução
             </TabsTrigger>
             <TabsTrigger value="progress" className="flex items-center gap-2">
               <TrendingUp className="h-4 w-4" />
@@ -99,6 +104,10 @@ const PatientDashboard = () => {
 
           <TabsContent value="tasks" className="mt-6">
             <TasksList />
+          </TabsContent>
+
+          <TabsContent value="evolution" className="mt-6">
+            <SimplifiedMoodChart />
           </TabsContent>
 
           <TabsContent value="progress" className="mt-6">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,10 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import PsychologistSidebar from "@/components/layout/PsychologistSidebar";
 import PatientCard from "@/components/psychologist/PatientCard";
 import MoodChart from "@/components/psychologist/MoodChart";
+import InteractiveMoodChart from "@/components/psychologist/InteractiveMoodChart";
+import PatientMoodAnalytics from "@/components/psychologist/PatientMoodAnalytics";
 import NotificationCard from "@/components/psychologist/NotificationCard";
 import SendTaskModal from "@/components/psychologist/SendTaskModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Users, ClipboardList, AlertTriangle, TrendingUp, Search } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Users, ClipboardList, AlertTriangle, TrendingUp, Search, BarChart3 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const PsychologistDashboard = () => {
@@ -21,8 +23,9 @@ const PsychologistDashboard = () => {
   const [selectedPatientForMood, setSelectedPatientForMood] = useState<string | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isMoodModalOpen, setIsMoodModalOpen] = useState(false);
+  const [activeAnalyticsTab, setActiveAnalyticsTab] = useState("chart");
 
-  // Mock data - será substituído por dados reais do Supabase
+  // ... keep existing code (mock data for patients and notifications)
   const [patients] = useState([
     {
       id: "1",
@@ -104,6 +107,7 @@ const PsychologistDashboard = () => {
     patient.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // ... keep existing code (all handler functions)
   const handleStatusChange = async (patientId: string, newStatus: 'active' | 'inactive') => {
     console.log(`Alterando status do paciente ${patientId} para ${newStatus}`);
     // Implementar lógica do Supabase
@@ -270,16 +274,36 @@ const PsychologistDashboard = () => {
         onSendTask={handleSendTaskSubmit}
       />
 
-      {/* Mood Chart Modal */}
+      {/* Enhanced Mood Chart Modal */}
       <Dialog open={isMoodModalOpen} onOpenChange={setIsMoodModalOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Gráfico de Humor</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              Análise Completa do Humor
+            </DialogTitle>
           </DialogHeader>
-          <MoodChart
-            patientName={patients.find(p => p.id === selectedPatientForMood)?.name || ""}
-            data={moodData}
-          />
+          
+          <Tabs value={activeAnalyticsTab} onValueChange={setActiveAnalyticsTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="chart">Gráfico Interativo</TabsTrigger>
+              <TabsTrigger value="analytics">Análise Detalhada</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="chart" className="mt-6">
+              <InteractiveMoodChart
+                patientId={selectedPatientForMood || ""}
+                patientName={patients.find(p => p.id === selectedPatientForMood)?.name || ""}
+              />
+            </TabsContent>
+            
+            <TabsContent value="analytics" className="mt-6">
+              <PatientMoodAnalytics
+                patientId={selectedPatientForMood || ""}
+                patientName={patients.find(p => p.id === selectedPatientForMood)?.name || ""}
+              />
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </div>
