@@ -78,7 +78,9 @@ const UsersTable = () => {
   });
 
   const getStatusBadge = (user: any) => {
-    const status = user.account_controls?.[0]?.status || 'active';
+    const status = Array.isArray(user.account_controls) && user.account_controls.length > 0 
+      ? user.account_controls[0].status 
+      : 'active';
     const variant = status === 'active' ? 'default' : status === 'suspended' ? 'destructive' : 'secondary';
     return <Badge variant={variant}>{status === 'active' ? 'Ativo' : status === 'suspended' ? 'Suspenso' : 'Inativo'}</Badge>;
   };
@@ -104,7 +106,9 @@ const UsersTable = () => {
 
   const filteredUsers = users?.filter(user => {
     if (statusFilter !== 'all') {
-      const userStatus = user.account_controls?.[0]?.status || 'active';
+      const userStatus = Array.isArray(user.account_controls) && user.account_controls.length > 0 
+        ? user.account_controls[0].status 
+        : 'active';
       if (userStatus !== statusFilter) return false;
     }
     return true;
@@ -176,7 +180,9 @@ const UsersTable = () => {
                 </TableRow>
               ) : (
                 filteredUsers?.map((user) => {
-                  const status = user.account_controls?.[0]?.status || 'active';
+                  const status = Array.isArray(user.account_controls) && user.account_controls.length > 0 
+                    ? user.account_controls[0].status 
+                    : 'active';
                   return (
                     <TableRow key={user.id}>
                       <TableCell className="font-medium">{user.name}</TableCell>

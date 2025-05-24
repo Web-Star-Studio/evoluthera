@@ -68,7 +68,9 @@ const ReportExport = () => {
             Nome: user.name,
             Email: user.email,
             Tipo: user.user_type,
-            Status: user.account_controls?.[0]?.status || 'active',
+            Status: Array.isArray(user.account_controls) && user.account_controls.length > 0 
+              ? user.account_controls[0].status 
+              : 'active',
             'Data de Criação': new Date(user.created_at).toLocaleDateString('pt-BR')
           }));
           filename = 'relatorio_usuarios';
