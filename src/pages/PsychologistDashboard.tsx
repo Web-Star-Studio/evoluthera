@@ -1,113 +1,288 @@
 
-import DashboardLayout from "@/components/layout/DashboardLayout";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import PsychologistSidebar from "@/components/psychologist/PsychologistSidebar";
+import PatientCard from "@/components/psychologist/PatientCard";
+import MoodChart from "@/components/psychologist/MoodChart";
+import NotificationCard from "@/components/psychologist/NotificationCard";
+import SendTaskModal from "@/components/psychologist/SendTaskModal";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Users, ClipboardList, AlertTriangle, TrendingUp, Search } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const PsychologistDashboard = () => {
-  const patients = [
-    { id: 1, name: "Maria Silva", status: "Ativo", lastSession: "10/01/2024", progress: "Bom" },
-    { id: 2, name: "João Santos", status: "Ativo", lastSession: "08/01/2024", progress: "Excelente" },
-    { id: 3, name: "Ana Costa", status: "Pendente", lastSession: "05/01/2024", progress: "Regular" },
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPatientForTask, setSelectedPatientForTask] = useState<string | null>(null);
+  const [selectedPatientForMood, setSelectedPatientForMood] = useState<string | null>(null);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [isMoodModalOpen, setIsMoodModalOpen] = useState(false);
+
+  // Mock data - será substituído por dados reais do Supabase
+  const [patients] = useState([
+    {
+      id: "1",
+      name: "Maria Silva",
+      email: "maria@email.com",
+      status: 'active' as const,
+      lastSession: "10/01/2024",
+      moodTrend: 'improving' as const,
+      pendingTasks: 2,
+      alertLevel: 'none' as const
+    },
+    {
+      id: "2",
+      name: "João Santos",
+      email: "joao@email.com",
+      status: 'active' as const,
+      lastSession: "08/01/2024",
+      moodTrend: 'stable' as const,
+      pendingTasks: 0,
+      alertLevel: 'none' as const
+    },
+    {
+      id: "3",
+      name: "Ana Costa",
+      email: "ana@email.com",
+      status: 'active' as const,
+      lastSession: "05/01/2024",
+      moodTrend: 'declining' as const,
+      pendingTasks: 1,
+      alertLevel: 'high' as const
+    }
+  ]);
+
+  const [notifications] = useState([
+    {
+      id: "1",
+      type: 'mood_alert' as const,
+      title: "Alerta de Humor Baixo",
+      message: "Ana Costa registrou humor muito baixo nos últimos 3 dias",
+      patientName: "Ana Costa",
+      time: "2 min atrás",
+      priority: 'high' as const,
+      actionLabel: "Ver Gráfico",
+      onAction: () => handleViewMoodChart("3")
+    },
+    {
+      id: "2",
+      type: 'new_response' as const,
+      title: "Nova Resposta de Tarefa",
+      message: "Maria Silva completou o exercício de respiração",
+      patientName: "Maria Silva",
+      time: "1 hora atrás",
+      priority: 'medium' as const,
+      actionLabel: "Ver Resposta"
+    },
+    {
+      id: "3",
+      type: 'session_reminder' as const,
+      title: "Sessão Agendada",
+      message: "Sessão com João Santos em 30 minutos",
+      patientName: "João Santos",
+      time: "30 min",
+      priority: 'medium' as const
+    }
+  ]);
+
+  const moodData = [
+    { date: "2024-01-01", mood: 7 },
+    { date: "2024-01-02", mood: 6 },
+    { date: "2024-01-03", mood: 8 },
+    { date: "2024-01-04", mood: 5 },
+    { date: "2024-01-05", mood: 7 },
+    { date: "2024-01-06", mood: 9 },
+    { date: "2024-01-07", mood: 8 },
   ];
 
+  const filteredPatients = patients.filter(patient =>
+    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.email.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleStatusChange = async (patientId: string, newStatus: 'active' | 'inactive') => {
+    console.log(`Alterando status do paciente ${patientId} para ${newStatus}`);
+    // Implementar lógica do Supabase
+  };
+
+  const handleViewRecord = (patientId: string) => {
+    navigate(`/medical-record?patient=${patientId}`);
+  };
+
+  const handleSendTask = (patientId: string) => {
+    setSelectedPatientForTask(patientId);
+    setIsTaskModalOpen(true);
+  };
+
+  const handleViewMoodChart = (patientId: string) => {
+    setSelectedPatientForMood(patientId);
+    setIsMoodModalOpen(true);
+  };
+
+  const handleSendTaskSubmit = async (task: {
+    title: string;
+    description: string;
+    dueDate?: Date;
+  }) => {
+    console.log('Enviando tarefa:', task, 'para paciente:', selectedPatientForTask);
+    // Implementar lógica do Supabase
+  };
+
+  const handleMarkNotificationAsRead = (notificationId: string) => {
+    console.log('Marcando notificação como lida:', notificationId);
+    // Implementar lógica do Supabase
+  };
+
+  const totalPendingTasks = patients.reduce((total, patient) => total + patient.pendingTasks, 0);
+  const newResponses = notifications.filter(n => n.type === 'new_response').length;
+  const activePatients = patients.filter(p => p.status === 'active').length;
+  const alertPatients = patients.filter(p => p.alertLevel === 'high').length;
+
   return (
-    <DashboardLayout userType="psychologist" userName="Dr. João Santos">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Dashboard Profissional</h1>
-          <p className="text-gray-600">Gerencie seus pacientes e acompanhe o progresso</p>
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Pacientes Ativos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-emerald-600">24</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Sessões Esta Semana</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-blue-600">18</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Próximas Sessões</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">5</div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Taxa de Adesão</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-green-600">87%</div>
-            </CardContent>
-          </Card>
-        </div>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pacientes Recentes</CardTitle>
-              <CardDescription>Últimas atualizações</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {patients.map((patient) => (
-                  <div key={patient.id} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <p className="font-medium">{patient.name}</p>
-                      <p className="text-sm text-gray-600">Última sessão: {patient.lastSession}</p>
+    <div className="min-h-screen bg-gray-50 flex">
+      <PsychologistSidebar 
+        pendingTasks={totalPendingTasks}
+        newResponses={newResponses}
+      />
+      
+      <div className="flex-1 md:ml-0">
+        <main className="p-6">
+          <div className="space-y-6">
+            {/* Header */}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard Profissional</h1>
+              <p className="text-gray-600">Gerencie seus pacientes e acompanhe o progresso</p>
+            </div>
+            
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <Users className="h-4 w-4 mr-2" />
+                    Pacientes Ativos
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-emerald-600">{activePatients}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <ClipboardList className="h-4 w-4 mr-2" />
+                    Tarefas Pendentes
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-orange-600">{totalPendingTasks}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <TrendingUp className="h-4 w-4 mr-2" />
+                    Novas Respostas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-blue-600">{newResponses}</div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium flex items-center">
+                    <AlertTriangle className="h-4 w-4 mr-2" />
+                    Alertas
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold text-red-600">{alertPatients}</div>
+                </CardContent>
+              </Card>
+            </div>
+            
+            {/* Main Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Patients List */}
+              <div className="lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Pacientes</CardTitle>
+                    <CardDescription>Gerencie seus pacientes ativos</CardDescription>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                      <Input
+                        placeholder="Buscar pacientes..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-10"
+                      />
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <Badge variant={patient.status === "Ativo" ? "default" : "secondary"}>
-                        {patient.status}
-                      </Badge>
-                      <Button size="sm" variant="outline">Ver</Button>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {filteredPatients.map((patient) => (
+                        <PatientCard
+                          key={patient.id}
+                          patient={patient}
+                          onStatusChange={handleStatusChange}
+                          onViewRecord={handleViewRecord}
+                          onSendTask={handleSendTask}
+                          onViewMoodChart={handleViewMoodChart}
+                        />
+                      ))}
+                      {filteredPatients.length === 0 && (
+                        <div className="text-center py-8 text-gray-500">
+                          <Users className="h-12 w-12 mx-auto mb-3 opacity-50" />
+                          <p>Nenhum paciente encontrado</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  </CardContent>
+                </Card>
               </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Notificações</CardTitle>
-              <CardDescription>Alertas e lembretes importantes</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm font-medium text-yellow-800">Lembrete</p>
-                  <p className="text-sm text-yellow-700">Sessão com Maria Silva em 30 minutos</p>
-                </div>
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm font-medium text-blue-800">Nova Resposta</p>
-                  <p className="text-sm text-blue-700">João Santos completou a atividade de respiração</p>
-                </div>
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="text-sm font-medium text-green-800">Progresso</p>
-                  <p className="text-sm text-green-700">Ana Costa melhorou sua pontuação de humor</p>
-                </div>
+              
+              {/* Notifications */}
+              <div>
+                <NotificationCard 
+                  notifications={notifications}
+                  onMarkAsRead={handleMarkNotificationAsRead}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
+        </main>
       </div>
-    </DashboardLayout>
+
+      {/* Send Task Modal */}
+      <SendTaskModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        patientName={patients.find(p => p.id === selectedPatientForTask)?.name || ""}
+        onSendTask={handleSendTaskSubmit}
+      />
+
+      {/* Mood Chart Modal */}
+      <Dialog open={isMoodModalOpen} onOpenChange={setIsMoodModalOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Gráfico de Humor</DialogTitle>
+          </DialogHeader>
+          <MoodChart
+            patientName={patients.find(p => p.id === selectedPatientForMood)?.name || ""}
+            data={moodData}
+          />
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 
