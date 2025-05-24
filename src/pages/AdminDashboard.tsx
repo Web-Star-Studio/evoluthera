@@ -1,4 +1,4 @@
-import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminStats from "@/components/admin/AdminStats";
@@ -14,15 +14,12 @@ import AdminSettings from "@/components/admin/AdminSettings";
 import LegalDocumentsManager from "@/components/admin/LegalDocumentsManager";
 import SupportTickets from "@/components/admin/SupportTickets";
 import CommunicationManager from "@/components/admin/CommunicationManager";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { BarChart3, Users, DollarSign, FileText, Download, Shield, TrendingUp, Receipt, Settings, Scale, MessageSquare, Megaphone } from "lucide-react";
-
 const AdminDashboard = () => {
-  return (
-    <UniversalDashboardLayout userType="admin">
+  return <DashboardLayout userType="admin" userName="Admin Master">
       <div className="space-y-6">
         <div className="flex items-center gap-3">
-          <SidebarTrigger className="md:hidden" />
+          
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
             <p className="text-gray-600">Gestão completa da plataforma Evoluthera</p>
@@ -67,49 +64,48 @@ const AdminDashboard = () => {
         {/* Tabs para diferentes funcionalidades administrativas */}
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-10">
-            <TabsTrigger value="overview" data-tab="overview" className="flex items-center gap-2">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
             </TabsTrigger>
-            <TabsTrigger value="users" data-tab="users" className="flex items-center gap-2">
+            <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Usuários
             </TabsTrigger>
-            <TabsTrigger value="billing" data-tab="billing" className="flex items-center gap-2">
+            <TabsTrigger value="billing" className="flex items-center gap-2">
               <DollarSign className="h-4 w-4" />
               Cobrança
             </TabsTrigger>
-            <TabsTrigger value="billing-full" data-tab="billing-full" className="flex items-center gap-2">
+            <TabsTrigger value="billing-full" className="flex items-center gap-2">
               <Receipt className="h-4 w-4" />
               Faturamento
             </TabsTrigger>
-            <TabsTrigger value="support" data-tab="support" className="flex items-center gap-2">
+            <TabsTrigger value="support" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Suporte
             </TabsTrigger>
-            <TabsTrigger value="communications" data-tab="communications" className="flex items-center gap-2">
+            <TabsTrigger value="communications" className="flex items-center gap-2">
               <Megaphone className="h-4 w-4" />
               Comunicados
             </TabsTrigger>
-            <TabsTrigger value="documents" data-tab="documents" className="flex items-center gap-2">
+            <TabsTrigger value="documents" className="flex items-center gap-2">
               <Scale className="h-4 w-4" />
               Documentos
             </TabsTrigger>
-            <TabsTrigger value="settings" data-tab="settings" className="flex items-center gap-2">
+            <TabsTrigger value="settings" className="flex items-center gap-2">
               <Settings className="h-4 w-4" />
               Configurações
             </TabsTrigger>
-            <TabsTrigger value="logs" data-tab="logs" className="flex items-center gap-2">
+            <TabsTrigger value="logs" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
               Logs
             </TabsTrigger>
-            <TabsTrigger value="reports" data-tab="reports" className="flex items-center gap-2">
+            <TabsTrigger value="reports" className="flex items-center gap-2">
               <Download className="h-4 w-4" />
               Relatórios
             </TabsTrigger>
           </TabsList>
 
-          
           <TabsContent value="overview">
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -216,8 +212,6 @@ const AdminDashboard = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </UniversalDashboardLayout>
-  );
+    </DashboardLayout>;
 };
-
 export default AdminDashboard;

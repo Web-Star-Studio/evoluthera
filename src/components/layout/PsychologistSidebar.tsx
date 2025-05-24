@@ -1,224 +1,197 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { useNavigate, useLocation } from "react-router-dom";
 import { 
-  BarChart3, 
   Users, 
-  FileText, 
-  UserCheck, 
   ClipboardList, 
-  Bell, 
+  FileText, 
   Calendar, 
-  TrendingUp, 
-  MessageSquare, 
-  Settings,
-  LogOut 
+  BarChart3, 
+  Settings, 
+  LogOut,
+  Menu,
+  X,
+  Bell,
+  TrendingUp,
+  UserCheck
 } from "lucide-react";
 
-const PsychologistSidebar = () => {
+interface PsychologistSidebarProps {
+  pendingTasks?: number;
+  newResponses?: number;
+}
+
+const PsychologistSidebar = ({ pendingTasks = 0, newResponses = 0 }: PsychologistSidebarProps) => {
+  const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { signOut, profile } = useAuth();
-  const { state } = useSidebar();
-  const [pendingTasks, setPendingTasks] = useState(0);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
-
-  useEffect(() => {
-    if (profile?.id) {
-      fetchCounts();
-    }
-  }, [profile?.id]);
-
-  const fetchCounts = async () => {
-    try {
-      // Fetch pending tasks
-      const { data: tasks } = await supabase
-        .from('tasks')
-        .select('*')
-        .eq('psychologist_id', profile?.id)
-        .eq('status', 'pending');
-
-      // Fetch unread notifications
-      const { data: notifications } = await supabase
-        .from('anamnesis_notifications')
-        .select('*')
-        .eq('recipient_id', profile?.id)
-        .is('read_at', null);
-
-      setPendingTasks(tasks?.length || 0);
-      setUnreadNotifications(notifications?.length || 0);
-    } catch (error) {
-      console.error('Error fetching counts:', error);
-    }
-  };
 
   const menuItems = [
     {
-      title: "Dashboard",
       icon: BarChart3,
+      label: "Dashboard",
       path: "/psychologist-dashboard",
+      badge: null
     },
     {
-      title: "Pacientes",
       icon: Users,
-      path: "/psychologist-dashboard#patients",
+      label: "Pacientes",
+      path: "/psychologist-dashboard",
+      badge: null
     },
     {
-      title: "Prontuários",
       icon: FileText,
+      label: "Prontuários",
       path: "/medical-record",
+      badge: null
     },
     {
-      title: "Anamneses",
       icon: UserCheck,
+      label: "Anamneses",
       path: "/anamnesis-management",
+      badge: null
     },
     {
-      title: "Tarefas",
       icon: ClipboardList,
+      label: "Tarefas",
       path: "/activities",
-      badge: pendingTasks > 0 ? pendingTasks : undefined,
+      badge: pendingTasks > 0 ? pendingTasks : null
     },
     {
-      title: "Notificações",
       icon: Bell,
-      path: "/psychologist-dashboard#notifications",
-      badge: unreadNotifications > 0 ? unreadNotifications : undefined,
+      label: "Respostas",
+      path: "/psychologist-dashboard",
+      badge: newResponses > 0 ? newResponses : null
     },
     {
-      title: "Agenda",
       icon: Calendar,
+      label: "Agenda",
       path: "/calendar",
+      badge: null
     },
     {
-      title: "Relatórios",
       icon: TrendingUp,
-      path: "/psychologist-dashboard#reports",
+      label: "Relatórios",
+      path: "/reports",
+      badge: null
     },
     {
-      title: "Chat",
-      icon: MessageSquare,
-      path: "/chat",
-    },
-    {
-      title: "Configurações",
       icon: Settings,
+      label: "Configurações",
       path: "/settings",
-    },
+      badge: null
+    }
   ];
 
   const handleNavigation = (path: string) => {
-    if (path.includes("#")) {
-      const [route, hash] = path.split("#");
-      navigate(route);
-      setTimeout(() => {
-        const element = document.querySelector(`[data-tab="${hash}"]`);
-        if (element) {
-          element.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 100);
-    } else {
-      navigate(path);
-    }
+    navigate(path);
+    setIsOpen(false);
   };
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+  const handleLogout = () => {
+    // Implementar logout
+    navigate("/login");
   };
 
   const isActivePath = (path: string) => {
-    if (path.includes("#")) {
-      const route = path.split("#")[0];
-      return location.pathname === route;
-    }
     return location.pathname === path;
   };
 
-  return (
-    <Sidebar>
-      <SidebarHeader className="border-b p-4">
-        <div className="flex items-center gap-3">
-          <SidebarTrigger className="md:hidden" />
-          <img 
-            src="/lovable-uploads/2efc273a-5ee9-4b8d-9f84-75c1295f89eb.png" 
-            alt="Evoluthera Logo" 
-            className={`transition-all ${state === "collapsed" ? "h-8 w-8" : "h-8 w-auto"}`}
-          />
-          {state === "expanded" && (
-            <div className="flex flex-col">
-              <span className="font-semibold text-sm">Psicólogo</span>
-              <span className="text-xs text-muted-foreground">Painel Profissional</span>
-            </div>
-          )}
-        </div>
-      </SidebarHeader>
-
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    onClick={() => handleNavigation(item.path)}
-                    isActive={isActivePath(item.path)}
-                    tooltip={state === "collapsed" ? item.title : undefined}
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.title}</span>
-                    {item.badge && state === "expanded" && (
-                      <Badge variant="destructive" className="ml-auto">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-
-      <SidebarFooter className="border-t p-4">
-        <div className="space-y-2">
-          {state === "expanded" && (
-            <div className="px-2 py-1">
-              <p className="text-sm font-medium">Dr(a). {profile?.name || 'Psicólogo'}</p>
-              <p className="text-xs text-muted-foreground">CRP: 06/123456</p>
-            </div>
-          )}
+  const sidebarContent = (
+    <div className="flex flex-col h-full">
+      <div className="p-6 border-b">
+        <div className="flex items-center justify-between">
+          <img src="/lovable-uploads/f22ddfd1-16b6-4226-871a-0a3f6b79261c.png" alt="Evolut Logo" className="h-8 w-auto" />
           <Button
             variant="ghost"
-            className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
-            onClick={handleSignOut}
+            size="sm"
+            onClick={() => setIsOpen(false)}
+            className="md:hidden"
           >
-            <LogOut className="h-4 w-4" />
-            {state === "expanded" && <span>Sair</span>}
+            <X className="h-5 w-5" />
           </Button>
         </div>
-      </SidebarFooter>
-    </Sidebar>
+        <p className="text-sm text-gray-600 mt-1">Dashboard Profissional</p>
+      </div>
+
+      <ScrollArea className="flex-1 p-4">
+        <nav className="space-y-2">
+          {menuItems.map((item) => (
+            <Button
+              key={item.path}
+              variant={isActivePath(item.path) ? "default" : "ghost"}
+              className={`w-full justify-start ${
+                isActivePath(item.path) 
+                  ? "text-white hover:bg-blue-600" 
+                  : "hover:bg-gray-100"
+              }`}
+              style={{ 
+                backgroundColor: isActivePath(item.path) ? '#1893f8' : undefined,
+                color: isActivePath(item.path) ? 'white' : undefined
+              }}
+              onClick={() => handleNavigation(item.path)}
+            >
+              <item.icon className="h-5 w-5 mr-3" />
+              <span className="flex-1 text-left">{item.label}</span>
+              {item.badge && (
+                <Badge variant="secondary" className="ml-2">
+                  {item.badge}
+                </Badge>
+              )}
+            </Button>
+          ))}
+        </nav>
+      </ScrollArea>
+
+      <div className="p-4 border-t">
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
+          onClick={handleLogout}
+        >
+          <LogOut className="h-5 w-5 mr-3" />
+          Sair
+        </Button>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Mobile menu button */}
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => setIsOpen(true)}
+        className="md:hidden fixed top-4 left-4 z-50"
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`
+          fixed left-0 top-0 h-full bg-white border-r border-gray-200 z-50
+          transition-transform duration-300 ease-in-out
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          md:translate-x-0 md:static md:z-auto
+          w-64
+        `}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
 

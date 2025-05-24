@@ -1,17 +1,14 @@
 
-import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
+import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useAuth } from "@/contexts/AuthContext";
 
 const Settings = () => {
-  const { profile } = useAuth();
-  
   return (
-    <UniversalDashboardLayout userType={profile?.user_type}>
+    <DashboardLayout userType="patient" userName="Maria Silva">
       <div className="max-w-4xl mx-auto space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Configurações</h1>
@@ -27,11 +24,11 @@ const Settings = () => {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="name">Nome Completo</Label>
-                <Input id="name" defaultValue={profile?.name || ""} />
+                <Input id="name" defaultValue="Maria Silva" />
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" defaultValue={profile?.email || ""} />
+                <Input id="email" type="email" defaultValue="maria@exemplo.com" />
               </div>
               <div>
                 <Label htmlFor="phone">Telefone</Label>
@@ -118,7 +115,7 @@ const Settings = () => {
           </Card>
         </div>
       </div>
-    </UniversalDashboardLayout>
+    </DashboardLayout>
   );
 };
 
