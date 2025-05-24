@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Users, TrendingUp, Shield, MessageCircle, Calendar, FileText, BarChart3, Heart, Award, CheckCircle, ArrowRight, Mail, Phone, ChevronDown, ChevronUp, Star, Gamepad2, Clock, Lock } from "lucide-react";
+import { Brain, Users, TrendingUp, Shield, MessageCircle, Calendar, FileText, BarChart3, Heart, Award, CheckCircle, ArrowRight, Mail, Phone, ChevronDown, ChevronUp, Star, Gamepad2, Clock, Lock, Sparkles, Target, Zap } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const LandingPage = () => {
@@ -99,29 +99,131 @@ const LandingPage = () => {
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="pt-20 pb-16 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <Badge className="mb-6 bg-blue-100 text-blue-800 border-blue-200">
-                R$20/mês por paciente ativo
-              </Badge>
-              <h1 className="text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-                Acompanhe. <span className="text-blue-600">Evolua.</span> Conecte.
-              </h1>
-              <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                A plataforma inteligente que transforma o acompanhamento terapêutico.
-              </p>
-              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700 text-lg px-8 py-4">
-                <Link to="/register">
-                  Quero conhecer a Evolut
-                  <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
+      {/* Enhanced Hero Section */}
+      <section className="relative pt-20 pb-32 min-h-screen flex items-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 overflow-hidden">
+        {/* Background Elements */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-200 rounded-full opacity-20 animate-pulse"></div>
+          <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-indigo-200 rounded-full opacity-20 animate-pulse" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-purple-200 rounded-full opacity-10 animate-pulse" style={{ animationDelay: '2s' }}></div>
+        </div>
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="grid lg:grid-cols-2 gap-16 items-center min-h-[80vh]">
+            <div className="space-y-8 animate-fade-in">
+              {/* Premium Badge */}
+              <div className="flex items-center space-x-3">
+                <Badge className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-0 px-6 py-2 text-sm font-medium shadow-lg">
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  R$20/mês por paciente ativo
+                </Badge>
+                <Badge variant="outline" className="border-green-300 text-green-700 bg-green-50">
+                  <Zap className="w-3 h-3 mr-1" />
+                  Sem taxa de adesão
+                </Badge>
+              </div>
+
+              {/* Main Heading */}
+              <div className="space-y-6">
+                <h1 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-gray-900 leading-tight">
+                  <span className="block">Acompanhe.</span>
+                  <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Evolua.
+                  </span>
+                  <span className="block">Conecte.</span>
+                </h1>
+                
+                <p className="text-xl lg:text-2xl text-gray-600 leading-relaxed max-w-2xl">
+                  A plataforma inteligente que transforma o acompanhamento terapêutico com 
+                  <span className="font-semibold text-blue-600"> dados em tempo real</span> e 
+                  <span className="font-semibold text-indigo-600"> gamificação inovadora</span>.
+                </p>
+              </div>
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-8 py-6">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-600">70%</div>
+                  <div className="text-sm text-gray-600">+ Engajamento</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-indigo-600">24/7</div>
+                  <div className="text-sm text-gray-600">Acompanhamento</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-600">100%</div>
+                  <div className="text-sm text-gray-600">Seguro LGPD</div>
+                </div>
+              </div>
+
+              {/* CTA Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button asChild size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-lg px-8 py-4 h-auto shadow-xl transform hover:scale-105 transition-all duration-200">
+                  <Link to="/register">
+                    <Target className="mr-3 h-5 w-5" />
+                    Começar Gratuitamente
+                    <ArrowRight className="ml-3 h-5 w-5" />
+                  </Link>
+                </Button>
+                <Button variant="outline" size="lg" className="border-2 border-gray-300 hover:border-blue-600 hover:bg-blue-50 text-lg px-8 py-4 h-auto">
+                  <Heart className="mr-2 h-5 w-5" />
+                  Agendar Demo
+                </Button>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="flex items-center space-x-6 pt-6 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <Shield className="w-4 h-4 mr-2 text-green-600" />
+                  Certificado LGPD
+                </div>
+                <div className="flex items-center">
+                  <Lock className="w-4 h-4 mr-2 text-blue-600" />
+                  Dados Criptografados
+                </div>
+                <div className="flex items-center">
+                  <Award className="w-4 h-4 mr-2 text-purple-600" />
+                  ISO 27001
+                </div>
+              </div>
             </div>
-            <div className="relative">
-              <img src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=800&q=80" alt="Psicólogo e paciente interagindo com plataforma digital" className="rounded-2xl shadow-2xl" />
+
+            {/* Hero Image */}
+            <div className="relative lg:pl-12 animate-fade-in" style={{ animationDelay: '0.3s' }}>
+              <div className="relative">
+                {/* Floating Elements */}
+                <div className="absolute -top-6 -left-6 w-24 h-24 bg-gradient-to-br from-blue-500 to-indigo-500 rounded-2xl shadow-lg transform rotate-12 animate-pulse opacity-80"></div>
+                <div className="absolute -bottom-6 -right-6 w-32 h-32 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full shadow-lg animate-pulse opacity-60" style={{ animationDelay: '1s' }}></div>
+                
+                {/* Main Image */}
+                <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl transform hover:scale-105 transition-transform duration-500">
+                  <img 
+                    src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=800&q=80" 
+                    alt="Psicólogo e paciente interagindo com plataforma digital" 
+                    className="w-full h-auto"
+                  />
+                  
+                  {/* Overlay with stats */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-6 left-6 right-6">
+                    <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <div className="text-sm text-gray-600">Progresso do Paciente</div>
+                          <div className="text-2xl font-bold text-green-600">+85%</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm text-gray-600">Esta Semana</div>
+                          <div className="flex items-center text-blue-600">
+                            <TrendingUp className="w-4 h-4 mr-1" />
+                            <span className="font-semibold">Em alta</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
