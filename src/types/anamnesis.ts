@@ -40,12 +40,15 @@ export interface AnamnesisApplication {
   psychologist_notes: Record<string, string>;
   status: 'sent' | 'in_progress' | 'completed' | 'locked';
   sent_at: string;
-  started_at?: string;
-  completed_at?: string;
-  locked_at?: string;
+  started_at?: string | null;
+  completed_at?: string | null;
+  locked_at?: string | null;
   created_at: string;
   updated_at: string;
-  template?: AnamnesisTemplate;
+  template?: {
+    name: string;
+    description?: string;
+  };
   patient?: {
     name: string;
     email: string;

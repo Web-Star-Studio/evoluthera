@@ -26,8 +26,15 @@ export const useAnamnesisTemplates = () => {
       
       // Convert the data to match our types
       const convertedTemplates: AnamnesisTemplate[] = (data || []).map(template => ({
-        ...template,
-        sections: template.sections as any, // Will be properly typed as AnamnesisSection[]
+        id: template.id,
+        psychologist_id: template.psychologist_id,
+        name: template.name,
+        description: template.description || undefined,
+        sections: (template.sections as any) || [],
+        is_default: template.is_default,
+        is_published: template.is_published,
+        created_at: template.created_at,
+        updated_at: template.updated_at,
       }));
       
       setTemplates(convertedTemplates);
@@ -54,8 +61,12 @@ export const useAnamnesisTemplates = () => {
       
       // Convert the data to match our types
       const convertedDefaultTemplates: DefaultTemplate[] = (data || []).map(template => ({
-        ...template,
-        sections: template.sections as any, // Will be properly typed as AnamnesisSection[]
+        id: template.id,
+        name: template.name,
+        description: template.description || undefined,
+        category: template.category,
+        sections: (template.sections as any) || [],
+        created_at: template.created_at,
       }));
       
       setDefaultTemplates(convertedDefaultTemplates);
@@ -69,10 +80,19 @@ export const useAnamnesisTemplates = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('Usuário não autenticado');
 
+      // Ensure required fields are present
+      if (!template.name) {
+        throw new Error('Nome do template é obrigatório');
+      }
+
       const { data, error } = await supabase
         .from('anamnesis_templates')
         .insert({
-          ...template,
+          name: template.name,
+          description: template.description,
+          sections: template.sections as any,
+          is_default: template.is_default || false,
+          is_published: template.is_published || false,
           psychologist_id: user.user.id,
         })
         .select()
@@ -100,9 +120,17 @@ export const useAnamnesisTemplates = () => {
 
   const updateTemplate = async (id: string, updates: Partial<AnamnesisTemplate>) => {
     try {
+      const updateData: any = {};
+      
+      if (updates.name !== undefined) updateData.name = updates.name;
+      if (updates.description !== undefined) updateData.description = updates.description;
+      if (updates.sections !== undefined) updateData.sections = updates.sections;
+      if (updates.is_default !== undefined) updateData.is_default = updates.is_default;
+      if (updates.is_published !== undefined) updateData.is_published = updates.is_published;
+
       const { error } = await supabase
         .from('anamnesis_templates')
-        .update(updates)
+        .update(updateData)
         .eq('id', id);
 
       if (error) throw error;

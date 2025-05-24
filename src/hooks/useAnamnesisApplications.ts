@@ -19,18 +19,28 @@ export const useAnamnesisApplications = () => {
         .from('anamnesis_applications')
         .select(`
           *,
-          template:anamnesis_templates(name, description),
+          template:anamnesis_templates!inner(name, description),
           patient:profiles!anamnesis_applications_patient_id_fkey(name, email)
         `)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       
-      // Convert the data to match our types
+      // Convert the data to match our types with proper type casting
       const convertedApplications: AnamnesisApplication[] = (data || []).map(app => ({
-        ...app,
-        responses: app.responses as Record<string, any>,
-        psychologist_notes: app.psychologist_notes as Record<string, string>,
+        id: app.id,
+        template_id: app.template_id,
+        patient_id: app.patient_id,
+        psychologist_id: app.psychologist_id,
+        responses: (app.responses as any) || {},
+        psychologist_notes: (app.psychologist_notes as any) || {},
+        status: app.status as 'sent' | 'in_progress' | 'completed' | 'locked',
+        sent_at: app.sent_at,
+        started_at: app.started_at,
+        completed_at: app.completed_at,
+        locked_at: app.locked_at,
+        created_at: app.created_at,
+        updated_at: app.updated_at,
         template: app.template ? {
           name: app.template.name,
           description: app.template.description || undefined,
