@@ -9,6 +9,7 @@ import UsersTable from "@/components/admin/UsersTable";
 import BillingMetrics from "@/components/admin/BillingMetrics";
 import BillingDashboard from "@/components/admin/BillingDashboard";
 import SystemLogs from "@/components/admin/SystemLogs";
+import AdminLogs from "@/components/admin/AdminLogs";
 import ReportExport from "@/components/admin/ReportExport";
 import AdminSettings from "@/components/admin/AdminSettings";
 import LegalDocumentsManager from "@/components/admin/LegalDocumentsManager";
