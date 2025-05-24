@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -17,7 +16,7 @@ interface AuthContextType {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
-  signUp: (email: string, password: string, userData: { name: string; user_type: string }) => Promise<void>;
+  signUp: (email: string, password: string, userData: { name: string; user_type: string; crp?: string }) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
@@ -109,7 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, userData: { name: string; user_type: string }) => {
+  const signUp = async (email: string, password: string, userData: { name: string; user_type: string; crp?: string }) => {
     try {
       setLoading(true);
       
@@ -120,6 +119,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             name: userData.name,
             user_type: userData.user_type,
+            crp: userData.crp,
           }
         }
       });
@@ -128,14 +128,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data.user) {
         // Create or update profile
+        const profileData: any = {
+          id: data.user.id,
+          name: userData.name,
+          email: email,
+          user_type: userData.user_type,
+        };
+
+        // Add CRP to profile if it's provided (for psychologists)
+        if (userData.crp) {
+          profileData.crp = userData.crp;
+        }
+
         const { error: profileError } = await supabase
           .from('profiles')
-          .upsert({
-            id: data.user.id,
-            name: userData.name,
-            email: email,
-            user_type: userData.user_type,
-          });
+          .upsert(profileData);
 
         if (profileError) {
           console.error('Error creating profile:', profileError);
