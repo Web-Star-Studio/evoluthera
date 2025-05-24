@@ -149,7 +149,7 @@ const LegalDocumentsManager = () => {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>
-                    {documentTypes.find(d => d.document_type === selectedDocument.document_type)?.title}
+                    {documentTypes.find(d => d.type === selectedDocument.document_type)?.title}
                   </CardTitle>
                   <TabsList>
                     <TabsTrigger value="editor">Editor</TabsTrigger>

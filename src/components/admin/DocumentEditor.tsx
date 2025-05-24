@@ -17,6 +17,8 @@ interface LegalDocument {
   content: string;
   content_type: string;
   version: number;
+  created_at: string;
+  updated_at: string;
 }
 
 interface DocumentEditorProps {
