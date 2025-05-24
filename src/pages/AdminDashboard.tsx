@@ -14,6 +14,7 @@ import ReportExport from "@/components/admin/ReportExport";
 import AdminSettings from "@/components/admin/AdminSettings";
 import LegalDocumentsManager from "@/components/admin/LegalDocumentsManager";
 import SupportTickets from "@/components/admin/SupportTickets";
+import CommunicationManager from "@/components/admin/CommunicationManager";
 import { 
   BarChart3, 
   Users, 
@@ -25,7 +26,8 @@ import {
   Receipt,
   Settings,
   Scale,
-  MessageSquare
+  MessageSquare,
+  Megaphone
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -77,7 +79,7 @@ const AdminDashboard = () => {
         
         {/* Tabs para diferentes funcionalidades administrativas */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-9">
+          <TabsList className="grid w-full grid-cols-10">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
@@ -97,6 +99,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="support" className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
               Suporte
+            </TabsTrigger>
+            <TabsTrigger value="communications" className="flex items-center gap-2">
+              <Megaphone className="h-4 w-4" />
+              Comunicados
             </TabsTrigger>
             <TabsTrigger value="documents" className="flex items-center gap-2">
               <Scale className="h-4 w-4" />
@@ -199,6 +205,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="support">
             <SupportTickets />
+          </TabsContent>
+
+          <TabsContent value="communications">
+            <CommunicationManager />
           </TabsContent>
 
           <TabsContent value="documents">

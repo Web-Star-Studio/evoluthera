@@ -80,6 +80,54 @@ export type Database = {
           },
         ]
       }
+      admin_communications: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          message: string
+          message_type: string
+          scheduled_at: string | null
+          send_email: boolean
+          sent_at: string | null
+          status: string
+          target_type: string
+          target_users: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          message: string
+          message_type?: string
+          scheduled_at?: string | null
+          send_email?: boolean
+          sent_at?: string | null
+          status?: string
+          target_type: string
+          target_users?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          message?: string
+          message_type?: string
+          scheduled_at?: string | null
+          send_email?: boolean
+          sent_at?: string | null
+          status?: string
+          target_type?: string
+          target_users?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_settings: {
         Row: {
           created_at: string
@@ -491,6 +539,67 @@ export type Database = {
             columns: ["psychologist_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_reads: {
+        Row: {
+          communication_id: string
+          id: string
+          read_at: string
+          user_id: string
+        }
+        Insert: {
+          communication_id: string
+          id?: string
+          read_at?: string
+          user_id: string
+        }
+        Update: {
+          communication_id?: string
+          id?: string
+          read_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_reads_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "admin_communications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communication_recipients: {
+        Row: {
+          communication_id: string
+          email_sent: boolean | null
+          email_sent_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          communication_id: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          communication_id?: string
+          email_sent?: boolean | null
+          email_sent_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_recipients_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "admin_communications"
             referencedColumns: ["id"]
           },
         ]
@@ -1745,8 +1854,23 @@ export type Database = {
         Args: { key_name: string }
         Returns: Json
       }
+      get_unread_communications: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          id: string
+          title: string
+          message: string
+          message_type: string
+          created_at: string
+          sender_name: string
+        }[]
+      }
       is_admin: {
         Args: { user_id: string }
+        Returns: boolean
+      }
+      mark_communication_as_read: {
+        Args: { communication_uuid: string }
         Returns: boolean
       }
       reopen_support_ticket: {
