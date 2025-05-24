@@ -1338,9 +1338,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      admin_metrics: {
+        Row: {
+          active_patients_current_month: number | null
+          active_patients_previous_month: number | null
+          new_patients_last_30_days: number | null
+          total_psychologists: number | null
+        }
+        Relationships: []
+      }
+      monthly_evolution: {
+        Row: {
+          count: number | null
+          cumulative_count: number | null
+          metric_type: string | null
+          month: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      calculate_estimated_revenue: {
+        Args: { target_month?: string }
+        Returns: number
+      }
       check_daily_message_limit: {
         Args: { p_patient_id: string; p_psychologist_id: string }
         Returns: boolean

@@ -2,46 +2,34 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, UserCheck, DollarSign, Activity } from "lucide-react";
+import { Users, UserCheck, DollarSign, TrendingUp } from "lucide-react";
 
 const AdminStats = () => {
   const { data: stats } = useQuery({
-    queryKey: ['admin-stats'],
+    queryKey: ['admin-metrics'],
     queryFn: async () => {
-      // Total de psicólogos
-      const { count: psychologistsCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_type', 'psychologist');
+      // Buscar métricas principais
+      const { data: metrics } = await supabase
+        .from('admin_metrics')
+        .select('*')
+        .single();
 
-      // Total de pacientes ativos
-      const { count: patientsCount } = await supabase
-        .from('patients')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'active');
+      // Calcular receita estimada do mês atual
+      const { data: revenue } = await supabase.rpc('calculate_estimated_revenue');
 
-      // Receita estimada (último mês)
-      const { data: revenue } = await supabase
-        .from('billing_metrics')
-        .select('revenue_amount')
-        .gte('month_year', new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0]);
-
-      const totalRevenue = revenue?.reduce((sum, record) => sum + (Number(record.revenue_amount) || 0), 0) || 0;
-
-      // Atividade recente (sessões últimos 7 dias)
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      
-      const { count: recentSessions } = await supabase
-        .from('sessions')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', sevenDaysAgo.toISOString());
+      // Calcular crescimento de pacientes
+      const activePatientsCurrent = metrics?.active_patients_current_month || 0;
+      const activePatientsLast30Days = metrics?.new_patients_last_30_days || 0;
+      const growthPercentage = activePatientsCurrent > 0 
+        ? ((activePatientsLast30Days / activePatientsCurrent) * 100).toFixed(1)
+        : 0;
 
       return {
-        psychologists: psychologistsCount || 0,
-        activePatients: patientsCount || 0,
-        estimatedRevenue: totalRevenue,
-        recentSessions: recentSessions || 0
+        totalPsychologists: metrics?.total_psychologists || 0,
+        activePatients: activePatientsCurrent,
+        estimatedRevenue: revenue || 0,
+        newPatientsLast30Days: activePatientsLast30Days,
+        growthPercentage: Number(growthPercentage)
       };
     }
   });
@@ -49,47 +37,58 @@ const AdminStats = () => {
   const statCards = [
     {
       title: "Total de Psicólogos",
-      value: stats?.psychologists || 0,
+      value: stats?.totalPsychologists || 0,
       icon: Users,
-      color: "text-blue-600"
+      color: "text-blue-600",
+      bgColor: "bg-blue-50",
+      description: "Cadastrados na plataforma"
     },
     {
       title: "Pacientes Ativos",
       value: stats?.activePatients || 0,
       icon: UserCheck,
-      color: "text-green-600"
+      color: "text-green-600",
+      bgColor: "bg-green-50",
+      description: "No mês atual"
     },
     {
       title: "Receita Estimada",
-      value: `R$ ${(stats?.estimatedRevenue || 0).toLocaleString('pt-BR')}`,
+      value: `R$ ${(stats?.estimatedRevenue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
       icon: DollarSign,
-      color: "text-emerald-600"
+      color: "text-emerald-600",
+      bgColor: "bg-emerald-50",
+      description: "Baseada em pacientes ativos"
     },
     {
-      title: "Sessões (7 dias)",
-      value: stats?.recentSessions || 0,
-      icon: Activity,
-      color: "text-purple-600"
+      title: "Crescimento (30 dias)",
+      value: `+${stats?.newPatientsLast30Days || 0}`,
+      icon: TrendingUp,
+      color: "text-purple-600",
+      bgColor: "bg-purple-50",
+      description: `${stats?.growthPercentage || 0}% de crescimento`
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       {statCards.map((stat, index) => (
-        <Card key={index}>
-          <CardHeader className="pb-2">
+        <Card key={index} className="hover:shadow-lg transition-shadow duration-200">
+          <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-medium text-gray-600">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-5 w-5 ${stat.color}`} />
+              <div>
+                <CardTitle className="text-sm font-medium text-gray-600 mb-1">
+                  {stat.title}
+                </CardTitle>
+                <div className={`text-2xl font-bold ${stat.color}`}>
+                  {stat.value}
+                </div>
+                <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
+              </div>
+              <div className={`p-3 rounded-full ${stat.bgColor}`}>
+                <stat.icon className={`h-6 w-6 ${stat.color}`} />
+              </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${stat.color}`}>
-              {stat.value}
-            </div>
-          </CardContent>
         </Card>
       ))}
     </div>

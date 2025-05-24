@@ -1,9 +1,10 @@
 
-import { useState } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AdminStats from "@/components/admin/AdminStats";
+import MonthlyEvolutionChart from "@/components/admin/MonthlyEvolutionChart";
+import RevenueChart from "@/components/admin/RevenueChart";
 import UsersTable from "@/components/admin/UsersTable";
 import BillingMetrics from "@/components/admin/BillingMetrics";
 import SystemLogs from "@/components/admin/SystemLogs";
@@ -14,7 +15,8 @@ import {
   DollarSign, 
   FileText, 
   Download,
-  Shield
+  Shield,
+  TrendingUp
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -25,16 +27,52 @@ const AdminDashboard = () => {
           <Shield className="h-8 w-8 text-red-600" />
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Painel Administrativo</h1>
-            <p className="text-gray-600">Gestão completa da plataforma</p>
+            <p className="text-gray-600">Gestão completa da plataforma Evoluthera</p>
           </div>
         </div>
         
-        {/* Dashboard Stats */}
+        {/* KPIs Principais */}
         <AdminStats />
         
-        {/* Tabs for different admin functions */}
-        <Tabs defaultValue="users" className="space-y-6">
+        {/* Gráficos de Evolução */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <RevenueChart />
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-blue-600" />
+                Resumo de Crescimento
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <h4 className="font-semibold text-blue-900">Meta de Crescimento</h4>
+                  <p className="text-sm text-blue-700">Objetivo: 20% ao mês</p>
+                </div>
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <h4 className="font-semibold text-green-900">Receita por Paciente</h4>
+                  <p className="text-sm text-green-700">R$ 5,00 por paciente ativo</p>
+                </div>
+                <div className="p-4 bg-purple-50 rounded-lg">
+                  <h4 className="font-semibold text-purple-900">Projeção Mensal</h4>
+                  <p className="text-sm text-purple-700">Baseada em ativações</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Gráfico de Evolução Mensal */}
+        <MonthlyEvolutionChart />
+        
+        {/* Tabs para diferentes funcionalidades administrativas */}
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger value="overview" className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              Visão Geral
+            </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Usuários
@@ -51,27 +89,7 @@ const AdminDashboard = () => {
               <Download className="h-4 w-4" />
               Relatórios
             </TabsTrigger>
-            <TabsTrigger value="overview" className="flex items-center gap-2">
-              <BarChart3 className="h-4 w-4" />
-              Visão Geral
-            </TabsTrigger>
           </TabsList>
-
-          <TabsContent value="users">
-            <UsersTable />
-          </TabsContent>
-
-          <TabsContent value="billing">
-            <BillingMetrics />
-          </TabsContent>
-
-          <TabsContent value="logs">
-            <SystemLogs />
-          </TabsContent>
-
-          <TabsContent value="reports">
-            <ReportExport />
-          </TabsContent>
 
           <TabsContent value="overview">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -139,6 +157,22 @@ const AdminDashboard = () => {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="users">
+            <UsersTable />
+          </TabsContent>
+
+          <TabsContent value="billing">
+            <BillingMetrics />
+          </TabsContent>
+
+          <TabsContent value="logs">
+            <SystemLogs />
+          </TabsContent>
+
+          <TabsContent value="reports">
+            <ReportExport />
           </TabsContent>
         </Tabs>
       </div>
