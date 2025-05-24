@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +29,7 @@ const LandingPage = () => {
 
   const testimonials = [
     {
-      quote: "A Evolut me permite acompanhar meus pacientes mesmo nos intervalos das sessões. Sinto que minha prática ficou mais completa.",
+      quote: "A Evoluthera me permite acompanhar meus pacientes mesmo nos intervalos das sessões. Sinto que minha prática ficou mais completa.",
       author: "Dra. Juliana Ribeiro",
       role: "Psicóloga Clínica",
       location: "Recife"
@@ -51,16 +50,16 @@ const LandingPage = () => {
 
   const faqs = [
     {
-      question: "Quanto custa para usar a Evolut?",
-      answer: "A Evolut cobra apenas R$ 20,00 por mês para cada paciente ativo. Não há taxa de adesão ou mensalidade fixa. Você só paga pelo que usar."
+      question: "Quanto custa para usar a Evoluthera?",
+      answer: "A Evoluthera cobra apenas R$ 20,00 por mês para cada paciente ativo. Não há taxa de adesão ou mensalidade fixa. Você só paga pelo que usar."
     },
     {
       question: "O paciente precisa pagar alguma coisa?",
       answer: "Não! O paciente não paga nada para usar a plataforma. Todo o custo é responsabilidade do psicólogo, que pode incluir esse valor no honorário da terapia."
     },
     {
-      question: "A Evolut substitui a terapia?",
-      answer: "Absolutamente não. A Evolut é uma ferramenta de apoio que potencializa o trabalho terapêutico, mas nunca substitui o profissional ou as sessões presenciais/online."
+      question: "A Evoluthera substitui a terapia?",
+      answer: "Absolutamente não. A Evoluthera é uma ferramenta de apoio que potencializa o trabalho terapêutico, mas nunca substitui o profissional ou as sessões presenciais/online."
     },
     {
       question: "Os dados dos pacientes são seguros?",
@@ -71,8 +70,8 @@ const LandingPage = () => {
       answer: "A cobrança é automática e mensal. Você recebe uma fatura com o valor correspondente ao número de pacientes ativos no período."
     },
     {
-      question: "Posso usar a Evolut com pacientes presenciais?",
-      answer: "Claro! A Evolut funciona perfeitamente tanto com pacientes presenciais quanto online, potencializando o acompanhamento entre as sessões."
+      question: "Posso usar a Evoluthera com pacientes presenciais?",
+      answer: "Claro! A Evoluthera funciona perfeitamente tanto com pacientes presenciais quanto online, potencializando o acompanhamento entre as sessões."
     }
   ];
 
@@ -83,7 +82,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img src="/lovable-uploads/af7620ff-fa7a-44e1-b147-674b8fe0caca.png" alt="Evolut Logo" className="h-8 w-auto" />
+              <img src="/lovable-uploads/2efc273a-5ee9-4b8d-9f84-75c1295f89eb.png" alt="Evoluthera Logo" className="h-8 w-auto" />
             </div>
             <div className="hidden md:flex space-x-8">
               <a href="#sobre" className="text-gray-600 hover:text-blue-600 transition-colors">Sobre</a>
@@ -128,7 +127,7 @@ const LandingPage = () => {
                 <h1 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-gray-900 leading-tight">
                   <span className="block">Acompanhe.</span>
                   <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Evolua.
+                    Evoluthera.
                   </span>
                   <span className="block">Conecte.</span>
                 </h1>
@@ -232,9 +231,9 @@ const LandingPage = () => {
       {/* About Section */}
       <section id="sobre" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-4xl font-bold text-gray-900 mb-8">Sobre a Evolut</h2>
+          <h2 className="text-4xl font-bold text-gray-900 mb-8">Sobre a Evoluthera</h2>
           <p className="text-xl text-gray-600 max-w-4xl mx-auto mb-16 leading-relaxed">
-            A Evolut nasceu para apoiar psicólogos no desafio de acompanhar a jornada emocional de seus pacientes 
+            A Evoluthera nasceu para apoiar psicólogos no desafio de acompanhar a jornada emocional de seus pacientes 
             com mais precisão, engajamento e humanidade. Unimos tecnologia, dados e cuidado para transformar a forma de fazer terapia.
           </p>
           
@@ -419,7 +418,7 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Depoimentos</h2>
-            <p className="text-xl text-gray-600">O que os profissionais dizem sobre a Evolut</p>
+            <p className="text-xl text-gray-600">O que os profissionais dizem sobre a Evoluthera</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
@@ -449,7 +448,7 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Perguntas Frequentes</h2>
-            <p className="text-xl text-gray-600">Tire suas dúvidas sobre a Evolut</p>
+            <p className="text-xl text-gray-600">Tire suas dúvidas sobre a Evoluthera</p>
           </div>
           
           <div className="space-y-4">
@@ -542,7 +541,7 @@ const LandingPage = () => {
                 <div className="space-y-4">
                   <div className="flex items-center space-x-3">
                     <Mail className="h-5 w-5 text-blue-600" />
-                    <span className="text-gray-600">contato@evolut.com.br</span>
+                    <span className="text-gray-600">contato@evoluthera.com.br</span>
                   </div>
                   <div className="flex items-center space-x-3">
                     <Phone className="h-5 w-5 text-blue-600" />
@@ -579,8 +578,8 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="mb-4 md:mb-0">
-              <img src="/lovable-uploads/af7620ff-fa7a-44e1-b147-674b8fe0caca.png" alt="Evolut Logo" className="h-8 w-auto mb-2 filter brightness-0 invert" />
-              <p className="text-gray-400">© 2025 Evolut. Todos os direitos reservados.</p>
+              <img src="/lovable-uploads/2efc273a-5ee9-4b8d-9f84-75c1295f89eb.png" alt="Evoluthera Logo" className="h-8 w-auto mb-2 filter brightness-0 invert" />
+              <p className="text-gray-400">© 2025 Evoluthera. Todos os direitos reservados.</p>
             </div>
             <div className="flex space-x-6">
               <a href="#" className="text-gray-400 hover:text-white transition-colors">Termos de Uso</a>

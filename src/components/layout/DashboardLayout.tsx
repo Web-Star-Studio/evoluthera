@@ -61,7 +61,7 @@ const DashboardLayout = ({ children, userType, userName }: DashboardLayoutProps)
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <Link to="/" className="flex items-center">
-              <img src="/lovable-uploads/f22ddfd1-16b6-4226-871a-0a3f6b79261c.png" alt="Evolut Logo" className="h-8 w-auto" />
+              <img src="/lovable-uploads/2efc273a-5ee9-4b8d-9f84-75c1295f89eb.png" alt="Evoluthera Logo" className="h-8 w-auto" />
             </Link>
             
             <nav className="hidden md:flex space-x-8">

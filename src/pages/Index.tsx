@@ -8,7 +8,7 @@ const Index = () => {
       <div className="max-w-4xl mx-auto px-6 text-center">
         <div className="mb-8">
           <h1 className="text-5xl font-bold text-gray-800 mb-4">
-            Evolua
+            Evoluthera
           </h1>
           <p className="text-xl text-gray-600 mb-8">
             Plataforma de acompanhamento terapêutico para o seu bem-estar emocional
