@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Save, Send, Eye, History, Plus, Trash2 } from "lucide-react";
+import { Save, Send, Eye, History, Plus, Trash2, Settings } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 interface AnamnesisField {
   type: string;
@@ -45,6 +55,9 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
   const [status, setStatus] = useState<string>("draft");
   const [isLoading, setIsLoading] = useState(false);
   const [versions, setVersions] = useState<any[]>([]);
+  const [isTemplateDialogOpen, setIsTemplateDialogOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState("");
+  const [newTemplateDescription, setNewTemplateDescription] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -277,6 +290,51 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
     }
   };
 
+  const handleCreateTemplate = async () => {
+    if (!newTemplateName.trim()) {
+      toast({
+        title: "Erro",
+        description: "Nome do template é obrigatório",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase
+        .from('anamnesis_templates')
+        .insert({
+          psychologist_id: user.user.id,
+          name: newTemplateName,
+          description: newTemplateDescription,
+          fields: currentFields,
+          is_default: false
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Sucesso",
+        description: "Template criado com sucesso",
+      });
+
+      setIsTemplateDialogOpen(false);
+      setNewTemplateName("");
+      setNewTemplateDescription("");
+      loadTemplates();
+    } catch (error) {
+      console.error('Erro ao criar template:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível criar o template",
+        variant: "destructive",
+      });
+    }
+  };
+
   const renderField = (sectionKey: string, fieldKey: string, field: AnamnesisField) => {
     const value = responses[sectionKey]?.[fieldKey] || '';
     const isReadOnly = status === 'locked' || (status === 'completed' && Boolean(patientId));
@@ -378,6 +436,50 @@ const AnamnesisEditor = ({ patientId, anamnesisId, onSave }: AnamnesisEditorProp
               Enviar para Paciente
             </Button>
           )}
+          <Dialog open={isTemplateDialogOpen} onOpenChange={setIsTemplateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <Settings className="h-4 w-4 mr-2" />
+                Salvar como Template
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Criar Novo Template</DialogTitle>
+                <DialogDescription>
+                  Salve os campos atuais como um novo template reutilizável.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="templateName">Nome do Template</Label>
+                  <Input
+                    id="templateName"
+                    value={newTemplateName}
+                    onChange={(e) => setNewTemplateName(e.target.value)}
+                    placeholder="Digite o nome do template"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="templateDescription">Descrição (opcional)</Label>
+                  <Textarea
+                    id="templateDescription"
+                    value={newTemplateDescription}
+                    onChange={(e) => setNewTemplateDescription(e.target.value)}
+                    placeholder="Descreva o propósito deste template"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsTemplateDialogOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button onClick={handleCreateTemplate}>
+                  Criar Template
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

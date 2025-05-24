@@ -6,7 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Search, Edit, Eye, Send, Lock, Unlock } from "lucide-react";
+import { Plus, Search, Edit, Eye, Send, Lock, Unlock, Trash2, Copy } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import AnamnesisEditor from "./AnamnesisEditor";
 
 interface Anamnesis {
@@ -122,6 +133,108 @@ const AnamnesisManager = () => {
       toast({
         title: "Erro",
         description: "Não foi possível alterar o status da anamnese",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteAnamnesis = async (anamnesisId: string) => {
+    try {
+      const { error } = await supabase
+        .from('anamnesis')
+        .delete()
+        .eq('id', anamnesisId);
+
+      if (error) throw error;
+
+      await loadAnamneses();
+      toast({
+        title: "Sucesso",
+        description: "Anamnese deletada com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao deletar anamnese:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível deletar a anamnese",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDuplicateAnamnesis = async (anamnesisId: string) => {
+    try {
+      const { data: originalAnamnesis, error: fetchError } = await supabase
+        .from('anamnesis')
+        .select('*')
+        .eq('id', anamnesisId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const { error: insertError } = await supabase
+        .from('anamnesis')
+        .insert({
+          patient_id: originalAnamnesis.patient_id,
+          psychologist_id: originalAnamnesis.psychologist_id,
+          template_id: originalAnamnesis.template_id,
+          data: originalAnamnesis.data,
+          status: 'draft'
+        });
+
+      if (insertError) throw insertError;
+
+      await loadAnamneses();
+      toast({
+        title: "Sucesso",
+        description: "Anamnese duplicada com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao duplicar anamnese:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível duplicar a anamnese",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleSaveAsTemplate = async (anamnesisId: string) => {
+    try {
+      const { data: anamnesis, error: fetchError } = await supabase
+        .from('anamnesis')
+        .select(`
+          *,
+          template:anamnesis_templates(fields)
+        `)
+        .eq('id', anamnesisId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const templateName = `Template baseado em ${new Date().toLocaleDateString('pt-BR')}`;
+      
+      const { error: insertError } = await supabase
+        .from('anamnesis_templates')
+        .insert({
+          psychologist_id: anamnesis.psychologist_id,
+          name: templateName,
+          description: 'Template criado a partir de anamnese existente',
+          fields: anamnesis.template?.fields || {},
+          is_default: false
+        });
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Sucesso",
+        description: "Template criado com sucesso",
+      });
+    } catch (error) {
+      console.error('Erro ao salvar como template:', error);
+      toast({
+        title: "Erro",
+        description: "Não foi possível salvar como template",
         variant: "destructive",
       });
     }
@@ -266,6 +379,24 @@ const AnamnesisManager = () => {
                       </Button>
                     )}
 
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDuplicateAnamnesis(anamnesis.id)}
+                    >
+                      <Copy className="h-4 w-4 mr-1" />
+                      Duplicar
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleSaveAsTemplate(anamnesis.id)}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Salvar como Template
+                    </Button>
+
                     {anamnesis.status === 'completed' && !anamnesis.locked_at && (
                       <Button
                         size="sm"
@@ -287,6 +418,36 @@ const AnamnesisManager = () => {
                         Desbloquear
                       </Button>
                     )}
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Deletar
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja deletar esta anamnese? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDeleteAnamnesis(anamnesis.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Deletar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </div>
               ))}
