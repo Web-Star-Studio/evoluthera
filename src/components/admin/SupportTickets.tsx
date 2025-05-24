@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,7 +37,7 @@ interface SupportTicket {
   updated_at: string;
   resolved_at: string | null;
   assigned_to: string | null;
-  profiles: {
+  user_profile: {
     name: string;
     email: string;
     user_type: string;
@@ -52,7 +51,7 @@ interface TicketResponse {
   message: string;
   is_internal: boolean;
   created_at: string;
-  profiles: {
+  responder_profile: {
     name: string;
     user_type: string;
   } | null;
@@ -76,7 +75,7 @@ const SupportTickets = () => {
         .from('support_tickets')
         .select(`
           *,
-          profiles:user_id (
+          user_profile:profiles!support_tickets_user_id_fkey (
             name,
             email,
             user_type
@@ -102,7 +101,7 @@ const SupportTickets = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data as SupportTicket[];
     }
   });
 
@@ -115,7 +114,7 @@ const SupportTickets = () => {
         .from('support_ticket_responses')
         .select(`
           *,
-          profiles:responder_id (
+          responder_profile:profiles!support_ticket_responses_responder_id_fkey (
             name,
             user_type
           )
@@ -124,7 +123,7 @@ const SupportTickets = () => {
         .order('created_at', { ascending: true });
 
       if (error) throw error;
-      return data;
+      return data as TicketResponse[];
     },
     enabled: !!selectedTicket?.id
   });
@@ -397,13 +396,13 @@ const SupportTickets = () => {
                     <TableRow key={ticket.id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <div className="font-medium">{ticket.profiles?.name || 'Usuário não encontrado'}</div>
+                          <div className="font-medium">{ticket.user_profile?.name || 'Usuário não encontrado'}</div>
                           <div className="text-sm text-gray-500 flex items-center gap-1">
                             <Mail className="h-3 w-3" />
-                            {ticket.profiles?.email || 'Email não disponível'}
+                            {ticket.user_profile?.email || 'Email não disponível'}
                           </div>
                           <Badge variant="outline" className="text-xs">
-                            {ticket.profiles?.user_type === 'psychologist' ? 'Psicólogo' : 'Paciente'}
+                            {ticket.user_profile?.user_type === 'psychologist' ? 'Psicólogo' : 'Paciente'}
                           </Badge>
                         </div>
                       </TableCell>
@@ -453,9 +452,9 @@ const SupportTickets = () => {
                                     <div>
                                       <h4 className="font-semibold mb-2">Informações do Usuário</h4>
                                       <div className="space-y-2 text-sm">
-                                        <div><strong>Nome:</strong> {selectedTicket.profiles?.name || 'N/A'}</div>
-                                        <div><strong>Email:</strong> {selectedTicket.profiles?.email || 'N/A'}</div>
-                                        <div><strong>Tipo:</strong> {selectedTicket.profiles?.user_type === 'psychologist' ? 'Psicólogo' : 'Paciente'}</div>
+                                        <div><strong>Nome:</strong> {selectedTicket.user_profile?.name || 'N/A'}</div>
+                                        <div><strong>Email:</strong> {selectedTicket.user_profile?.email || 'N/A'}</div>
+                                        <div><strong>Tipo:</strong> {selectedTicket.user_profile?.user_type === 'psychologist' ? 'Psicólogo' : 'Paciente'}</div>
                                       </div>
                                     </div>
                                     <div>
@@ -483,13 +482,13 @@ const SupportTickets = () => {
                                     <div className="space-y-4 max-h-60 overflow-y-auto">
                                       {responses?.map((response) => (
                                         <div key={response.id} className={`p-4 rounded-lg ${
-                                          response.profiles?.user_type === 'admin' ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-gray-50'
+                                          response.responder_profile?.user_type === 'admin' ? 'bg-blue-50 border-l-4 border-blue-500' : 'bg-gray-50'
                                         }`}>
                                           <div className="flex justify-between items-start mb-2">
                                             <div className="flex items-center gap-2">
                                               <strong className="text-sm">
-                                                {response.profiles?.name || 'Usuário'} 
-                                                {response.profiles?.user_type === 'admin' && ' (Admin)'}
+                                                {response.responder_profile?.name || 'Usuário'} 
+                                                {response.responder_profile?.user_type === 'admin' && ' (Admin)'}
                                               </strong>
                                               {response.is_internal && (
                                                 <Badge variant="secondary" className="text-xs">Interno</Badge>
