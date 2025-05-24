@@ -1,15 +1,17 @@
+
 import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, BarChart3, Target, Bell, TrendingUp, Trophy } from "lucide-react";
+import { Users, BarChart3, Target, Bell, TrendingUp, Trophy, FileText } from "lucide-react";
 import PatientsList from "@/components/psychologist/PatientsList";
 import MoodAnalytics from "@/components/psychologist/MoodAnalytics";
 import TasksManager from "@/components/psychologist/TasksManager";
 import NotificationsCenter from "@/components/psychologist/NotificationsCenter";
 import ReportsDashboard from "@/components/psychologist/ReportsDashboard";
 import PsychologistGamificationView from "@/components/gamification/PsychologistGamificationView";
+import PsychologicalTestsManager from "@/components/psychologist/PsychologicalTestsManager";
 
 const PsychologistDashboard = () => {
   const [patients, setPatients] = useState([
@@ -52,7 +54,7 @@ const PsychologistDashboard = () => {
 
         {/* Tabs Navigation */}
         <Tabs defaultValue="patients" className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="patients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
               Pacientes
@@ -64,6 +66,10 @@ const PsychologistDashboard = () => {
             <TabsTrigger value="tasks" className="flex items-center gap-2">
               <Target className="h-4 w-4" />
               Tarefas
+            </TabsTrigger>
+            <TabsTrigger value="tests" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Testes
             </TabsTrigger>
             <TabsTrigger value="gamification" className="flex items-center gap-2">
               <Trophy className="h-4 w-4" />
@@ -89,6 +95,10 @@ const PsychologistDashboard = () => {
 
           <TabsContent value="tasks" className="mt-6">
             <TasksManager tasks={tasks} addTask={addTask} />
+          </TabsContent>
+
+          <TabsContent value="tests" className="mt-6">
+            <PsychologicalTestsManager />
           </TabsContent>
 
           <TabsContent value="gamification" className="mt-6">

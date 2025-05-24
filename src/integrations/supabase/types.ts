@@ -520,6 +520,51 @@ export type Database = {
         }
         Relationships: []
       }
+      psychological_tests: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          interpretation_ranges: Json
+          is_active: boolean | null
+          name: string
+          questions: Json
+          scoring_rules: Json
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          interpretation_ranges: Json
+          is_active?: boolean | null
+          name: string
+          questions: Json
+          scoring_rules: Json
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          interpretation_ranges?: Json
+          is_active?: boolean | null
+          name?: string
+          questions?: Json
+          scoring_rules?: Json
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: []
+      }
       sessions: {
         Row: {
           created_at: string
@@ -813,6 +858,127 @@ export type Database = {
           {
             foreignKeyName: "tasks_psychologist_id_fkey"
             columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_applications: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          interpretation: string | null
+          notes: string | null
+          patient_id: string
+          psychologist_id: string
+          responses: Json | null
+          score: number | null
+          started_at: string | null
+          status: string | null
+          test_id: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          interpretation?: string | null
+          notes?: string | null
+          patient_id: string
+          psychologist_id: string
+          responses?: Json | null
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+          test_id: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          interpretation?: string | null
+          notes?: string | null
+          patient_id?: string
+          psychologist_id?: string
+          responses?: Json | null
+          score?: number | null
+          started_at?: string | null
+          status?: string | null
+          test_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_applications_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_applications_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_applications_test_id_fkey"
+            columns: ["test_id"]
+            isOneToOne: false
+            referencedRelation: "psychological_tests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      test_results_history: {
+        Row: {
+          application_id: string
+          completion_date: string
+          created_at: string
+          id: string
+          interpretation: string
+          patient_id: string
+          score: number
+          test_code: string
+          test_name: string
+        }
+        Insert: {
+          application_id: string
+          completion_date: string
+          created_at?: string
+          id?: string
+          interpretation: string
+          patient_id: string
+          score: number
+          test_code: string
+          test_name: string
+        }
+        Update: {
+          application_id?: string
+          completion_date?: string
+          created_at?: string
+          id?: string
+          interpretation?: string
+          patient_id?: string
+          score?: number
+          test_code?: string
+          test_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "test_results_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "test_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "test_results_history_patient_id_fkey"
+            columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]

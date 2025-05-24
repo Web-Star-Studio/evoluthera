@@ -2,295 +2,231 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useAchievementManager } from "../gamification/AchievementManager";
-import { Heart, Volume2, Mic, Square } from "lucide-react";
+import { Heart, Smile, Meh, Frown, Zap, Calendar, Plus } from "lucide-react";
 
-const MOOD_OPTIONS = [
-  { value: 1, emoji: "😢", color: "#ef4444", label: "Muito Triste" },
-  { value: 2, emoji: "😔", color: "#f97316", label: "Triste" },
-  { value: 3, emoji: "😐", color: "#eab308", label: "Neutro" },
-  { value: 4, emoji: "😊", color: "#22c55e", label: "Feliz" },
-  { value: 5, emoji: "😄", color: "#10b981", label: "Muito Feliz" }
-];
+interface MoodRecord {
+  id: string;
+  mood_score: number;
+  notes: string;
+  created_at: string;
+}
 
 const DailyMoodTracker = () => {
   const [selectedMood, setSelectedMood] = useState<number | null>(null);
+  const [notes, setNotes] = useState("");
   const [cause, setCause] = useState("");
-  const [observations, setObservations] = useState("");
-  const [diary, setDiary] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const [hasAudio, setHasAudio] = useState(false);
+  const [moodHistory, setMoodHistory] = useState<MoodRecord[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [todayRecord, setTodayRecord] = useState<any>(null);
 
-  const { toast } = useToast();
   const patientId = "temp-user-id"; // Substituir por auth.uid()
-  const { checkAndAwardAchievements, awardPoints, updateStreak } = useAchievementManager(patientId);
 
   useEffect(() => {
-    checkTodayRecord();
+    fetchMoodHistory();
   }, []);
 
-  const checkTodayRecord = async () => {
+  const fetchMoodHistory = async () => {
     try {
-      const today = new Date();
-      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const endOfDay = new Date(startOfDay.getTime() + 24 * 60 * 60 * 1000);
-
       const { data, error } = await supabase
         .from('mood_records')
         .select('*')
         .eq('patient_id', patientId)
-        .gte('created_at', startOfDay.toISOString())
-        .lt('created_at', endOfDay.toISOString())
-        .single();
+        .order('created_at', { ascending: false })
+        .limit(7);
 
-      if (error && error.code !== 'PGRST116') throw error;
-      
-      if (data) {
-        setTodayRecord(data);
-        setSelectedMood(data.mood_score);
-        
-        const notes = data.notes ? JSON.parse(data.notes) : {};
-        setCause(notes.cause || "");
-        setObservations(notes.observations || "");
-        setDiary(notes.diary || "");
-        setHasAudio(notes.hasAudio || false);
-      }
+      if (error) throw error;
+      setMoodHistory(data || []);
     } catch (error) {
-      console.error('Erro ao verificar registro de hoje:', error);
+      console.error('Erro ao buscar histórico de humor:', error);
     }
   };
 
-  const handleAudioRecording = () => {
-    if (!isRecording) {
-      setIsRecording(true);
-      // Simular gravação de áudio
-      setTimeout(() => {
-        setIsRecording(false);
-        setHasAudio(true);
-        toast({
-          title: "Áudio gravado!",
-          description: "Sua reflexão em áudio foi salva com sucesso.",
-        });
-      }, 3000);
-    } else {
-      setIsRecording(false);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedMood) {
-      toast({
-        title: "Selecione seu humor",
-        description: "Por favor, escolha como você está se sentindo hoje.",
-        variant: "destructive",
-      });
-      return;
-    }
+  const submitMoodRecord = async () => {
+    if (selectedMood === null) return;
 
     setIsSubmitting(true);
     try {
-      const notes = {
-        cause: cause.trim(),
-        observations: observations.trim(),
-        diary: diary.trim(),
-        hasAudio
-      };
-
-      const recordData = {
-        patient_id: patientId,
-        mood_score: selectedMood,
-        notes: JSON.stringify(notes)
-      };
-
-      if (todayRecord) {
-        // Atualizar registro existente
-        const { error } = await supabase
-          .from('mood_records')
-          .update(recordData)
-          .eq('id', todayRecord.id);
-
-        if (error) throw error;
-
-        toast({
-          title: "Registro atualizado!",
-          description: "Seu humor de hoje foi atualizado com sucesso.",
-        });
-      } else {
-        // Criar novo registro
-        const { error } = await supabase
-          .from('mood_records')
-          .insert(recordData);
-
-        if (error) throw error;
-
-        // Conceder pontos pela primeira vez hoje
-        await awardPoints(patientId, 10, "registro de humor");
-
-        // Atualizar streak
-        await updateStreak(patientId);
-
-        // Atualizar contador de registros de humor
-        await supabase
-          .from('patient_stats')
-          .update({
-            mood_records_count: supabase.sql`mood_records_count + 1`
-          })
-          .eq('patient_id', patientId);
-
-        // Se escreveu diário, conceder pontos extras e atualizar contador
-        if (diary.trim()) {
-          await awardPoints(patientId, 5, "entrada no diário");
-          await supabase
-            .from('patient_stats')
-            .update({
-              diary_entries_count: supabase.sql`diary_entries_count + 1`
-            })
-            .eq('patient_id', patientId);
-        }
-
-        // Verificar novas conquistas
-        setTimeout(() => checkAndAwardAchievements(), 1000);
-
-        toast({
-          title: "Registro salvo!",
-          description: "Seu humor de hoje foi registrado com sucesso. +10 pontos!",
+      const moodNotes = `${cause ? `Causa: ${cause}. ` : ''}${notes}`;
+      
+      const { error } = await supabase
+        .from('mood_records')
+        .insert({
+          patient_id: patientId,
+          mood_score: selectedMood,
+          notes: moodNotes
         });
 
-        setTodayRecord({ ...recordData, id: Date.now() });
-      }
+      if (error) throw error;
+
+      // Atualizar estatísticas do paciente
+      await supabase
+        .rpc('increment_mood_record', { patient_uuid: patientId })
+        .then(() => {
+          console.log('Estatísticas atualizadas');
+        });
+
+      // Resetar formulário
+      setSelectedMood(null);
+      setNotes("");
+      setCause("");
+      
+      // Recarregar histórico
+      fetchMoodHistory();
+      
+      alert('Registro de humor salvo com sucesso!');
     } catch (error) {
       console.error('Erro ao salvar registro:', error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar seu registro. Tente novamente.",
-        variant: "destructive",
-      });
+      alert('Erro ao salvar registro. Tente novamente.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const moodOptions = [
+    { value: 1, label: "Muito Baixo", icon: Frown, color: "bg-red-500", emoji: "😢" },
+    { value: 2, label: "Baixo", icon: Frown, color: "bg-orange-500", emoji: "😔" },
+    { value: 3, label: "Neutro", icon: Meh, color: "bg-yellow-500", emoji: "😐" },
+    { value: 4, label: "Bom", icon: Smile, color: "bg-green-500", emoji: "😊" },
+    { value: 5, label: "Excelente", icon: Zap, color: "bg-emerald-500", emoji: "😄" }
+  ];
+
+  const getMoodColor = (score: number) => {
+    const mood = moodOptions.find(m => m.value === score);
+    return mood?.color || "bg-gray-500";
+  };
+
+  const getMoodEmoji = (score: number) => {
+    const mood = moodOptions.find(m => m.value === score);
+    return mood?.emoji || "😐";
+  };
+
+  const getMoodLabel = (score: number) => {
+    const mood = moodOptions.find(m => m.value === score);
+    return mood?.label || "Neutro";
+  };
+
   return (
-    <Card className="w-full max-w-2xl mx-auto">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Heart className="h-5 w-5 text-red-500" />
-          Como você está se sentindo hoje?
-        </CardTitle>
-        <CardDescription>
-          {todayRecord ? "Atualize seu registro de hoje" : "Registre seu humor e reflexões diárias"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {/* Seleção de Humor */}
-        <div className="space-y-3">
-          <Label className="text-base font-medium">Meu humor hoje:</Label>
-          <div className="grid grid-cols-5 gap-2">
-            {MOOD_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                onClick={() => setSelectedMood(option.value)}
-                className={`p-4 rounded-lg border-2 transition-all hover:scale-105 ${
-                  selectedMood === option.value
-                    ? 'border-current bg-current/10'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
-                style={{
-                  borderColor: selectedMood === option.value ? option.color : undefined,
-                  backgroundColor: selectedMood === option.value ? `${option.color}20` : undefined
-                }}
-              >
-                <div className="text-3xl mb-1">{option.emoji}</div>
-                <div className="text-xs font-medium text-gray-700">{option.label}</div>
-              </button>
-            ))}
+    <div className="space-y-6">
+      {/* Registro de Humor */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-red-500" />
+            Como você está se sentindo hoje?
+          </CardTitle>
+          <CardDescription>
+            Registre seu humor e nos ajude a acompanhar seu bem-estar
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Seleção de Humor */}
+          <div>
+            <Label className="text-base font-medium">Nível de Humor (1-5)</Label>
+            <div className="grid grid-cols-5 gap-3 mt-3">
+              {moodOptions.map((mood) => (
+                <button
+                  key={mood.value}
+                  onClick={() => setSelectedMood(mood.value)}
+                  className={`p-4 rounded-lg border-2 transition-all text-center ${
+                    selectedMood === mood.value
+                      ? 'border-emerald-500 bg-emerald-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-2xl mb-1">{mood.emoji}</div>
+                  <div className="text-xs font-medium">{mood.label}</div>
+                  <div className="text-xs text-gray-500">({mood.value})</div>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Causa */}
-        <div className="space-y-2">
-          <Label htmlFor="cause">O que influenciou seu humor? (opcional)</Label>
-          <Input
-            id="cause"
-            placeholder="Ex: trabalho estressante, boa conversa com amigo..."
-            value={cause}
-            onChange={(e) => setCause(e.target.value)}
-          />
-        </div>
-
-        {/* Observações */}
-        <div className="space-y-2">
-          <Label htmlFor="observations">Observações adicionais (opcional)</Label>
-          <Textarea
-            id="observations"
-            placeholder="Como foi seu dia? O que você sentiu?"
-            value={observations}
-            onChange={(e) => setObservations(e.target.value)}
-            className="min-h-[80px] resize-none"
-          />
-        </div>
-
-        {/* Diário */}
-        <div className="space-y-2">
-          <Label htmlFor="diary">Diário pessoal (opcional) - Ganhe +5 pontos extra!</Label>
-          <Textarea
-            id="diary"
-            placeholder="Escreva sobre seus pensamentos, sentimentos ou reflexões do dia..."
-            value={diary}
-            onChange={(e) => setDiary(e.target.value)}
-            className="min-h-[100px] resize-none"
-          />
-        </div>
-
-        {/* Gravação de Áudio */}
-        <div className="space-y-2">
-          <Label>Reflexão em áudio (opcional)</Label>
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              onClick={handleAudioRecording}
-              disabled={isSubmitting}
-              className={`${isRecording ? 'bg-red-50 border-red-300' : ''}`}
-            >
-              {isRecording ? (
-                <>
-                  <Square className="h-4 w-4 mr-2 text-red-600" />
-                  Gravando... (Pare)
-                </>
-              ) : (
-                <>
-                  <Mic className="h-4 w-4 mr-2" />
-                  {hasAudio ? 'Regravar' : 'Gravar reflexão'}
-                </>
-              )}
-            </Button>
-            
-            {hasAudio && !isRecording && (
-              <div className="flex items-center gap-2 text-green-600 text-sm">
-                <Volume2 className="h-4 w-4" />
-                Áudio gravado
-              </div>
-            )}
+          {/* Causa */}
+          <div>
+            <Label htmlFor="cause">O que pode ter influenciado seu humor?</Label>
+            <Input
+              id="cause"
+              placeholder="Ex: trabalho, família, exercício, sono..."
+              value={cause}
+              onChange={(e) => setCause(e.target.value)}
+              className="mt-1"
+            />
           </div>
-        </div>
 
-        {/* Botão de Envio */}
-        <Button
-          onClick={handleSubmit}
-          disabled={!selectedMood || isSubmitting}
-          className="w-full bg-emerald-600 hover:bg-emerald-700"
-        >
-          {isSubmitting ? "Salvando..." : todayRecord ? "Atualizar Registro" : "Salvar Registro (+10 pontos)"}
-        </Button>
-      </CardContent>
-    </Card>
+          {/* Observações */}
+          <div>
+            <Label htmlFor="notes">Observações adicionais (opcional)</Label>
+            <Textarea
+              id="notes"
+              placeholder="Descreva como você se sente, o que aconteceu hoje, pensamentos..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="mt-1"
+              rows={3}
+            />
+          </div>
+
+          <Button 
+            onClick={submitMoodRecord}
+            disabled={selectedMood === null || isSubmitting}
+            className="w-full bg-emerald-600 hover:bg-emerald-700"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            {isSubmitting ? 'Salvando...' : 'Registrar Humor'}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Histórico */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5 text-blue-500" />
+            Histórico dos Últimos Registros
+          </CardTitle>
+          <CardDescription>
+            Veja como seu humor tem evoluído
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {moodHistory.length > 0 ? (
+            <div className="space-y-3">
+              {moodHistory.map((record) => (
+                <div key={record.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <div className="text-2xl">{getMoodEmoji(record.mood_score)}</div>
+                    <div>
+                      <div className="font-medium">{getMoodLabel(record.mood_score)}</div>
+                      <div className="text-sm text-gray-600">
+                        {new Date(record.created_at).toLocaleDateString('pt-BR')}
+                      </div>
+                      {record.notes && (
+                        <div className="text-sm text-gray-500 mt-1 max-w-md truncate">
+                          {record.notes}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  <Badge className={`${getMoodColor(record.mood_score)} text-white`}>
+                    {record.mood_score}/5
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Heart className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500">Nenhum registro de humor ainda</p>
+              <p className="text-sm text-gray-400">Comece registrando como você se sente hoje!</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
