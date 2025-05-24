@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -116,7 +115,8 @@ const AIInsights = () => {
         patientId,
         moodRecords || [],
         tasks || [],
-        diaryEntries || []
+        diaryEntries || [],
+        sevenDaysAgo
       );
 
       setInsights(weeklyInsights);
@@ -131,7 +131,8 @@ const AIInsights = () => {
     patientId: string,
     moodRecords: any[],
     tasks: any[],
-    diaryEntries: any[]
+    diaryEntries: any[],
+    sevenDaysAgo: Date
   ): Promise<WeeklyInsights> => {
     const patientName = patients.find(p => p.id === patientId)?.name || "Paciente";
     

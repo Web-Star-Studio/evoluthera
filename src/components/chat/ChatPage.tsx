@@ -53,7 +53,7 @@ const ChatPage = ({ currentUserId, userType }: ChatPageProps) => {
                   <ChatInterface
                     conversationId={selectedConversationId}
                     currentUserId={currentUserId}
-                    userType={userType}
+                    otherUserName="Paciente"
                   />
                 </div>
               ) : (
@@ -87,7 +87,7 @@ const ChatPage = ({ currentUserId, userType }: ChatPageProps) => {
               <ChatInterface
                 conversationId={selectedConversationId}
                 currentUserId={currentUserId}
-                userType={userType}
+                otherUserName="Psicólogo"
               />
             </div>
           ) : (
