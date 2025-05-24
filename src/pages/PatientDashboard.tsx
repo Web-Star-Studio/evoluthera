@@ -126,10 +126,10 @@ const PatientDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Rastreador de Humor */}
-          <MoodTracker onMoodSaved={fetchPatientStats} />
+          <MoodTracker />
 
           {/* Tarefas Pendentes */}
-          <TasksList onTaskCompleted={fetchPatientStats} />
+          <TasksList />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -137,7 +137,7 @@ const PatientDashboard = () => {
           <WeeklyProgressChart />
 
           {/* Entrada de Diário */}
-          <DiaryEntry onEntrySaved={fetchPatientStats} />
+          <DiaryEntry />
         </div>
       </div>
     </DashboardLayout>

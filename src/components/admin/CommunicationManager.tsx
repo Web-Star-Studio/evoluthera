@@ -13,16 +13,17 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Communication {
   id: string;
   title: string;
   message: string;
-  message_type: 'text' | 'html';
-  target_type: 'all_psychologists' | 'all_patients' | 'specific_users';
+  message_type: string;
+  target_type: string;
   target_users: string[] | null;
   send_email: boolean;
-  status: 'draft' | 'sent' | 'scheduled';
+  status: string;
   sent_at: string | null;
   created_at: string;
   created_by: string;
@@ -35,15 +36,19 @@ interface User {
   user_type: string;
 }
 
+type MessageType = 'text' | 'html';
+type TargetType = 'all_psychologists' | 'all_patients' | 'specific_users';
+
 const CommunicationManager = () => {
+  const { profile } = useAuth();
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     message: '',
-    message_type: 'text' as const,
-    target_type: 'all_psychologists' as const,
+    message_type: 'text' as MessageType,
+    target_type: 'all_psychologists' as TargetType,
     target_users: [] as string[],
     send_email: false
   });
@@ -89,6 +94,8 @@ const CommunicationManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!profile?.id) return;
+    
     setLoading(true);
 
     try {
@@ -102,7 +109,8 @@ const CommunicationManager = () => {
           target_users: formData.target_type === 'specific_users' ? formData.target_users : null,
           send_email: formData.send_email,
           status: 'sent',
-          sent_at: new Date().toISOString()
+          sent_at: new Date().toISOString(),
+          created_by: profile.id
         })
         .select()
         .single();
@@ -221,7 +229,7 @@ const CommunicationManager = () => {
                     <Label htmlFor="message_type">Tipo de Mensagem</Label>
                     <Select
                       value={formData.message_type}
-                      onValueChange={(value: 'text' | 'html') => 
+                      onValueChange={(value: MessageType) => 
                         setFormData({ ...formData, message_type: value })
                       }
                     >
@@ -253,7 +261,7 @@ const CommunicationManager = () => {
                     <Label htmlFor="target_type">Destinatários</Label>
                     <Select
                       value={formData.target_type}
-                      onValueChange={(value: 'all_psychologists' | 'all_patients' | 'specific_users') => 
+                      onValueChange={(value: TargetType) => 
                         setFormData({ ...formData, target_type: value, target_users: [] })
                       }
                     >

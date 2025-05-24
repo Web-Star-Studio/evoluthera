@@ -11,7 +11,7 @@ interface Communication {
   id: string;
   title: string;
   message: string;
-  message_type: 'text' | 'html';
+  message_type: string;
   created_at: string;
   sender_name: string;
 }
