@@ -15,6 +15,7 @@ import Anamnesis from "./pages/Anamnesis";
 import PatientAnamnesis from "./pages/PatientAnamnesis";
 import AnamnesisManagement from "./pages/AnamnesisManagement";
 import Activities from "./pages/Activities";
+import EnhancedActivities from "./pages/EnhancedActivities";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/anamnesis/:anamnesisId" element={<PatientAnamnesis />} />
           <Route path="/anamnesis-management" element={<AnamnesisManagement />} />
           <Route path="/activities" element={<Activities />} />
+          <Route path="/enhanced-activities" element={<EnhancedActivities />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

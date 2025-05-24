@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,10 +11,11 @@ import MoodChart from "@/components/psychologist/MoodChart";
 import InteractiveMoodChart from "@/components/psychologist/InteractiveMoodChart";
 import PatientMoodAnalytics from "@/components/psychologist/PatientMoodAnalytics";
 import NotificationCard from "@/components/psychologist/NotificationCard";
-import SendTaskModal from "@/components/psychologist/SendTaskModal";
+import EnhancedSendTaskModal from "@/components/psychologist/EnhancedSendTaskModal";
+import TaskResponsesModal from "@/components/psychologist/TaskResponsesModal";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Users, ClipboardList, AlertTriangle, TrendingUp, Search, BarChart3 } from "lucide-react";
+import { Users, ClipboardList, AlertTriangle, TrendingUp, Search, BarChart3, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 const PsychologistDashboard = () => {
@@ -23,6 +25,7 @@ const PsychologistDashboard = () => {
   const [selectedPatientForMood, setSelectedPatientForMood] = useState<string | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isMoodModalOpen, setIsMoodModalOpen] = useState(false);
+  const [isResponsesModalOpen, setIsResponsesModalOpen] = useState(false);
   const [activeAnalyticsTab, setActiveAnalyticsTab] = useState("chart");
 
   // ... keep existing code (mock data for patients and notifications)
@@ -79,7 +82,8 @@ const PsychologistDashboard = () => {
       patientName: "Maria Silva",
       time: "1 hora atrás",
       priority: 'medium' as const,
-      actionLabel: "Ver Resposta"
+      actionLabel: "Ver Resposta",
+      onAction: () => setIsResponsesModalOpen(true)
     },
     {
       id: "3",
@@ -127,13 +131,29 @@ const PsychologistDashboard = () => {
     setIsMoodModalOpen(true);
   };
 
-  const handleSendTaskSubmit = async (task: {
-    title: string;
-    description: string;
-    dueDate?: Date;
-  }) => {
-    console.log('Enviando tarefa:', task, 'para paciente:', selectedPatientForTask);
-    // Implementar lógica do Supabase
+  const handleSendTaskSubmit = async (taskData: any) => {
+    try {
+      const { error } = await supabase
+        .from('tasks')
+        .insert(taskData);
+
+      if (error) throw error;
+
+      // Criar notificação para o paciente
+      await supabase
+        .from('task_notifications')
+        .insert({
+          task_id: taskData.id, // Será preenchido pelo banco
+          recipient_id: taskData.patient_id,
+          type: 'new_task',
+          message: `Nova tarefa disponível: "${taskData.title}"`
+        });
+
+      console.log('Tarefa enviada com sucesso:', taskData);
+    } catch (error) {
+      console.error('Erro ao enviar tarefa:', error);
+      throw error;
+    }
   };
 
   const handleMarkNotificationAsRead = (notificationId: string) => {
@@ -188,10 +208,13 @@ const PsychologistDashboard = () => {
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card 
+                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                onClick={() => setIsResponsesModalOpen(true)}
+              >
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium flex items-center">
-                    <TrendingUp className="h-4 w-4 mr-2" />
+                    <MessageCircle className="h-4 w-4 mr-2" />
                     Novas Respostas
                   </CardTitle>
                 </CardHeader>
@@ -266,12 +289,19 @@ const PsychologistDashboard = () => {
         </main>
       </div>
 
-      {/* Send Task Modal */}
-      <SendTaskModal
+      {/* Enhanced Send Task Modal */}
+      <EnhancedSendTaskModal
         isOpen={isTaskModalOpen}
         onClose={() => setIsTaskModalOpen(false)}
+        patientId={selectedPatientForTask || ""}
         patientName={patients.find(p => p.id === selectedPatientForTask)?.name || ""}
         onSendTask={handleSendTaskSubmit}
+      />
+
+      {/* Task Responses Modal */}
+      <TaskResponsesModal
+        isOpen={isResponsesModalOpen}
+        onClose={() => setIsResponsesModalOpen(false)}
       />
 
       {/* Enhanced Mood Chart Modal */}

@@ -604,26 +604,83 @@ export type Database = {
         }
         Relationships: []
       }
-      task_responses: {
+      task_notifications: {
         Row: {
           created_at: string
           id: string
-          patient_id: string
-          response: string
+          message: string
+          read_at: string | null
+          recipient_id: string
           task_id: string
+          type: string
         }
         Insert: {
           created_at?: string
           id?: string
-          patient_id: string
-          response: string
+          message: string
+          read_at?: string | null
+          recipient_id: string
           task_id: string
+          type: string
         }
         Update: {
           created_at?: string
           id?: string
+          message?: string
+          read_at?: string | null
+          recipient_id?: string
+          task_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_notifications_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_notifications_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_responses: {
+        Row: {
+          commented_at: string | null
+          created_at: string
+          id: string
+          patient_id: string
+          psychologist_comment: string | null
+          response: string
+          response_data: Json | null
+          response_type: string | null
+          task_id: string
+        }
+        Insert: {
+          commented_at?: string | null
+          created_at?: string
+          id?: string
+          patient_id: string
+          psychologist_comment?: string | null
+          response: string
+          response_data?: Json | null
+          response_type?: string | null
+          task_id: string
+        }
+        Update: {
+          commented_at?: string | null
+          created_at?: string
+          id?: string
           patient_id?: string
+          psychologist_comment?: string | null
           response?: string
+          response_data?: Json | null
+          response_type?: string | null
           task_id?: string
         }
         Relationships: [
@@ -643,16 +700,71 @@ export type Database = {
           },
         ]
       }
+      task_templates: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          estimated_duration: number | null
+          id: string
+          is_public: boolean | null
+          name: string
+          options: Json | null
+          psychologist_id: string
+          task_type: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          estimated_duration?: number | null
+          id?: string
+          is_public?: boolean | null
+          name: string
+          options?: Json | null
+          psychologist_id: string
+          task_type?: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          estimated_duration?: number | null
+          id?: string
+          is_public?: boolean | null
+          name?: string
+          options?: Json | null
+          psychologist_id?: string
+          task_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_templates_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           completed_at: string | null
           created_at: string
           description: string | null
           due_date: string | null
+          estimated_duration: number | null
           id: string
+          options: Json | null
           patient_id: string
+          priority: string | null
           psychologist_id: string
           status: string
+          task_type: string | null
+          template_id: string | null
           title: string
           updated_at: string
         }
@@ -661,10 +773,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          estimated_duration?: number | null
           id?: string
+          options?: Json | null
           patient_id: string
+          priority?: string | null
           psychologist_id: string
           status?: string
+          task_type?: string | null
+          template_id?: string | null
           title: string
           updated_at?: string
         }
@@ -673,10 +790,15 @@ export type Database = {
           created_at?: string
           description?: string | null
           due_date?: string | null
+          estimated_duration?: number | null
           id?: string
+          options?: Json | null
           patient_id?: string
+          priority?: string | null
           psychologist_id?: string
           status?: string
+          task_type?: string | null
+          template_id?: string | null
           title?: string
           updated_at?: string
         }
