@@ -1,3 +1,4 @@
+
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,6 +10,7 @@ import BillingMetrics from "@/components/admin/BillingMetrics";
 import BillingDashboard from "@/components/admin/BillingDashboard";
 import SystemLogs from "@/components/admin/SystemLogs";
 import ReportExport from "@/components/admin/ReportExport";
+import AdminSettings from "@/components/admin/AdminSettings";
 import { 
   BarChart3, 
   Users, 
@@ -17,7 +19,8 @@ import {
   Download,
   Shield,
   TrendingUp,
-  Receipt
+  Receipt,
+  Settings
 } from "lucide-react";
 
 const AdminDashboard = () => {
@@ -69,7 +72,7 @@ const AdminDashboard = () => {
         
         {/* Tabs para diferentes funcionalidades administrativas */}
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart3 className="h-4 w-4" />
               Visão Geral
@@ -85,6 +88,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="billing-full" className="flex items-center gap-2">
               <Receipt className="h-4 w-4" />
               Faturamento
+            </TabsTrigger>
+            <TabsTrigger value="settings" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Configurações
             </TabsTrigger>
             <TabsTrigger value="logs" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -175,6 +182,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="billing-full">
             <BillingDashboard />
+          </TabsContent>
+
+          <TabsContent value="settings">
+            <AdminSettings />
           </TabsContent>
 
           <TabsContent value="logs">
