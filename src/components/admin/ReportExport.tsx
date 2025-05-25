@@ -60,7 +60,7 @@ const ReportExport = () => {
         case 'users':
           const { data: usersData } = await supabase
             .from('profiles')
-            .select('name, email, user_type, created_at');
+            .select('id, name, email, user_type, created_at');
           
           const { data: accountControls } = await supabase
             .from('account_controls')
