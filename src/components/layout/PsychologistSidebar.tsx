@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Sidebar, SidebarTrigger } from "@/components/ui/sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 import { usePsychologistBadges } from "./psychologist-sidebar/usePsychologistBadges";
 import { getPsychologistMenuItems } from "./psychologist-sidebar/psychologistMenuItems";
 import PsychologistSidebarHeader from "./psychologist-sidebar/PsychologistSidebarHeader";

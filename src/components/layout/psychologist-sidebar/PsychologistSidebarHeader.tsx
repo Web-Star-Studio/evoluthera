@@ -8,7 +8,7 @@ const PsychologistSidebarHeader = () => {
   return (
     <SidebarHeader className="border-b p-4">
       <div className="flex items-center gap-3">
-        <SidebarTrigger className="md:hidden" />
+        <SidebarTrigger />
         <Brain className="h-8 w-8 text-green-600" />
         {state === "expanded" && (
           <div className="flex flex-col">

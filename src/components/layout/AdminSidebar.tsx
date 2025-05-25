@@ -1,7 +1,6 @@
 
 import {
   Sidebar,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import AdminSidebarHeader from "./admin-sidebar/AdminSidebarHeader";
 import AdminSidebarMenu from "./admin-sidebar/AdminSidebarMenu";
