@@ -105,11 +105,6 @@ const App = () => (
                 <PatientAnamnesis />
               </ProtectedRoute>
             } />
-            <Route path="/activities" element={
-              <ProtectedRoute allowedUserTypes={['patient']}>
-                <Activities />
-              </ProtectedRoute>
-            } />
             <Route path="/enhanced-activities" element={
               <ProtectedRoute allowedUserTypes={['patient']}>
                 <EnhancedActivities />
@@ -200,7 +195,12 @@ const App = () => (
               </ProtectedRoute>
             } />
 
-            {/* Shared Routes (require authentication) */}
+            {/* Shared Routes (require authentication) - Activities accessible by patients and psychologists */}
+            <Route path="/activities" element={
+              <ProtectedRoute allowedUserTypes={['patient', 'psychologist']}>
+                <Activities />
+              </ProtectedRoute>
+            } />
             <Route path="/calendar" element={
               <ProtectedRoute>
                 <Calendar />
