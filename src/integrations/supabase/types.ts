@@ -182,6 +182,57 @@ export type Database = {
           },
         ]
       }
+      ai_insights: {
+        Row: {
+          confidence_score: number | null
+          created_at: string
+          data: Json
+          id: string
+          insight_type: string
+          is_reviewed: boolean
+          patient_id: string
+          psychologist_id: string
+          reviewed_at: string | null
+        }
+        Insert: {
+          confidence_score?: number | null
+          created_at?: string
+          data?: Json
+          id?: string
+          insight_type: string
+          is_reviewed?: boolean
+          patient_id: string
+          psychologist_id: string
+          reviewed_at?: string | null
+        }
+        Update: {
+          confidence_score?: number | null
+          created_at?: string
+          data?: Json
+          id?: string
+          insight_type?: string
+          is_reviewed?: boolean
+          patient_id?: string
+          psychologist_id?: string
+          reviewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_insights_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_insights_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       anamnesis: {
         Row: {
           completed: boolean | null
@@ -678,6 +729,73 @@ export type Database = {
           },
         ]
       }
+      clinical_documents: {
+        Row: {
+          ai_generated: boolean
+          compliance_status: string
+          content: string
+          created_at: string
+          document_type: string
+          id: string
+          metadata: Json | null
+          patient_id: string
+          psychologist_id: string
+          session_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          ai_generated?: boolean
+          compliance_status?: string
+          content: string
+          created_at?: string
+          document_type: string
+          id?: string
+          metadata?: Json | null
+          patient_id: string
+          psychologist_id: string
+          session_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          ai_generated?: boolean
+          compliance_status?: string
+          content?: string
+          created_at?: string
+          document_type?: string
+          id?: string
+          metadata?: Json | null
+          patient_id?: string
+          psychologist_id?: string
+          session_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clinical_documents_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_documents_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clinical_documents_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "session_recordings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communication_reads: {
         Row: {
           communication_id: string
@@ -777,6 +895,63 @@ export type Database = {
           },
           {
             foreignKeyName: "conversations_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crisis_predictions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          indicators: Json
+          intervention_plan: string | null
+          is_active: boolean
+          patient_id: string
+          psychologist_id: string
+          risk_level: string
+          risk_score: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          indicators?: Json
+          intervention_plan?: string | null
+          is_active?: boolean
+          patient_id: string
+          psychologist_id: string
+          risk_level: string
+          risk_score: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          indicators?: Json
+          intervention_plan?: string | null
+          is_active?: boolean
+          patient_id?: string
+          psychologist_id?: string
+          risk_level?: string
+          risk_score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crisis_predictions_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crisis_predictions_psychologist_id_fkey"
             columns: ["psychologist_id"]
             isOneToOne: false
             referencedRelation: "profiles"
@@ -1356,6 +1531,63 @@ export type Database = {
           version?: string | null
         }
         Relationships: []
+      }
+      session_recordings: {
+        Row: {
+          analysis: Json | null
+          audio_url: string | null
+          created_at: string
+          id: string
+          patient_id: string
+          psychologist_id: string
+          sentiment_score: number | null
+          session_date: string
+          status: string
+          transcript: string | null
+          updated_at: string
+        }
+        Insert: {
+          analysis?: Json | null
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          patient_id: string
+          psychologist_id: string
+          sentiment_score?: number | null
+          session_date?: string
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Update: {
+          analysis?: Json | null
+          audio_url?: string | null
+          created_at?: string
+          id?: string
+          patient_id?: string
+          psychologist_id?: string
+          sentiment_score?: number | null
+          session_date?: string
+          status?: string
+          transcript?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_recordings_patient_id_fkey"
+            columns: ["patient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "session_recordings_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sessions: {
         Row: {
