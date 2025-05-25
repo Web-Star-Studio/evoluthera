@@ -7,13 +7,17 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Download, FileText, FileSpreadsheet } from "lucide-react";
 
+interface ExportRow {
+  [key: string]: string | number | null;
+}
+
 const ReportExport = () => {
   const [reportType, setReportType] = useState("");
   const [format, setFormat] = useState("csv");
   const [isExporting, setIsExporting] = useState(false);
   const { toast } = useToast();
 
-  const exportToCSV = (data: any[], filename: string) => {
+  const exportToCSV = (data: ExportRow[], filename: string) => {
     if (!data.length) return;
     
     const headers = Object.keys(data[0]);
@@ -49,74 +53,79 @@ const ReportExport = () => {
 
     setIsExporting(true);
     try {
-      let data;
-      let filename;
+      let data: ExportRow[] = [];
+      let filename: string = '';
 
       switch (reportType) {
         case 'users':
           const { data: usersData } = await supabase
             .from('profiles')
-            .select(`
-              name,
-              email,
-              user_type,
-              created_at,
-              account_controls(status)
-            `);
+            .select('name, email, user_type, created_at');
           
-          data = usersData?.map(user => ({
-            Nome: user.name,
-            Email: user.email,
-            Tipo: user.user_type,
-            Status: Array.isArray(user.account_controls) && user.account_controls.length > 0 
-              ? user.account_controls[0].status 
-              : 'active',
-            'Data de Criação': new Date(user.created_at).toLocaleDateString('pt-BR')
-          }));
+          const { data: accountControls } = await supabase
+            .from('account_controls')
+            .select('user_id, status');
+          
+          data = (usersData || []).map(user => {
+            const control = accountControls?.find(ac => ac.user_id === user.id);
+            return {
+              Nome: user.name || '',
+              Email: user.email || '',
+              Tipo: user.user_type || '',
+              Status: control?.status || 'active',
+              'Data de Criação': new Date(user.created_at).toLocaleDateString('pt-BR')
+            };
+          });
           filename = 'relatorio_usuarios';
           break;
 
         case 'billing':
           const { data: billingData } = await supabase
             .from('billing_metrics')
-            .select(`
-              *,
-              profiles!billing_metrics_psychologist_id_fkey(name, email)
-            `);
+            .select('*');
           
-          data = billingData?.map(record => ({
-            Psicólogo: record.profiles?.name,
-            Email: record.profiles?.email,
-            'Mês/Ano': new Date(record.month_year).toLocaleDateString('pt-BR'),
-            Sessões: record.sessions_count,
-            Receita: record.revenue_amount,
-            'Taxa (%)': record.commission_rate,
-            Comissão: record.commission_amount,
-            Status: record.status || 'pending'
-          }));
+          const { data: psychologists } = await supabase
+            .from('profiles')
+            .select('id, name, email')
+            .eq('user_type', 'psychologist');
+          
+          data = (billingData || []).map(record => {
+            const psychologist = psychologists?.find(p => p.id === record.psychologist_id);
+            return {
+              Psicólogo: psychologist?.name || '',
+              Email: psychologist?.email || '',
+              'Mês/Ano': new Date(record.month_year).toLocaleDateString('pt-BR'),
+              Sessões: record.sessions_count || 0,
+              Receita: record.revenue_amount || 0,
+              'Taxa (%)': record.commission_rate || 0,
+              Comissão: record.commission_amount || 0,
+              Status: record.status || 'pending'
+            };
+          });
           filename = 'relatorio_cobranca';
           break;
 
         case 'sessions':
           const { data: sessionsData } = await supabase
             .from('sessions')
-            .select(`
-              date,
-              duration,
-              mood_assessment,
-              created_at,
-              profiles!sessions_psychologist_id_fkey(name),
-              patient:profiles!sessions_patient_id_fkey(name)
-            `);
+            .select('date, duration, mood_assessment, created_at, psychologist_id, patient_id');
           
-          data = sessionsData?.map(session => ({
-            Data: new Date(session.date).toLocaleDateString('pt-BR'),
-            Duração: session.duration,
-            'Avaliação de Humor': session.mood_assessment,
-            Psicólogo: session.profiles?.name,
-            Paciente: session.patient?.name,
-            'Criado em': new Date(session.created_at).toLocaleDateString('pt-BR')
-          }));
+          const { data: allProfiles } = await supabase
+            .from('profiles')
+            .select('id, name');
+          
+          data = (sessionsData || []).map(session => {
+            const psychologist = allProfiles?.find(p => p.id === session.psychologist_id);
+            const patient = allProfiles?.find(p => p.id === session.patient_id);
+            return {
+              Data: new Date(session.date).toLocaleDateString('pt-BR'),
+              Duração: session.duration || 0,
+              'Avaliação de Humor': session.mood_assessment || 0,
+              Psicólogo: psychologist?.name || '',
+              Paciente: patient?.name || '',
+              'Criado em': new Date(session.created_at).toLocaleDateString('pt-BR')
+            };
+          });
           filename = 'relatorio_sessoes';
           break;
 
@@ -127,11 +136,11 @@ const ReportExport = () => {
             .order('created_at', { ascending: false })
             .limit(1000);
           
-          data = logsData?.map(log => ({
-            Ação: log.action,
-            'ID do Usuário': log.user_id,
-            'Endereço IP': log.ip_address,
-            'User Agent': log.user_agent,
+          data = (logsData || []).map(log => ({
+            Ação: log.action || '',
+            'ID do Usuário': log.user_id || '',
+            'Endereço IP': log.ip_address ? log.ip_address.toString() : '',
+            'User Agent': log.user_agent || '',
             'Data/Hora': new Date(log.created_at).toLocaleString('pt-BR')
           }));
           filename = 'relatorio_logs';
