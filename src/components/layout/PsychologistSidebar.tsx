@@ -1,6 +1,6 @@
 
 import { useAuth } from "@/contexts/AuthContext";
-import { Sidebar } from "@/components/ui/sidebar";
+import { Sidebar, SidebarTrigger } from "@/components/ui/sidebar";
 import { usePsychologistBadges } from "./psychologist-sidebar/usePsychologistBadges";
 import { getPsychologistMenuItems } from "./psychologist-sidebar/psychologistMenuItems";
 import PsychologistSidebarHeader from "./psychologist-sidebar/PsychologistSidebarHeader";
@@ -13,7 +13,7 @@ const PsychologistSidebar = () => {
   const menuItems = getPsychologistMenuItems(badges);
 
   return (
-    <Sidebar>
+    <Sidebar collapsible="icon">
       <PsychologistSidebarHeader />
       <PsychologistSidebarMenu menuItems={menuItems} />
       <PsychologistSidebarFooter profile={profile} onSignOut={signOut} />
