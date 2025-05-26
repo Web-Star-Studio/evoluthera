@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,7 +23,7 @@ const EnhancedPatientsList = () => {
 
   const loadPatients = async () => {
     try {
-      const { data: patientsData, error } = await supabase
+      let { data: patientsData, error }: { data: any[] | null; error: any } = await supabase
         .from('patients')
         .select(`
           *,
@@ -34,9 +33,22 @@ const EnhancedPatientsList = () => {
         .eq('psychologist_id', profile?.id)
         .eq('status', 'active');
 
+      // Fallback se relation patient_stats não existir
+      if (error && error.code === 'PGRST200') {
+        ({ data: patientsData, error } = await supabase
+          .from('patients')
+          .select(`
+            *,
+            profiles!patients_patient_id_fkey(id, name, email)
+          `)
+          .eq('psychologist_id', profile?.id)
+          .eq('status', 'active'));
+      }
+
       if (error) throw error;
 
-      setPatients(patientsData || []);
+      // @ts-ignore -- supabase types might lack patient_stats in fallback
+      setPatients((patientsData as any[]) || []);
     } catch (error) {
       console.error('Error loading patients:', error);
     } finally {
@@ -134,7 +146,7 @@ const EnhancedPatientsList = () => {
                     <DialogHeader>
                       <DialogTitle>Análise de Humor - {patient.profiles?.name}</DialogTitle>
                     </DialogHeader>
-                    <PatientMoodAnalytics patientId={patient.profiles?.id} />
+                    <PatientMoodAnalytics patientId={patient.profiles?.id} patientName={patient.profiles?.name || ''} />
                   </DialogContent>
                 </Dialog>
               </div>

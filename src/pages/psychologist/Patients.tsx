@@ -1,7 +1,7 @@
-
 import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import EnhancedPatientsList from "@/components/psychologist/EnhancedPatientsList";
 import { Users } from "lucide-react";
+import InvitePatientButton from "@/components/psychologist/InvitePatientButton";
 
 const PsychologistPatients = () => {
   return (
@@ -14,6 +14,8 @@ const PsychologistPatients = () => {
             <p className="text-gray-600">Gerencie e acompanhe seus pacientes</p>
           </div>
         </div>
+
+        <InvitePatientButton />
 
         <EnhancedPatientsList />
       </div>

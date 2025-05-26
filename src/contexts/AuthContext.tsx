@@ -76,14 +76,39 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfile = async (userId: string) => {
     try {
       console.log('Fetching profile for user:', userId);
-      const { data, error } = await supabase
+      
+      // First try to get the profile using the standard query
+      let { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to avoid throwing on no results
 
       if (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error fetching profile with maybeSingle:', error);
+        
+        // Fallback to get without single if the first approach fails
+        const response = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId);
+          
+        if (response.error) {
+          console.error('Error in fallback profile fetch:', response.error);
+          return null;
+        }
+        
+        // Check if we got any data
+        if (response.data && response.data.length > 0) {
+          data = response.data[0];
+        } else {
+          console.log('No profile found for user:', userId);
+          return null;
+        }
+      }
+      
+      if (!data) {
+        console.log('No profile data found for user:', userId);
         return null;
       }
 
@@ -117,7 +142,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (session?.user) {
           // Defer profile fetching to prevent deadlocks
           setTimeout(async () => {
-            const profileData = await fetchProfile(session.user.id);
+            let profileData = await fetchProfile(session.user.id);
+            
+            // If no profile exists, try to create one from user metadata
+            if (!profileData && session.user) {
+              console.log('No profile found, creating from user metadata');
+              const userData = session.user.user_metadata;
+              
+              if (userData && userData.name && userData.user_type) {
+                try {
+                  const newProfileData = {
+                    id: session.user.id,
+                    name: userData.name,
+                    email: session.user.email || '',
+                    user_type: userData.user_type as 'patient' | 'psychologist' | 'admin',
+                  };
+                  
+                  console.log('Creating profile with data:', newProfileData);
+                  const { error } = await supabase
+                    .from('profiles')
+                    .upsert(newProfileData);
+                    
+                  if (error) {
+                    console.error('Error creating profile during auth:', error);
+                  } else {
+                    // Fetch the newly created profile
+                    profileData = await fetchProfile(session.user.id);
+                  }
+                } catch (err) {
+                  console.error('Failed to create profile from metadata:', err);
+                }
+              } else {
+                console.log('Insufficient user metadata to create profile:', userData);
+              }
+            }
+            
             setProfile(profileData);
             setLoading(false);
           }, 0);
@@ -135,7 +194,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchProfile(session.user.id).then((profileData) => {
+        fetchProfile(session.user.id).then(async (profileData) => {
+          // If no profile exists, try to create one from user metadata
+          if (!profileData && session.user) {
+            console.log('No profile found during initial session, creating from user metadata');
+            const userData = session.user.user_metadata;
+            
+            if (userData && userData.name && userData.user_type) {
+              try {
+                const newProfileData = {
+                  id: session.user.id,
+                  name: userData.name,
+                  email: session.user.email || '',
+                  user_type: userData.user_type as 'patient' | 'psychologist' | 'admin',
+                };
+                
+                console.log('Creating profile with data:', newProfileData);
+                const { error } = await supabase
+                  .from('profiles')
+                  .upsert(newProfileData);
+                  
+                if (error) {
+                  console.error('Error creating profile during initial session:', error);
+                } else {
+                  // Fetch the newly created profile
+                  profileData = await fetchProfile(session.user.id);
+                }
+              } catch (err) {
+                console.error('Failed to create profile from metadata during initial session:', err);
+              }
+            } else {
+              console.log('Insufficient user metadata to create profile during initial session:', userData);
+            }
+          }
+          
           setProfile(profileData);
           setLoading(false);
         });
@@ -167,6 +259,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           data: {
             name: userData.name,
             user_type: userData.user_type,
+            // Only include crp in user metadata, not in profile table
             crp: userData.crp,
           }
         }
@@ -183,17 +276,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           user_type: userData.user_type,
         };
 
-        // Add CRP to profile if it's provided (for psychologists)
-        if (userData.crp) {
-          profileData.crp = userData.crp;
-        }
+        // Don't add CRP to profile if it's not in the schema
+        // We already stored it in the user metadata above
 
+        console.log('Creating profile with data:', profileData);
         const { error: profileError } = await supabase
           .from('profiles')
           .upsert(profileData);
 
         if (profileError) {
           console.error('Error creating profile:', profileError);
+          throw profileError; // Re-throw to handle in catch block
         }
 
         toast({
