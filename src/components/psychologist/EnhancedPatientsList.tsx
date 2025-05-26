@@ -146,7 +146,10 @@ const EnhancedPatientsList = () => {
                     <DialogHeader>
                       <DialogTitle>Análise de Humor - {patient.profiles?.name}</DialogTitle>
                     </DialogHeader>
-                    <PatientMoodAnalytics patientId={patient.profiles?.id} />
+                    <PatientMoodAnalytics 
+                      patientId={patient.profiles?.id} 
+                      patientName={patient.profiles?.name || 'Paciente'}
+                    />
                   </DialogContent>
                 </Dialog>
               </div>

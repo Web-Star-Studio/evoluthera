@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -152,12 +151,16 @@ export const usePsychologistDashboard = () => {
           else if (lastMoodScore <= 2) riskLevel = 'high';
           else if (lastMoodScore <= 3) riskLevel = 'medium';
 
+          // Fix: Handle patient_stats as array and get last_activity correctly
+          const patientStats = Array.isArray(patient.patient_stats) ? patient.patient_stats[0] : patient.patient_stats;
+          const lastActivity = patientStats?.last_activity || new Date().toISOString();
+
           return {
             id: patient.patient_id,
             name: patient.profiles?.name || 'Paciente',
             email: patient.profiles?.email || '',
             lastMoodScore,
-            lastActivity: patient.patient_stats?.[0]?.last_activity || new Date().toISOString(),
+            lastActivity,
             moodTrend,
             riskLevel,
             avatar_url: patient.profiles?.avatar_url
