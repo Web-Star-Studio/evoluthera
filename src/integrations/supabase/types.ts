@@ -1039,6 +1039,38 @@ export type Database = {
           },
         ]
       }
+      invite_links: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_used: boolean | null
+          psychologist_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          psychologist_id: string
+          token: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_used?: boolean | null
+          psychologist_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invite_links_psychologist_id_fkey"
+            columns: ["psychologist_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       legal_document_versions: {
         Row: {
           changes_summary: string | null
