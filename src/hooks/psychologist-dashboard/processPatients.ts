@@ -20,8 +20,8 @@ export const processPatients = (patientsData: any[], moodData: any[]): PatientOv
     else if (lastMoodScore <= 2) riskLevel = 'high';
     else if (lastMoodScore <= 3) riskLevel = 'medium';
 
-    // Handle patient_stats as array and get last_activity correctly
-    const patientStats = Array.isArray(patient.patient_stats) ? patient.patient_stats[0] : patient.patient_stats;
+    // Handle patient_stats as a single object now
+    const patientStats = patient.patient_stats;
     const lastActivity = patientStats?.last_activity || new Date().toISOString();
 
     return {
