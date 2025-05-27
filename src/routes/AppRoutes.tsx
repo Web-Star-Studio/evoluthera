@@ -8,11 +8,11 @@ import SharedRoutes from "./SharedRoutes";
 
 const AppRoutes = () => (
   <Routes>
-    <PublicRoutes />
-    <PatientRoutes />
-    <PsychologistRoutes />
-    <AdminRoutes />
-    <SharedRoutes />
+    {PublicRoutes()}
+    {PatientRoutes()}
+    {PsychologistRoutes()}
+    {AdminRoutes()}
+    {SharedRoutes()}
   </Routes>
 );
 
