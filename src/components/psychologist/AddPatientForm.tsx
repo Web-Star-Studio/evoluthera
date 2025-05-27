@@ -100,9 +100,15 @@ export const AddPatientForm: React.FC = () => {
         throw new Error(response.error || "Erro ao adicionar paciente.");
       }
 
+      // Check if email was sent successfully by looking at the response
+      const emailSent = response.message?.includes("Email enviado");
+      
       toast({
         title: "Paciente adicionado com sucesso!",
-        description: `${formData.name} foi cadastrado e receberá um email com as credenciais de acesso.`,
+        description: emailSent 
+          ? `${formData.name} foi cadastrado e receberá um email com as credenciais de acesso.`
+          : `${formData.name} foi cadastrado. Atenção: Pode haver problemas com o envio do email. Verifique com o paciente se recebeu as credenciais.`,
+        variant: emailSent ? "default" : "destructive",
       });
 
       // Reset form and close dialog

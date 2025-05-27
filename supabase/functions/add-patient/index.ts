@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "npm:resend@2.0.0";
@@ -16,7 +15,7 @@ interface AddPatientRequest {
   password: string;
 }
 
-const logStep = (step: string, details?: any) => {
+const logStep = (step: string, details?: Record<string, unknown>) => {
   console.log(`[ADD-PATIENT] ${step}`, details ? JSON.stringify(details) : '');
 };
 
@@ -128,30 +127,50 @@ serve(async (req) => {
     // Enviar email com credenciais
     try {
       const emailResponse = await resend.emails.send({
-        from: "Evolut <noreply@yourdomain.com>",
+        from: "Evolut <noreply@evoluthera.app>",
         to: [email],
         subject: "Bem-vindo à plataforma Evolut - Suas credenciais de acesso",
         html: `
-          <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif;">
-            <h1 style="color: #1893f8; text-align: center;">Bem-vindo à Evolut!</h1>
-            <p>Olá <strong>${name}</strong>,</p>
-            <p>Você foi adicionado à plataforma Evolut pelo seu psicólogo. Aqui estão suas credenciais de acesso:</p>
-            
-            <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-              <p><strong>Email:</strong> ${email}</p>
-              <p><strong>Senha:</strong> A senha foi definida pelo seu psicólogo</p>
+          <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; padding: 20px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #10b981; margin: 0; font-size: 28px;">Bem-vindo à Evolut!</h1>
             </div>
             
-            <p>Para acessar a plataforma, clique no link abaixo:</p>
-            <p style="text-align: center;">
-              <a href="${req.headers.get("origin") || 'https://your-domain.com'}/login" 
-                 style="background-color: #1893f8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Olá <strong>${name}</strong>,
+            </p>
+            
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+              Você foi adicionado à plataforma Evolut pelo seu psicólogo. Esta é uma plataforma segura para acompanhamento psicológico onde você poderá registrar seu humor, realizar tarefas terapêuticas e se comunicar com seu psicólogo.
+            </p>
+            
+            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #10b981;">
+              <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Suas credenciais de acesso:</h3>
+              <p style="margin: 8px 0; font-size: 16px;"><strong>Email:</strong> ${email}</p>
+              <p style="margin: 8px 0; font-size: 16px;"><strong>Senha:</strong> ${password}</p>
+              <p style="margin: 15px 0 0 0; font-size: 14px; color: #6b7280;">
+                <em>Por motivos de segurança, recomendamos que você altere sua senha após o primeiro acesso.</em>
+              </p>
+            </div>
+            
+            <p style="text-align: center; margin: 30px 0;">
+              <a href="${req.headers.get("origin") || 'https://evoluthera.app'}/login" 
+                 style="background-color: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-size: 16px; font-weight: 600;">
                 Acessar Plataforma
               </a>
             </p>
             
-            <p>Se você tiver alguma dúvida, entre em contato com seu psicólogo.</p>
-            <p>Atenciosamente,<br>Equipe Evolut</p>
+            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+              <p style="font-size: 14px; line-height: 1.6; color: #6b7280;">
+                Se você tiver alguma dúvida sobre como usar a plataforma, entre em contato com seu psicólogo. 
+                Em caso de problemas técnicos, nossa equipe de suporte está disponível.
+              </p>
+              
+              <p style="font-size: 14px; margin-top: 20px; color: #374151;">
+                Atenciosamente,<br>
+                <strong>Equipe Evolut</strong>
+              </p>
+            </div>
           </div>
         `,
       });
@@ -159,7 +178,8 @@ serve(async (req) => {
       logStep("Email sent successfully", { emailId: emailResponse.id });
     } catch (emailError) {
       console.error("Error sending email:", emailError);
-      // Não falhar a operação por causa do email
+      logStep("Email sending failed", { error: emailError.message });
+      // Não falhar a operação por causa do email - mas logar o erro
     }
 
     return new Response(JSON.stringify({
