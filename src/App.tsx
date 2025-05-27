@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -55,7 +56,6 @@ import AdminReports from "./pages/admin/Reports";
 import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
 import Chat from "./pages/Chat";
-import InviteRegistration from "./pages/Invite";
 
 const queryClient = new QueryClient();
 
@@ -217,7 +217,6 @@ const App = () => (
               </ProtectedRoute>
             } />
 
-            <Route path="/invite/:token" element={<InviteRegistration />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
