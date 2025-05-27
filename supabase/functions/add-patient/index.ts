@@ -59,11 +59,18 @@ serve(async (req) => {
     const { name, email, password }: AddPatientRequest = await req.json();
     logStep("Request data received", { name, email });
 
-    // Verificar se o email já existe
-    const { data: existingUser } = await supabaseClient.auth.admin.getUserByEmail(email);
-    if (existingUser.user) {
+    // Verificar se o email já existe na tabela profiles
+    const { data: existingProfile } = await supabaseClient
+      .from('profiles')
+      .select('id')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (existingProfile) {
       throw new Error("Um usuário com este email já existe no sistema");
     }
+
+    logStep("Email check passed - no existing user found");
 
     // Criar usuário no auth com a senha definida pelo psicólogo
     const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
