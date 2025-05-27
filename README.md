@@ -1,73 +1,219 @@
-# Welcome to your Lovable project
+# Documentação do Sistema Evoluthera
 
-## Project info
+## Histórico de Versões
 
-**URL**: https://lovable.dev/projects/b83051ba-7988-42c6-b0ce-c9182bfc902a
+| Versão | Data       | Autor  | Mudanças                     |
+| ------ | ---------- | ------ | ---------------------------- |
+| 1.0    | 2024-05-26 | Gemini | Criação inicial do documento |
 
-## How can I edit this code?
+## 1. Introdução
 
-There are several ways of editing your application.
+Evoluthera é uma plataforma digital inovadora projetada para conectar psicólogos e pacientes, facilitando o acompanhamento terapêutico e o gerenciamento da saúde mental. A plataforma visa oferecer ferramentas intuitivas e eficazes para otimizar a jornada terapêutica, tanto para o profissional quanto para o paciente, incorporando recursos modernos como inteligência artificial e gamificação.
 
-**Use Lovable**
+Este documento detalha a visão, arquitetura, funcionalidades e o estado atual de desenvolvimento do sistema Evoluthera.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/b83051ba-7988-42c6-b0ce-c9182bfc902a) and start prompting.
+## 2. Visão Geral do Sistema
 
-Changes made via Lovable will be committed automatically to this repo.
+O Evoluthera busca ser uma solução completa para a gestão da terapia psicológica, oferecendo um ambiente seguro e colaborativo.
 
-**Use your preferred IDE**
+### Objetivos Principais
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+**Para Psicólogos:**
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+* Gerenciamento de pacientes
+* Criação e acompanhamento de anamneses
+* Atribuição de tarefas
+* Monitoramento de humor
+* Geração de relatórios e insights baseados em IA
 
-Follow these steps:
+**Para Pacientes:**
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+* Interface amigável para registrar o humor
+* Realizar tarefas terapêuticas
+* Acompanhar o progresso
+* Acessar o histórico de sessões
+* Comunicação com o psicólogo
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+**Para Administradores:**
 
-# Step 3: Install the necessary dependencies.
-npm i
+* Gerenciamento da plataforma
+* Configurações do sistema, logs, faturamento e suporte
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+### Público-Alvo
+
+* Psicólogos e Terapeutas
+* Pacientes em acompanhamento psicológico
+* Clínicas de psicologia (potencialmente no futuro)
+* Administradores da plataforma
+
+## 3. Arquitetura do Sistema
+
+Evoluthera é construído sobre uma arquitetura moderna, separando o frontend do backend para maior escalabilidade e manutenibilidade.
+
+### 3.1. Frontend
+
+* **Framework Principal:** React com TypeScript
+* **Build Tool:** Vite
+* **Estilização:** Tailwind CSS e componentes Shadcn/UI
+* **Estado da Aplicação:** Context API do React, hooks customizados
+* **Roteamento:** React Router
+
+### 3.2. Backend
+
+* **Plataforma:** Supabase
+* **Banco de Dados:** PostgreSQL
+* **Autenticação:** Supabase Auth
+* **Funções Serverless:** Funções específicas (ex: `add-patient`, `crisis-prediction`, `generate-invite-link`)
+* **Armazenamento:** Supabase Storage
+
+### 3.3. Principais Tecnologias e Bibliotecas
+
+* React, TypeScript, Vite, Tailwind CSS, Shadcn/UI
+* Supabase (Auth, DB, Functions, Storage)
+* Recharts, ESLint, Prettier
+
+## 4. Funcionalidades Principais
+
+Sistema dividido por tipo de usuário:
+
+### 4.1. Módulos Comuns
+
+* Autenticação, recuperação de senha
+* Landing Page
+* Chat
+
+### 4.2. Funcionalidades do Paciente
+
+* Dashboard, registro e histórico de humor
+* Gerenciamento de tarefas e diário
+* Anamnese, gamificação, testes psicológicos
+* Acompanhamento de progresso, configurações
+
+### 4.3. Funcionalidades do Psicólogo
+
+* Dashboard, gerenciamento de pacientes
+* Anamnese e tarefas
+* Monitoramento de humor, insights com IA
+* Relatórios, notificações, gamificação
+* Configurações
+
+### 4.4. Funcionalidades do Administrador
+
+* Dashboard, gerenciamento de usuários
+* Faturamento, logs do sistema
+* Documentos legais, comunicações, suporte
+* Configurações do sistema
+
+## 5. Backlog do Produto
+
+### 5.1. Tarefas Concluídas
+
+* Estrutura da aplicação, roteamento, autenticação
+* Layouts, UI, Supabase functions, páginas básicas
+
+### 5.2. Backlog para o MVP
+
+**Alta Prioridade:**
+
+* Paciente: Login, dashboard, humor, tarefas, chat
+* Psicólogo: Login, dashboard, pacientes, tarefas, humor, chat
+* Admin: Login, dashboard, usuários
+* Geral: Termos de uso, testes E2E, deploy inicial
+
+**Média Prioridade:**
+
+* Histórico de humor, diário, notificações, relatórios, IA inicial
+
+### 5.3. Sugestões Pós-MVP
+
+* Sessões online, comunidade, metas
+* Agendamento, prontuário, análise de dados
+* Multiplataforma, IA avançada, gamificação, app móvel
+* Integrações com wearables e sistemas externos
+
+## 6. Pontos Críticos do Sistema
+
+### Segurança e Privacidade
+
+* Criptografia, controle de acesso, LGPD/HIPAA
+* RLS e segurança Supabase
+
+### Escalabilidade
+
+* Design de banco, otimização de queries, funções eficientes
+
+### Integração com IA
+
+* Custos, ética, qualidade, explicabilidade
+
+### Usabilidade
+
+* Intuitivo, acessível, engajamento
+
+### Conformidade Regulatória
+
+* Regras específicas da área de saúde
+
+### Manutenção de Supabase Functions
+
+* Versionamento e complexidade
+
+### Dependência do Supabase
+
+* Limitações e custos
+
+### Testes
+
+* Estratégia completa: unitários, integração, E2E, segurança
+
+## 7. Avaliação de Produção para um MVP
+
+### 7.1. Infraestrutura Mínima
+
+* Plano Supabase, backups, monitoramento
+
+### 7.2. Deploy
+
+* Frontend: Vercel, Netlify, Amplify
+* Backend: Supabase CLI, ambientes separados
+* Domínio e SSL
+
+### 7.3. Monitoramento e Manutenção
+
+* Monitoramento de erros e performance
+* Logs, alertas, plano de backup
+* Atualizações de segurança, suporte ao usuário
+
+## 8. Estrutura do Repositório
+
+```
+public/
+src/
+  components/
+  contexts/
+  hooks/
+  integrations/
+  lib/
+  pages/
+  styles/ ou assets/
+  types/
+App.tsx
+main.tsx
+supabase/functions/
+tailwind.config.ts
+postcss.config.js
+vite.config.ts
+tsconfig*.json
+package.json
+README.md
 ```
 
-**Edit a file directly in GitHub**
+## 9. Guia de Contribuição (Sugestão)
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Para garantir a qualidade e consistência do código, sugere-se o uso de:
 
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/b83051ba-7988-42c6-b0ce-c9182bfc902a) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+* Modelo de branching
+* Pull Requests com revisão obrigatória
+* Padrão de commits
+* Testes automatizados
+* Linting e formatação automatizada
