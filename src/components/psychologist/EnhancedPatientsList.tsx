@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -53,31 +52,64 @@ const EnhancedPatientsList = () => {
     try {
       if (showRefreshNotification) setIsRefreshing(true);
       
-      // Get patients with their profiles and stats
+      console.log('Loading patients for psychologist:', profile?.id);
+      
+      // First, get all patients for this psychologist
       const { data: patientsData, error: patientsError } = await supabase
         .from('patients')
-        .select(`
-          id,
-          patient_id,
-          psychologist_id,
-          status,
-          created_at,
-          updated_at,
-          profiles!patients_patient_id_fkey(
-            id,
-            name,
-            email,
-            created_at
-          )
-        `)
+        .select('*')
         .eq('psychologist_id', profile?.id)
         .eq('status', 'active');
 
-      if (patientsError) throw patientsError;
+      if (patientsError) {
+        console.error('Error fetching patients:', patientsError);
+        throw patientsError;
+      }
 
-      // Get patient stats for each patient
+      console.log('Found patients:', patientsData);
+
+      if (!patientsData || patientsData.length === 0) {
+        setPatients([]);
+        if (showRefreshNotification) {
+          toast({
+            title: "Dados atualizados",
+            description: "0 pacientes carregados",
+          });
+        }
+        return;
+      }
+
+      // Get all patient IDs
+      const patientIds = patientsData.map(p => p.patient_id);
+      console.log('Patient IDs:', patientIds);
+
+      // Fetch profiles separately using the patient IDs
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', patientIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        // Continue without throwing error, we'll handle missing profiles
+      }
+
+      console.log('Found profiles:', profilesData);
+
+      // Combine patients with their profiles
+      const patientsWithProfiles = patientsData.map(patient => {
+        const profile = profilesData?.find(p => p.id === patient.patient_id);
+        return {
+          ...patient,
+          profiles: profile || null
+        };
+      });
+
+      console.log('Patients with profiles:', patientsWithProfiles);
+
+      // Get patient stats and mood analytics for each patient
       const patientsWithStats = await Promise.all(
-        (patientsData || []).map(async (patient) => {
+        patientsWithProfiles.map(async (patient) => {
           // Get patient stats
           const { data: stats } = await supabase
             .from('patient_stats')
@@ -123,6 +155,7 @@ const EnhancedPatientsList = () => {
         })
       );
 
+      console.log('Final patients data:', patientsWithStats);
       setPatients(patientsWithStats);
       
       if (showRefreshNotification) {
