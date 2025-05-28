@@ -71,11 +71,12 @@ serve(async (req) => {
 
     logStep("Email check passed - no existing user found");
 
-    // Criar usuário no auth com a senha definida pelo psicólogo
+    // Criar usuário no auth com a senha definida pelo psicólogo e display_name
     const { data: newUser, error: createError } = await supabaseClient.auth.admin.createUser({
       email,
       password,
       email_confirm: true,
+      display_name: name,
       user_metadata: {
         name,
         user_type: 'patient'
@@ -83,7 +84,7 @@ serve(async (req) => {
     });
 
     if (createError) throw new Error(`Error creating user: ${createError.message}`);
-    logStep("User created in auth", { userId: newUser.user?.id });
+    logStep("User created in auth with display_name", { userId: newUser.user?.id, displayName: name });
 
     // Criar perfil do paciente
     const { error: profileError } = await supabaseClient
@@ -181,27 +182,3 @@ serve(async (req) => {
       logStep("Email sending failed", { error: emailError.message });
       // Não falhar a operação por causa do email - mas logar o erro
     }
-
-    return new Response(JSON.stringify({
-      success: true,
-      patient: {
-        id: newUser.user!.id,
-        name,
-        email,
-        activationId: activation.id
-      },
-      message: "Paciente adicionado com sucesso. Email enviado com credenciais."
-    }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
-
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    logStep("ERROR", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 500,
-    });
-  }
-});
