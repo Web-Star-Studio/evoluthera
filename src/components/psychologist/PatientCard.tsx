@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +41,7 @@ interface PatientData {
     name: string;
     email: string;
     created_at: string;
-  };
+  } | null;
   patient_stats?: {
     tasks_completed: number;
     streak_days: number;
@@ -69,6 +70,30 @@ const PatientCard = ({
 }: PatientCardProps) => {
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [moodDialogOpen, setMoodDialogOpen] = useState(false);
+
+  // Verificar se os dados do profile existem
+  if (!patient.profiles) {
+    return (
+      <Card className="border-l-4 border-l-red-500">
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-3">
+            <AlertTriangle className="h-8 w-8 text-red-500" />
+            <div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">
+                Dados do paciente incompletos
+              </h3>
+              <p className="text-sm text-gray-600">
+                ID: {patient.patient_id}
+              </p>
+              <p className="text-xs text-gray-500 mt-2">
+                O perfil deste paciente não foi encontrado. Entre em contato com o suporte.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const getInitials = (name: string) => {
     return name
