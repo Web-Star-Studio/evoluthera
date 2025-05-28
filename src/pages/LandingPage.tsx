@@ -126,10 +126,10 @@ const LandingPage = () => {
               <div className="space-y-6">
                 <h1 className="text-6xl lg:text-7xl xl:text-8xl font-bold text-gray-900 leading-tight">
                   <span className="block">Acompanhe.</span>
-                  <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Evoluthera.
-                  </span>
                   <span className="block">Conecte.</span>
+                  <span className="block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                    Evolua.
+                  </span>
                 </h1>
                 
                 <p className="text-xl lg:text-2xl text-gray-600 leading-relaxed max-w-2xl">

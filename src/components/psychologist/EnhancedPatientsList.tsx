@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ interface PatientData {
     name: string;
     email: string;
     created_at: string;
-  };
+  } | null;
   patient_stats?: {
     tasks_completed: number;
     streak_days: number;
