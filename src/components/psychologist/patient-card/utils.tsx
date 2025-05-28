@@ -1,4 +1,4 @@
-
+import React from "react";
 import { TrendingUp, TrendingDown, Activity } from "lucide-react";
 
 export const getInitials = (name: string) => {
