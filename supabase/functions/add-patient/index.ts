@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 import { Resend } from "npm:resend@2.0.0";
@@ -182,3 +183,27 @@ serve(async (req) => {
       logStep("Email sending failed", { error: emailError.message });
       // Não falhar a operação por causa do email - mas logar o erro
     }
+
+    return new Response(JSON.stringify({
+      success: true,
+      patient: {
+        id: newUser.user!.id,
+        name,
+        email,
+        activationId: activation.id
+      },
+      message: "Paciente adicionado com sucesso. Email enviado com credenciais."
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 200,
+    });
+
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    logStep("ERROR", { message: errorMessage });
+    return new Response(JSON.stringify({ error: errorMessage }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500,
+    });
+  }
+});
