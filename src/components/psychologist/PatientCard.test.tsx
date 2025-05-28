@@ -1,8 +1,10 @@
+
 import React from 'react';
 import PatientCard from './PatientCard';
+import { PatientData } from './patient-card/types';
 
 // Mock data for testing
-const mockPatient = {
+const mockPatient: PatientData = {
   id: '1',
   patient_id: 'patient-1',
   psychologist_id: 'psycho-1',
@@ -51,4 +53,4 @@ const PatientCardTest = () => {
   );
 };
 
-export default PatientCardTest; 
+export default PatientCardTest;
