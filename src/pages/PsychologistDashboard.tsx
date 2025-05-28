@@ -1,4 +1,3 @@
-
 import { useAuth } from "@/contexts/AuthContext";
 import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

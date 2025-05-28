@@ -42,19 +42,27 @@ const EnhancedPatientsList = () => {
   const { profile } = useAuth();
   const { toast } = useToast();
 
+  // Policy RLS atualizada - psicólogos podem ver perfis dos pacientes
+  console.log('[ENHANCED_PATIENTS_LIST] Component mounted, profile:', profile);
+
   useEffect(() => {
+    console.log('[ENHANCED_PATIENTS_LIST] useEffect triggered, profile?.id:', profile?.id);
     if (profile?.id) {
       loadPatients();
     }
   }, [profile?.id]);
 
   const loadPatients = async (showRefreshNotification = false) => {
+    console.log('[ENHANCED_PATIENTS_LIST] loadPatients called with showRefreshNotification:', showRefreshNotification);
+    console.log('[ENHANCED_PATIENTS_LIST] Current profile:', profile);
+    
     try {
       if (showRefreshNotification) setIsRefreshing(true);
       
-      console.log('Loading patients for psychologist:', profile?.id);
+      console.log('[ENHANCED_PATIENTS_LIST] Loading patients for psychologist:', profile?.id);
+      console.log('[ENHANCED_PATIENTS_LIST] Starting patients query...');
       
-      // First, get all patients for this psychologist
+      // Primeira query: buscar todos os pacientes
       const { data: patientsData, error: patientsError } = await supabase
         .from('patients')
         .select('*')
@@ -62,13 +70,16 @@ const EnhancedPatientsList = () => {
         .eq('status', 'active');
 
       if (patientsError) {
-        console.error('Error fetching patients:', patientsError);
+        console.error('[ENHANCED_PATIENTS_LIST] Error fetching patients:', patientsError);
+        console.error('[ENHANCED_PATIENTS_LIST] Full error object:', JSON.stringify(patientsError, null, 2));
         throw patientsError;
       }
 
-      console.log('Found patients:', patientsData);
+      console.log('[ENHANCED_PATIENTS_LIST] Patients found:', patientsData);
+      console.log('[ENHANCED_PATIENTS_LIST] Number of patients found:', patientsData?.length || 0);
 
       if (!patientsData || patientsData.length === 0) {
+        console.log('[ENHANCED_PATIENTS_LIST] No patients found, setting empty array');
         setPatients([]);
         if (showRefreshNotification) {
           toast({
@@ -79,25 +90,25 @@ const EnhancedPatientsList = () => {
         return;
       }
 
-      // Get all patient IDs
+      // Segunda query: buscar os perfis dos pacientes
       const patientIds = patientsData.map(p => p.patient_id);
-      console.log('Patient IDs:', patientIds);
+      console.log('[ENHANCED_PATIENTS_LIST] Patient IDs:', patientIds);
 
-      // Fetch profiles separately using the patient IDs
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .in('id', patientIds);
 
       if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
-        // Continue without throwing error, we'll handle missing profiles
+        console.error('[ENHANCED_PATIENTS_LIST] Error fetching profiles:', profilesError);
+        // Não fazer throw aqui, continuar com dados limitados
       }
 
-      console.log('Found profiles:', profilesData);
+      console.log('[ENHANCED_PATIENTS_LIST] Profiles found:', profilesData);
+      console.log('[ENHANCED_PATIENTS_LIST] Number of profiles found:', profilesData?.length || 0);
 
-      // Combine patients with their profiles
-      const patientsWithProfiles = patientsData.map(patient => {
+      // Transformar os dados para o formato esperado
+      const transformedPatients = patientsData.map(patient => {
         const profile = profilesData?.find(p => p.id === patient.patient_id);
         return {
           ...patient,
@@ -105,24 +116,38 @@ const EnhancedPatientsList = () => {
         };
       });
 
-      console.log('Patients with profiles:', patientsWithProfiles);
+      console.log('[ENHANCED_PATIENTS_LIST] Transformed patients:', transformedPatients);
+      console.log('[ENHANCED_PATIENTS_LIST] Patients with profiles:', transformedPatients.filter(p => p.profiles !== null).length);
 
       // Get patient stats and mood analytics for each patient
       const patientsWithStats = await Promise.all(
-        patientsWithProfiles.map(async (patient) => {
+        transformedPatients.map(async (patient) => {
+          if (!patient.profiles) {
+            console.warn(`No profile found for patient: ${patient.patient_id}`);
+            return patient;
+          }
+
           // Get patient stats
-          const { data: stats } = await supabase
+          const { data: stats, error: statsError } = await supabase
             .from('patient_stats')
             .select('*')
             .eq('patient_id', patient.patient_id)
             .single();
 
+          if (statsError && statsError.code !== 'PGRST116') {
+            console.warn('Error fetching stats for patient:', patient.patient_id, statsError);
+          }
+
           // Get mood analytics
-          const { data: moodData } = await supabase
+          const { data: moodData, error: moodError } = await supabase
             .from('mood_records')
             .select('mood_score, created_at')
             .eq('patient_id', patient.patient_id)
             .order('created_at', { ascending: false });
+
+          if (moodError) {
+            console.warn('Error fetching mood data for patient:', patient.patient_id, moodError);
+          }
 
           let mood_analytics = undefined;
           if (moodData && moodData.length > 0) {
@@ -156,12 +181,16 @@ const EnhancedPatientsList = () => {
       );
 
       console.log('Final patients data:', patientsWithStats);
-      setPatients(patientsWithStats);
+      
+      // Filtrar apenas pacientes que têm profiles
+      const validPatients = patientsWithStats.filter(patient => patient.profiles !== null);
+      
+      setPatients(validPatients);
       
       if (showRefreshNotification) {
         toast({
           title: "Dados atualizados",
-          description: `${patientsWithStats.length} paciente(s) carregado(s)`,
+          description: `${validPatients.length} paciente(s) carregado(s)`,
         });
       }
     } catch (error) {
@@ -187,7 +216,7 @@ const EnhancedPatientsList = () => {
       }
 
       // Call resend credentials function
-      const res = await fetch(`https://phjpyojetgxfsmqhhjfa.supabase.co/functions/v1/resend-credentials`, {
+      const res = await fetch("https://phjpyojetgxfsmqhhjfa.supabase.co/functions/v1/resend-credentials", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -209,10 +238,11 @@ const EnhancedPatientsList = () => {
         title: "Credenciais reenviadas",
         description: response.message,
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
       toast({
         title: "Erro ao reenviar credenciais",
-        description: error.message || "Tente novamente.",
+        description: errorMessage || "Tente novamente.",
         variant: "destructive",
       });
     }
@@ -246,15 +276,15 @@ const EnhancedPatientsList = () => {
               <CardContent className="p-6">
                 <div className="animate-pulse space-y-3">
                   <div className="flex items-center space-x-3">
-                    <div className="h-12 w-12 bg-gray-200 rounded-full"></div>
+                    <div className="h-12 w-12 bg-gray-200 rounded-full" />
                     <div className="space-y-2 flex-1">
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-1/2" />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="h-3 bg-gray-200 rounded w-full"></div>
-                    <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                    <div className="h-3 bg-gray-200 rounded w-full" />
+                    <div className="h-3 bg-gray-200 rounded w-2/3" />
                   </div>
                 </div>
               </CardContent>
