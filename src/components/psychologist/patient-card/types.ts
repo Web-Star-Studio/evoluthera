@@ -1,4 +1,3 @@
-
 export interface PatientData {
   id: string;
   patient_id: string;
@@ -31,4 +30,6 @@ export interface PatientCardProps {
   patient: PatientData;
   onResendCredentials?: (patientId: string) => void;
   onViewRecord?: (patientId: string) => void;
+  onDeletePatient?: (patientId: string) => void;
+  onToggleStatus?: (patientId: string) => void;
 }

@@ -12,11 +12,11 @@ const createSMTPClient = () => {
   return new SMTPClient({
     connection: {
       hostname: Deno.env.get("SMTP_HOST") || "smtp.gmail.com",
-      port: parseInt(Deno.env.get("SMTP_PORT") || "587"),
+      port: Number.parseInt(Deno.env.get("SMTP_PORT") || "587"),
       tls: true,
       auth: {
         username: Deno.env.get("SMTP_USERNAME") || "",
-        password: Deno.env.get("SMTP_PASSWORD") || "", // App Password do Gmail ou senha do provedor
+        password: Deno.env.get("SMTP_PASSWORD") || "",
       },
     },
   });
@@ -97,13 +97,15 @@ serve(async (req) => {
     });
 
     if (createError) throw new Error(`Error creating user: ${createError.message}`);
-    logStep("User created in auth with display_name", { userId: newUser.user?.id, displayName: name });
+    if (!newUser.user) throw new Error("User creation failed");
+    
+    logStep("User created in auth with display_name", { userId: newUser.user.id, displayName: name });
 
     // Criar perfil do paciente
     const { error: profileError } = await supabaseClient
       .from('profiles')
       .insert({
-        id: newUser.user!.id,
+        id: newUser.user.id,
         name,
         email,
         user_type: 'patient'
@@ -117,7 +119,7 @@ serve(async (req) => {
       .from('patients')
       .insert({
         psychologist_id: psychologist.id,
-        patient_id: newUser.user!.id,
+        patient_id: newUser.user.id,
         status: 'active'
       });
 
@@ -129,7 +131,7 @@ serve(async (req) => {
       .from('patient_activations')
       .insert({
         psychologist_id: psychologist.id,
-        patient_id: newUser.user!.id,
+        patient_id: newUser.user.id,
         status: 'pending'
       })
       .select()
@@ -138,69 +140,72 @@ serve(async (req) => {
     if (activationError) throw new Error(`Error creating activation: ${activationError.message}`);
     logStep("Patient activation record created", { activationId: activation.id });
 
-    // Enviar email com credenciais
+    // Enviar email com credenciais usando Nodemailer/denomailer
     try {
       const smtpClient = createSMTPClient();
-      await smtpClient.send({
-        from: "Evolut <noreply@evoluthera.app>",
-        to: [email],
-        subject: "Bem-vindo à plataforma Evolut - Suas credenciais de acesso",
-        html: `
-          <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #10b981; margin: 0; font-size: 28px;">Bem-vindo à Evolut!</h1>
-            </div>
-            
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
-              Olá <strong>${name}</strong>,
-            </p>
-            
-            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
-              Você foi adicionado à plataforma Evolut pelo seu psicólogo. Esta é uma plataforma segura para acompanhamento psicológico onde você poderá registrar seu humor, realizar tarefas terapêuticas e se comunicar com seu psicólogo.
-            </p>
-            
-            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #10b981;">
-              <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Suas credenciais de acesso:</h3>
-              <p style="margin: 8px 0; font-size: 16px;"><strong>Email:</strong> ${email}</p>
-              <p style="margin: 8px 0; font-size: 16px;"><strong>Senha:</strong> ${password}</p>
-              <p style="margin: 15px 0 0 0; font-size: 14px; color: #6b7280;">
-                <em>Por motivos de segurança, recomendamos que você altere sua senha após o primeiro acesso.</em>
-              </p>
-            </div>
-            
-            <p style="text-align: center; margin: 30px 0;">
-              <a href="${req.headers.get("origin") || 'https://evoluthera.app'}/login" 
-                 style="background-color: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-size: 16px; font-weight: 600;">
-                Acessar Plataforma
-              </a>
-            </p>
-            
-            <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
-              <p style="font-size: 14px; line-height: 1.6; color: #6b7280;">
-                Se você tiver alguma dúvida sobre como usar a plataforma, entre em contato com seu psicólogo. 
-                Em caso de problemas técnicos, nossa equipe de suporte está disponível.
-              </p>
-              
-              <p style="font-size: 14px; margin-top: 20px; color: #374151;">
-                Atenciosamente,<br>
-                <strong>Equipe Evolut</strong>
-              </p>
-            </div>
+      
+      const htmlContent = `
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; padding: 20px;">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #10b981; margin: 0; font-size: 28px;">Bem-vindo à Evolut!</h1>
           </div>
-        `,
+          
+          <p style="font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+            Olá <strong>${name}</strong>,
+          </p>
+          
+          <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">
+            Você foi adicionado à plataforma Evolut pelo seu psicólogo. Esta é uma plataforma segura para acompanhamento psicológico onde você poderá registrar seu humor, realizar tarefas terapêuticas e se comunicar com seu psicólogo.
+          </p>
+          
+          <div style="background-color: #f3f4f6; padding: 25px; border-radius: 10px; margin: 25px 0; border-left: 4px solid #10b981;">
+            <h3 style="color: #374151; margin: 0 0 15px 0; font-size: 18px;">Suas credenciais de acesso:</h3>
+            <p style="margin: 8px 0; font-size: 16px;"><strong>Email:</strong> ${email}</p>
+            <p style="margin: 8px 0; font-size: 16px;"><strong>Senha:</strong> ${password}</p>
+            <p style="margin: 15px 0 0 0; font-size: 14px; color: #6b7280;">
+              <em>Por motivos de segurança, recomendamos que você altere sua senha após o primeiro acesso.</em>
+            </p>
+          </div>
+          
+          <p style="text-align: center; margin: 30px 0;">
+            <a href="${req.headers.get("origin") || 'https://evoluthera.app'}/login" 
+               style="background-color: #10b981; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-size: 16px; font-weight: 600;">
+              Acessar Plataforma
+            </a>
+          </p>
+          
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
+            <p style="font-size: 14px; line-height: 1.6; color: #6b7280;">
+              Se você tiver alguma dúvida sobre como usar a plataforma, entre em contato com seu psicólogo. 
+              Em caso de problemas técnicos, nossa equipe de suporte está disponível.
+            </p>
+            
+            <p style="font-size: 14px; margin-top: 20px; color: #374151;">
+              Atenciosamente,<br>
+              <strong>Equipe Evolut</strong>
+            </p>
+          </div>
+        </div>
+      `;
+
+      await smtpClient.send({
+        from: Deno.env.get("SMTP_FROM_EMAIL") || "noreply@evoluthera.app",
+        to: email,
+        subject: "Bem-vindo à plataforma Evolut - Suas credenciais de acesso",
+        html: htmlContent,
       });
 
-      logStep("Email sent successfully");
+      logStep("Email sent successfully via SMTP");
     } catch (emailError) {
       console.error("Error sending email:", emailError);
-      logStep("Email sending failed", { error: emailError.message });
+      logStep("Email sending failed", { error: (emailError as Error).message });
       // Não falhar a operação por causa do email - mas logar o erro
     }
 
     return new Response(JSON.stringify({
       success: true,
       patient: {
-        id: newUser.user!.id,
+        id: newUser.user.id,
         name,
         email,
         activationId: activation.id
@@ -219,4 +224,4 @@ serve(async (req) => {
       status: 500,
     });
   }
-});
+}); 

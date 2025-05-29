@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,12 +9,16 @@ import {
   Mail,
   MoreVertical,
   Clock,
-  Calendar
+  Calendar,
+  Trash2,
+  UserCheck,
+  UserX
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
@@ -32,7 +35,9 @@ import PatientErrorCard from "./patient-card/PatientErrorCard";
 const PatientCard = ({ 
   patient, 
   onResendCredentials,
-  onViewRecord 
+  onViewRecord,
+  onDeletePatient,
+  onToggleStatus
 }: PatientCardProps) => {
   const [aiDialogOpen, setAiDialogOpen] = useState(false);
   const [moodDialogOpen, setMoodDialogOpen] = useState(false);
@@ -43,26 +48,48 @@ const PatientCard = ({
   }
 
   const activityStatus = getActivityStatus(patient.patient_stats?.last_activity || null);
+  const isActive = patient.status === 'active';
 
   return (
     <>
-      <Card className="hover:shadow-lg transition-all duration-200 border-l-4 border-l-blue-500">
+      <Card className={`hover:shadow-lg transition-all duration-200 border-l-4 ${
+        isActive 
+          ? 'border-l-blue-500' 
+          : 'border-l-gray-400 bg-gray-50/50'
+      }`}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3">
-              <Avatar className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600">
+              <Avatar className={`h-12 w-12 ${
+                isActive 
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-600' 
+                  : 'bg-gray-400'
+              }`}>
                 <AvatarFallback className="text-white font-semibold">
                   {getInitials(patient.profiles.name)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <CardTitle className="text-lg text-gray-900 mb-1">
-                  {patient.profiles.name}
-                </CardTitle>
-                <p className="text-sm text-gray-600 mb-2">{patient.profiles.email}</p>
-                <Badge className={`text-xs ${activityStatus.color}`}>
-                  {activityStatus.text}
-                </Badge>
+                <div className="flex items-center gap-2 mb-1">
+                  <CardTitle className={`text-lg ${
+                    isActive ? 'text-gray-900' : 'text-gray-600'
+                  }`}>
+                    {patient.profiles.name}
+                  </CardTitle>
+                  <Badge variant={isActive ? "default" : "secondary"} className="text-xs">
+                    {isActive ? "Ativo" : "Inativo"}
+                  </Badge>
+                </div>
+                <p className={`text-sm mb-2 ${
+                  isActive ? 'text-gray-600' : 'text-gray-500'
+                }`}>
+                  {patient.profiles.email}
+                </p>
+                {isActive && (
+                  <Badge className={`text-xs ${activityStatus.color}`}>
+                    {activityStatus.text}
+                  </Badge>
+                )}
               </div>
             </div>
             
@@ -73,22 +100,68 @@ const PatientCard = ({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => onResendCredentials?.(patient.patient_id)}>
-                  <Mail className="h-4 w-4 mr-2" />
-                  Reenviar Credenciais
+                {isActive && (
+                  <>
+                    <DropdownMenuItem onClick={() => onResendCredentials?.(patient.patient_id)}>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Reenviar Credenciais
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onViewRecord?.(patient.patient_id)}>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Ver Prontuário
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                  </>
+                )}
+                
+                <DropdownMenuItem 
+                  onClick={() => onToggleStatus?.(patient.patient_id)}
+                  className={isActive ? "text-orange-600 focus:text-orange-600" : "text-green-600 focus:text-green-600"}
+                >
+                  {isActive ? (
+                    <>
+                      <UserX className="h-4 w-4 mr-2" />
+                      Desativar Paciente
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Ativar Paciente
+                    </>
+                  )}
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => onViewRecord?.(patient.patient_id)}>
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Ver Prontuário
-                </DropdownMenuItem>
+
+                {isActive && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem 
+                      onClick={() => onDeletePatient?.(patient.patient_id)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Deletar Paciente
+                    </DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </CardHeader>
 
         <CardContent className="space-y-4">
-          <PatientStats patient={patient} />
-          <PatientMoodSection patient={patient} />
+          {isActive ? (
+            <>
+              <PatientStats patient={patient} />
+              <PatientMoodSection patient={patient} />
+            </>
+          ) : (
+            <div className="text-center py-4">
+              <UserX className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-500">
+                Paciente inativo - dados limitados
+              </p>
+            </div>
+          )}
 
           {/* Patient since */}
           <div className="flex items-center text-xs text-gray-500">
@@ -99,41 +172,47 @@ const PatientCard = ({
             })}
           </div>
 
-          <PatientActionButtons 
-            onAiClick={() => setAiDialogOpen(true)}
-            onMoodClick={() => setMoodDialogOpen(true)}
-          />
+          {isActive && (
+            <PatientActionButtons 
+              onAiClick={() => setAiDialogOpen(true)}
+              onMoodClick={() => setMoodDialogOpen(true)}
+            />
+          )}
         </CardContent>
       </Card>
 
-      {/* AI Assistant Dialog */}
-      <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Brain className="h-5 w-5 text-blue-600" />
-              Assistente de IA - {patient.profiles.name}
-            </DialogTitle>
-          </DialogHeader>
-          <AIAssistantDashboard 
-            patientId={patient.profiles.id}
-            sessionData={{}}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* AI Assistant Dialog - only for active patients */}
+      {isActive && (
+        <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
+          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Brain className="h-5 w-5 text-blue-600" />
+                Assistente de IA - {patient.profiles.name}
+              </DialogTitle>
+            </DialogHeader>
+            <AIAssistantDashboard 
+              patientId={patient.profiles.id}
+              sessionData={{}}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
 
-      {/* Mood Analytics Dialog */}
-      <Dialog open={moodDialogOpen} onOpenChange={setMoodDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Análise de Humor - {patient.profiles.name}</DialogTitle>
-          </DialogHeader>
-          <PatientMoodAnalytics 
-            patientId={patient.profiles.id} 
-            patientName={patient.profiles.name}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Mood Analytics Dialog - only for active patients */}
+      {isActive && (
+        <Dialog open={moodDialogOpen} onOpenChange={setMoodDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Análise de Humor - {patient.profiles.name}</DialogTitle>
+            </DialogHeader>
+            <PatientMoodAnalytics 
+              patientId={patient.profiles.id} 
+              patientName={patient.profiles.name}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };

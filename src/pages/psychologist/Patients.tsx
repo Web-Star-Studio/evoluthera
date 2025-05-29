@@ -1,4 +1,3 @@
-
 import UniversalDashboardLayout from "@/components/layout/UniversalDashboardLayout";
 import EnhancedPatientsList from "@/components/psychologist/EnhancedPatientsList";
 import { Users } from "lucide-react";
