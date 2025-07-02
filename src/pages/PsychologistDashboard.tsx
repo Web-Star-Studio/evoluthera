@@ -6,8 +6,7 @@ import PsychologistMainDashboard from "@/components/psychologist/PsychologistMai
 import EnhancedPatientsList from "@/components/psychologist/EnhancedPatientsList";
 import NotificationsCenter from "@/components/psychologist/NotificationsCenter";
 import ReportsDashboard from "@/components/psychologist/ReportsDashboard";
-import AIInsightsDashboard from "@/components/psychologist/AIInsightsDashboard";
-import { Brain, Users, Bell, BarChart3, Home } from "lucide-react";
+import { Users, Bell, BarChart3, Home } from "lucide-react";
 
 const PsychologistDashboard = () => {
   const { profile } = useAuth();
@@ -21,20 +20,16 @@ const PsychologistDashboard = () => {
               Olá, Dr(a). {profile?.name}
             </h1>
             <p className="text-gray-600">
-              Painel profissional com insights de IA
+              Painel profissional para gestão de pacientes
             </p>
           </div>
         </div>
 
         <Tabs defaultValue="overview" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <Home className="h-4 w-4" />
               Dashboard
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="flex items-center gap-2">
-              <Brain className="h-4 w-4" />
-              IA & Insights
             </TabsTrigger>
             <TabsTrigger value="patients" className="flex items-center gap-2">
               <Users className="h-4 w-4" />
@@ -54,9 +49,6 @@ const PsychologistDashboard = () => {
             <PsychologistMainDashboard />
           </TabsContent>
 
-          <TabsContent value="ai">
-            <AIInsightsDashboard />
-          </TabsContent>
 
           <TabsContent value="patients">
             <Card>

@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import AIAssistantDashboard from "@/components/ai/AIAssistantDashboard";
+
 import PatientMoodAnalytics from "./PatientMoodAnalytics";
 import { PatientCardProps } from "./patient-card/types";
 import { getInitials, getActivityStatus } from "./patient-card/utils";
@@ -39,7 +39,7 @@ const PatientCard = ({
   onDeletePatient,
   onToggleStatus
 }: PatientCardProps) => {
-  const [aiDialogOpen, setAiDialogOpen] = useState(false);
+  
   const [moodDialogOpen, setMoodDialogOpen] = useState(false);
 
   // Verificar se os dados do profile existem
@@ -174,30 +174,12 @@ const PatientCard = ({
 
           {isActive && (
             <PatientActionButtons 
-              onAiClick={() => setAiDialogOpen(true)}
               onMoodClick={() => setMoodDialogOpen(true)}
             />
           )}
         </CardContent>
       </Card>
 
-      {/* AI Assistant Dialog - only for active patients */}
-      {isActive && (
-        <Dialog open={aiDialogOpen} onOpenChange={setAiDialogOpen}>
-          <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Brain className="h-5 w-5 text-blue-600" />
-                Assistente de IA - {patient.profiles.name}
-              </DialogTitle>
-            </DialogHeader>
-            <AIAssistantDashboard 
-              patientId={patient.profiles.id}
-              sessionData={{}}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
 
       {/* Mood Analytics Dialog - only for active patients */}
       {isActive && (

@@ -81,7 +81,7 @@ const EnhancedPatientsList = () => {
         .from('patients')
         .select(`
           *,
-          profiles:patient_id (
+          profiles!patients_patient_id_fkey (
             id,
             name,
             email,
@@ -295,15 +295,8 @@ const EnhancedPatientsList = () => {
       // 3. Deletar agendamentos
       await supabase.from('appointments').delete().eq('patient_id', patientId);
       
-      // 4. Deletar dados de IA e análises
-      await supabase.from('ai_insights').delete().eq('patient_id', patientId);
-      await supabase.from('crisis_predictions').delete().eq('patient_id', patientId);
       
-      // 5. Deletar documentos clínicos e gravações de sessão
-      await supabase.from('clinical_documents').delete().eq('patient_id', patientId);
-      await supabase.from('session_recordings').delete().eq('patient_id', patientId);
-      
-      // 6. Deletar histórico de anamnese
+      // 4. Deletar histórico de anamnese
       const { data: anamnesisApps } = await supabase
         .from('anamnesis_applications')
         .select('id')
